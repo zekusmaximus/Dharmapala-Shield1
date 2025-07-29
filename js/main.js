@@ -25,6 +25,9 @@ class GameBootstrap {
         if (loadingScreen) {
             loadingScreen.style.display = 'flex';
             this.loadingScreen = loadingScreen;
+            console.log('[GameBootstrap] Loading screen shown');
+        } else {
+            console.warn('[GameBootstrap] Loading screen element not found');
         }
     }
 
@@ -92,12 +95,26 @@ class GameBootstrap {
         }
 
         try {
-            this.game = new Game();
+            // Get the canvas element
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) {
+                throw new Error('Game canvas not found in DOM');
+            }
+            
+            // Set canvas size
+            canvas.width = 800;
+            canvas.height = 600;
+            
+            console.log('[GameBootstrap] Canvas found and configured');
+            
+            this.game = new Game(canvas);
             await this.game.initialize();
             this.initialized = true;
+            console.log('[GameBootstrap] Game initialization complete');
         } catch (error) {
             console.error('Game initialization failed:', error);
             this.handleGameInitError(error);
+            throw error; // Re-throw to trigger error handler
         }
     }
 
@@ -106,11 +123,20 @@ class GameBootstrap {
         const gameScreen = document.getElementById('game-screen');
         
         if (mainMenuScreen) {
-            mainMenuScreen.style.display = 'flex';
+            mainMenuScreen.style.display = 'block';
+            mainMenuScreen.classList.add('active');
+            console.log('[GameBootstrap] Main menu shown');
+        } else {
+            console.warn('[GameBootstrap] Main menu element not found');
         }
+        
         if (gameScreen) {
             gameScreen.style.display = 'none';
+            gameScreen.classList.remove('active');
         }
+        
+        // Hide loading screen
+        this.hideLoadingScreen();
     }
 
     handleGameInitError(error) {

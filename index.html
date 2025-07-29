@@ -15,7 +15,7 @@
 </head>
 <body>
     <!-- Loading Screen -->
-    <div id="loadingScreen" class="screen active">
+    <div id="loading-screen" class="screen active">
         <div class="loading-container">
             <div class="loading-logo">🛡️</div>
             <h1>Dharmapala Shield</h1>
@@ -27,25 +27,26 @@
     </div>
 
     <!-- Main Menu Screen -->
-    <div id="mainMenu" class="screen">
+    <div id="main-menu-screen" class="screen">
         <div class="menu-container">
             <h1 class="game-title">🛡️ Dharmapala Shield</h1>
             <p class="game-subtitle">Buddhist Cyberpunk Tower Defense</p>
             
             <div class="menu-buttons">
-                <button id="startGameBtn" class="menu-btn primary">Start Campaign</button>
+                <button id="start-game-btn" class="menu-btn primary">Start Campaign</button>
+                <button id="continue-game-btn" class="menu-btn">Continue Game</button>
                 <button id="levelSelectBtn" class="menu-btn">Level Select</button>
-                <button id="loadGameBtn" class="menu-btn">Load Game</button>
+                <button id="save-load-btn" class="menu-btn">Load Game</button>
                 <button id="tutorialBtn" class="menu-btn">Tutorial</button>
-                <button id="achievementsBtn" class="menu-btn">Achievements</button>
-                <button id="settingsBtn" class="menu-btn">Settings</button>
+                <button id="achievements-btn" class="menu-btn">Achievements</button>
+                <button id="settings-btn" class="menu-btn">Settings</button>
                 <button id="creditsBtn" class="menu-btn">Credits</button>
             </div>
         </div>
     </div>
 
     <!-- Game Screen -->
-    <div id="gameScreen" class="screen">
+    <div id="game-screen" class="screen">
         <!-- Top HUD -->
         <div class="hud">
             <div class="resource-bar">
@@ -146,7 +147,7 @@
     </div>
 
     <!-- Achievement Gallery Screen -->
-    <div id="achievementScreen" class="screen">
+    <div id="achievement-gallery-screen" class="screen">
         <div class="achievement-container">
             <h2>Achievement Gallery</h2>
             
@@ -174,12 +175,12 @@
                 <!-- Achievement items will be populated dynamically -->
             </div>
             
-            <button id="backFromAchievementsBtn" class="back-btn">← Back to Menu</button>
+            <button id="back-from-achievements" class="back-btn">← Back to Menu</button>
         </div>
     </div>
 
     <!-- Upgrade Tree Modal -->
-    <div id="upgradeTreeModal" class="modal hidden">
+    <div id="upgrade-tree-modal" class="modal hidden">
         <div class="modal-content upgrade-tree">
             <div class="modal-header">
                 <h3 id="upgradeTreeTitle">Upgrade Tree</h3>
@@ -220,7 +221,7 @@
     </div>
 
     <!-- Settings Screen -->
-    <div id="settingsScreen" class="screen">
+    <div id="settings-screen" class="screen">
         <div class="settings-container">
             <h2>Settings</h2>
             
@@ -291,7 +292,7 @@
                 </div>
             </div>
             
-            <button id="backToMenuBtn" class="back-btn">← Back to Menu</button>
+            <button id="back-from-settings" class="back-btn">← Back to Menu</button>
         </div>
     </div>
 
@@ -334,7 +335,7 @@
     </div>
 
     <!-- Save/Load Screen -->
-    <div id="saveLoadScreen" class="screen">
+    <div id="save-load-screen" class="screen">
         <div class="save-load-container">
             <h2>Save/Load Game</h2>
             <div class="save-slots" id="saveSlots">
@@ -342,7 +343,7 @@
             </div>
             <div class="save-load-actions">
                 <button id="clearAllSavesBtn" class="btn danger">Clear All Saves</button>
-                <button id="backFromSaveLoadBtn" class="btn secondary">← Back</button>
+                <button id="back-from-save-load" class="btn secondary">← Back</button>
             </div>
         </div>
     </div>
@@ -384,7 +385,7 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Core Scripts -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/sprite.js"></script>
@@ -393,24 +394,35 @@
     <script src="js/particle.js"></script>
     <script src="js/audioManager.js"></script>
     <script src="js/saveSystem.js"></script>
-    <script src="js/level.js"></script>
     <script src="js/loadingManager.js"></script>
     <script src="js/imageOptimizer.js"></script>
     <script src="js/mobile.js"></script>
     
-    <!-- Phase 2 Scripts -->
-    <script src="js/levelPathPreservation.js"></script>
-    <script src="js/flexiblePathValidation.js"></script>
+    <!-- System Management -->
+    <script src="js/GameSystemManager.js"></script>
     <script src="js/pathGenerator.js"></script>
+    <script src="js/level.js"></script>
+    
+    <!-- Game Components -->
+    <script src="js/Projectile.js"></script>
+    <script src="js/DefenseManager.js"></script>
+    <script src="js/ScreenManager.js"></script>
+    <script src="js/UIManager.js"></script>
     <script src="js/achievementManager.js"></script>
+    
+    <!-- Enhanced Features -->
     <script src="js/enhancedAchievementGallery.js"></script>
     <script src="js/achievementNotificationAccessibility.js"></script>
-    
+    <script src="js/levelPathPreservation.js"></script>
+    <script src="js/flexiblePathValidation.js"></script>
     <script src="js/bossPhaseTransitionManager.js"></script>
     <script src="js/bossWarningSynchronizer.js"></script>
     <script src="js/upgradeTreeCleanupManager.js"></script>
+    
+    <!-- Game Logic -->
     <script src="js/defense.js"></script>
     <script src="js/enemy.js"></script>
+    <script src="js/Boss.js"></script>
     <script src="js/game.js"></script>
     <script src="js/main.js"></script>
 </body>
