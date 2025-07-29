@@ -1,0 +1,69 @@
+{
+  "lotus": {
+    "name": "Lotus Cannon",
+    "cost": { "dharma": 25, "bandwidth": 0, "anonymity": 0 },
+    "damage": 20,
+    "range": 100,
+    "fireRate": 1000,
+    "projectileType": "energy",
+    "upgradeMultiplier": 1.5,
+    "maxLevel": 5,
+    "description": "Basic energy cannon infused with Buddhist mindfulness"
+  },
+  "mandala": {
+    "name": "Mandala Shield",
+    "cost": { "dharma": 40, "bandwidth": 10, "anonymity": 0 },
+    "damage": 15,
+    "range": 80,
+    "fireRate": 800,
+    "projectileType": "protective",
+    "upgradeMultiplier": 1.4,
+    "maxLevel": 4,
+    "description": "Protective barrier that slows enemies",
+    "specialEffect": "slow"
+  },
+  "zen": {
+    "name": "Zen Garden",
+    "cost": { "dharma": 60, "bandwidth": 5, "anonymity": 15 },
+    "damage": 35,
+    "range": 120,
+    "fireRate": 1200,
+    "projectileType": "nature",
+    "upgradeMultiplier": 1.6,
+    "maxLevel": 6,
+    "description": "Meditative tower that grows stronger over time"
+  },
+  "quantum": {
+    "name": "Quantum Pagoda",
+    "cost": { "dharma": 100, "bandwidth": 25, "anonymity": 10 },
+    "damage": 50,
+    "range": 90,
+    "fireRate": 1500,
+    "projectileType": "quantum",
+    "upgradeMultiplier": 1.8,
+    "maxLevel": 4,
+    "description": "Advanced tower that can hit phase-shifted enemies"
+  },
+  "dharma": {
+    "name": "Dharma Wheel",
+    "cost": { "dharma": 80, "bandwidth": 15, "anonymity": 20 },
+    "damage": 40,
+    "range": 110,
+    "fireRate": 1000,
+    "projectileType": "spiritual",
+    "upgradeMultiplier": 1.7,
+    "maxLevel": 5,
+    "description": "Spinning wheel of justice that pierces armor"
+  },
+  "cyber": {
+    "name": "Cyber Monk",
+    "cost": { "dharma": 120, "bandwidth": 30, "anonymity": 25 },
+    "damage": 60,
+    "range": 100,
+    "fireRate": 900,
+    "projectileType": "cyber",
+    "upgradeMultiplier": 2.0,
+    "maxLevel": 7,
+    "description": "Elite defensive unit with multiple attack modes"
+  }
+}

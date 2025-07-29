@@ -1,0 +1,67 @@
+{
+  "scriptKiddie": {
+    "health": 50,
+    "speed": 1.2,
+    "size": 15,
+    "color": "#ff4444",
+    "reward": { "dharma": 10, "bandwidth": 1, "anonymity": 0 },
+    "armor": 0,
+    "abilities": ["erratic_movement"]
+  },
+  "federalAgent": {
+    "health": 100,
+    "speed": 0.8,
+    "size": 18,
+    "color": "#4444ff",
+    "reward": { "dharma": 20, "bandwidth": 3, "anonymity": 2 },
+    "armor": 2,
+    "abilities": ["persistent"]
+  },
+  "corporateSaboteur": {
+    "health": 75,
+    "speed": 1.0,
+    "size": 16,
+    "color": "#44ff44",
+    "reward": { "dharma": 15, "bandwidth": 2, "anonymity": 5 },
+    "armor": 1,
+    "abilities": ["stealth"]
+  },
+  "aiSurveillance": {
+    "health": 120,
+    "speed": 0.9,
+    "size": 20,
+    "color": "#ffff44",
+    "reward": { "dharma": 25, "bandwidth": 5, "anonymity": 3 },
+    "armor": 3,
+    "abilities": ["scanning", "adaptive"]
+  },
+  "quantumHacker": {
+    "health": 200,
+    "speed": 0.7,
+    "size": 22,
+    "color": "#ff44ff",
+    "reward": { "dharma": 40, "bandwidth": 8, "anonymity": 10 },
+    "armor": 2,
+    "abilities": ["phase_shift", "teleport"]
+  },
+  "bosses": {
+    "raidTeam": {
+      "maxHealth": 1000,
+      "speed": 0.5,
+      "size": 40,
+      "color": "#ff0080",
+      "reward": { "dharma": 200, "bandwidth": 100, "anonymity": 50 },
+      "phases": 3,
+      "abilities": ["spawn_minions", "emp_burst", "data_corruption"]
+    },
+    "megaCorp": {
+      "maxHealth": 1500,
+      "speed": 0.3,
+      "size": 50,
+      "color": "#800080",
+      "reward": { "dharma": 300, "bandwidth": 150, "anonymity": 100 },
+      "phases": 4,
+      "abilities": ["drone_swarm", "shield_regen", "market_crash", "hostile_takeover"]
+    }
+  }
+}
