@@ -251,6 +251,12 @@
                 <div class="test-count" id="integration-count">Loading...</div>
             </div>
             
+            <div class="category-card" data-category="manual">
+                <div class="category-title">Manual Tests</div>
+                <div class="category-description">Ad-hoc exploratory and manual validation</div>
+                <div class="test-count" id="manual-count">Loading...</div>
+            </div>
+            
             <div class="category-card" data-category="performance">
                 <div class="category-title">Performance Tests</div>
                 <div class="category-description">Benchmarks, optimization validation, and memory usage</div>
@@ -307,6 +313,7 @@
                 this.tests = {
                     unit: [],
                     integration: [],
+                    manual: [],
                     performance: [],
                     ui: []
                 };
@@ -324,10 +331,16 @@
                 this.updateTestCounts();
             }
             
+            /**
+             * Dynamically discover all *.html files inside each category
+             * directory (unit/, integration/, manual/, performance/, ui/).
+             * It fetches the directory path, parses the returned HTML for
+             * anchor hrefs that end in ".html", and builds the manifest.
+             * If directory listings are disabled, we fall back to the
+             * existing hard-coded manifests so the runner still works.
+             */
             async loadTestManifests() {
-                // In a real implementation, these would be loaded from the filesystem
-                // For now, we'll define them manually based on the moved files
-                this.tests = {
+                const fallback = {
                     unit: [
                         'test-achievement-accessibility-enhanced.html',
                         'test-achievement-accessibility.html',
@@ -350,6 +363,7 @@
                         'test-level-design-preservation.html',
                         'boss-warning-sync-test.html'
                     ],
+                    manual: [],
                     performance: [
                         'test-concurrent-achievement-handling.html',
                         'pathgenerator-basic-test.html',
@@ -361,6 +375,28 @@
                         'enhanced-achievement-gallery-test.html'
                     ]
                 };
+                
+                const categories = Object.keys(fallback);
+                
+                // helper to discover files via directory listing
+                const discover = async (category) => {
+                    try {
+                        const res = await fetch(`./${category}/`);
+                        if (!res.ok) throw new Error('no index');
+                        const html = await res.text();
+                        const matches = [...html.matchAll(/href="([^"]+\.html)"/gi)]
+                            .map(m => m[1])
+                            .filter(href => href && !href.startsWith('../') && href !== 'test-runner.html');
+                        return matches.length ? matches : fallback[category];
+                    } catch {
+                        return fallback[category];
+                    }
+                };
+                
+                this.tests = {};
+                for (const cat of categories) {
+                    this.tests[cat] = await discover(cat);
+                }
             }
             
             setupEventListeners() {
