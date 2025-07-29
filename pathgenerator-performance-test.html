@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathGenerator Performance Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .test-section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0052a3;
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066cc, #00ff88);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .log {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        canvas {
+            border: 1px solid #555;
+            background: #111;
+            border-radius: 4px;
+        }
+        
+        .warning {
+            color: #ff6666;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #66ff66;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>PathGenerator Performance Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Synchronous Path Generation Test</h2>
+        <div class="controls">
+            <button id="testBasic">Test Basic Generation</button>
+            <button id="testStress">Stress Test (100 paths)</button>
+            <button id="testIteration">Test Iteration Limits</button>
+            <button id="clearStats">Clear Statistics</button>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Total Generations</div>
+                <div class="stat-value" id="totalGenerations">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Average Time (ms)</div>
+                <div class="stat-value" id="averageTime">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Max Time (ms)</div>
+                <div class="stat-value" id="maxTime">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Cache Hit Rate (%)</div>
+                <div class="stat-value" id="cacheHitRate">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Failure Count</div>
+                <div class="stat-value" id="failureCount">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Fallback Count</div>
+                <div class="stat-value" id="fallbackCount">0</div>
+            </div>
+        </div>
+        
+        <canvas id="pathCanvas" width="800" height="400"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>Asynchronous Path Generation Test</h2>
+        <div class="controls">
+            <button id="testAsync">Test Async Generation</button>
+            <button id="testAsyncStress">Async Stress Test</button>
+            <button id="cancelAsync">Cancel Async</button>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="asyncProgress"></div>
+        </div>
+        <div id="asyncStatus">Ready for async generation</div>
+        
+        <canvas id="asyncPathCanvas" width="800" height="400"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Log</h2>
+        <div class="log" id="testLog"></div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/pathGenerator.js"></script>
+    <script>
+        let pathGenerator;
+        let testLog = document.getElementById('testLog');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'warning' : type === 'success' ? 'success' : '';
+            testLog.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            testLog.scrollTop = testLog.scrollHeight;
+        }
+        
+        function updateStats() {
+            const stats = pathGenerator.getPerformanceStats();
+            document.getElementById('totalGenerations').textContent = stats.totalGenerations;
+            document.getElementById('averageTime').textContent = stats.averageTime.toFixed(2);
+            document.getElementById('maxTime').textContent = stats.maxTime.toFixed(2);
+            document.getElementById('cacheHitRate').textContent = stats.cacheHitRate.toFixed(1);
+            document.getElementById('failureCount').textContent = stats.failureCount;
+            document.getElementById('fallbackCount').textContent = stats.fallbackCount;
+        }
+        
+        function drawPath(canvas, path, color = '#00ff88') {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!path || path.length < 2) return;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const points = Array.isArray(path.points) ? path.points : path;
+            ctx.moveTo(points[0].x, points[0].y);
+            
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            
+            ctx.stroke();
+            
+            // Draw start and end points
+            ctx.fillStyle = '#ff6666';
+            ctx.beginPath();
+            ctx.arc(points[0].x, points[0].y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#6666ff';
+            ctx.beginPath();
+            ctx.arc(points[points.length - 1].x, points[points.length - 1].y, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Initialize PathGenerator
+        try {
+            pathGenerator = new PathGenerator(800, 400, 20);
+            log('PathGenerator initialized successfully', 'success');
+        } catch (error) {
+            log(`Failed to initialize PathGenerator: ${error.message}`, 'error');
+        }
+        
+        // Basic generation test
+        document.getElementById('testBasic').addEventListener('click', () => {
+            log('Testing basic path generation...');
+            try {
+                const path = pathGenerator.generateBasePath(1, 12345, 'cyber', 'dynamic');
+                drawPath(document.getElementById('pathCanvas'), path);
+                updateStats();
+                
+                log(`Generated path with ${path.points ? path.points.length : path.length} points`, 'success');
+                if (path.performanceInfo) {
+                    log(`Generation time: ${path.performanceInfo.generationTime.toFixed(2)}ms`);
+                }
+                if (path.metadata) {
+                    log(`Iterations: ${path.metadata.iterations || 'N/A'}, Cache hit rate: ${path.metadata.cacheHitRate?.toFixed(1) || 'N/A'}%`);
+                }
+            } catch (error) {
+                log(`Basic generation failed: ${error.message}`, 'error');
+            }
+        });
+        
+        // Stress test
+        document.getElementById('testStress').addEventListener('click', () => {
+            log('Starting stress test (100 path generations)...');
+            const startTime = performance.now();
+            let successCount = 0;
+            
+            for (let i = 0; i < 100; i++) {
+                try {
+                    const path = pathGenerator.generateBasePath(i + 1, i * 1000, 'cyber', 'dynamic');
+                    successCount++;
+                    
+                    if (i === 99) {
+                        drawPath(document.getElementById('pathCanvas'), path);
+                    }
+                } catch (error) {
+                    log(`Path ${i + 1} failed: ${error.message}`, 'error');
+                }
+            }
+            
+            const endTime = performance.now();
+            updateStats();
+            
+            log(`Stress test completed: ${successCount}/100 successful`, 'success');
+            log(`Total time: ${(endTime - startTime).toFixed(2)}ms`);
+            log(`Average per path: ${((endTime - startTime) / 100).toFixed(2)}ms`);
+        });
+        
+        // Iteration limit test
+        document.getElementById('testIteration').addEventListener('click', () => {
+            log('Testing iteration limits with extreme parameters...');
+            
+            // Temporarily reduce iteration limit for testing
+            const originalMaxIterations = pathGenerator.maxIterations;
+            pathGenerator.maxIterations = 50;
+            
+            try {
+                // Create a scenario that would normally cause many iterations
+                pathGenerator.segmentLength = 5; // Very small segments
+                
+                const path = pathGenerator.generateBasePath(999, 12345, 'forest', 'dynamic');
+                drawPath(document.getElementById('pathCanvas'), path, '#ffaa00');
+                updateStats();
+                
+                if (path.metadata && path.metadata.hitMaxIterations) {
+                    log('Successfully handled maximum iteration limit', 'success');
+                } else {
+                    log('Path generated without hitting iteration limit');
+                }
+                
+                log(`Path generated with ${path.points ? path.points.length : path.length} points`);
+                
+            } catch (error) {
+                log(`Iteration limit test failed: ${error.message}`, 'error');
+            } finally {
+                // Restore original settings
+                pathGenerator.maxIterations = originalMaxIterations;
+                pathGenerator.segmentLength = 60;
+            }
+        });
+        
+        // Async generation test
+        document.getElementById('testAsync').addEventListener('click', async () => {
+            log('Testing asynchronous path generation...');
+            const progressBar = document.getElementById('asyncProgress');
+            const statusDiv = document.getElementById('asyncStatus');
+            
+            try {
+                const path = await pathGenerator.generateBasePathAsync(
+                    1, 12345, 'cyber', 'dynamic',
+                    (progress) => {
+                        progressBar.style.width = `${Math.max(0, progress.progress)}%`;
+                        statusDiv.textContent = progress.message;
+                        log(`Async: ${progress.stage} - ${progress.message}`);
+                    }
+                );
+                
+                drawPath(document.getElementById('asyncPathCanvas'), path, '#ff6600');
+                updateStats();
+                
+                log(`Async generation completed with ${path.points ? path.points.length : path.length} points`, 'success');
+                statusDiv.textContent = 'Async generation complete';
+                
+            } catch (error) {
+                log(`Async generation failed: ${error.message}`, 'error');
+                statusDiv.textContent = 'Async generation failed';
+            }
+        });
+        
+        // Async stress test
+        document.getElementById('testAsyncStress').addEventListener('click', async () => {
+            log('Starting async stress test (10 sequential generations)...');
+            const startTime = performance.now();
+            
+            for (let i = 0; i < 10; i++) {
+                try {
+                    const path = await pathGenerator.generateBasePathAsync(
+                        i + 1, i * 1000, 'cyber', 'dynamic',
+                        (progress) => {
+                            const progressBar = document.getElementById('asyncProgress');
+                            const statusDiv = document.getElementById('asyncStatus');
+                            progressBar.style.width = `${Math.max(0, progress.progress)}%`;
+                            statusDiv.textContent = `Path ${i + 1}/10: ${progress.message}`;
+                        }
+                    );
+                    
+                    if (i === 9) {
+                        drawPath(document.getElementById('asyncPathCanvas'), path, '#aa00ff');
+                    }
+                    
+                    log(`Async path ${i + 1}/10 completed`);
+                    
+                } catch (error) {
+                    log(`Async path ${i + 1} failed: ${error.message}`, 'error');
+                }
+            }
+            
+            const endTime = performance.now();
+            updateStats();
+            
+            log(`Async stress test completed in ${(endTime - startTime).toFixed(2)}ms`, 'success');
+            document.getElementById('asyncStatus').textContent = 'Async stress test complete';
+        });
+        
+        // Cancel async
+        document.getElementById('cancelAsync').addEventListener('click', () => {
+            const cancelled = pathGenerator.cancelAsyncGeneration();
+            if (cancelled) {
+                log('Async generation cancelled', 'success');
+                document.getElementById('asyncStatus').textContent = 'Async generation cancelled';
+                document.getElementById('asyncProgress').style.width = '0%';
+            } else {
+                log('No async generation to cancel');
+            }
+        });
+        
+        // Clear statistics
+        document.getElementById('clearStats').addEventListener('click', () => {
+            pathGenerator.resetPerformanceStats();
+            updateStats();
+            log('Performance statistics cleared', 'success');
+        });
+        
+        // Initial stats update
+        updateStats();
+        log('PathGenerator performance test suite ready', 'success');
+    </script>
+</body>
+</html>

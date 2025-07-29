@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathGenerator Final Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        canvas { border: 1px solid #ccc; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>PathGenerator Final Validation Test</h1>
+    <div id="results"></div>
+    <canvas id="canvas" width="400" height="300"></canvas>
+    
+    <script src="js/pathGenerator.js"></script>
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `test-result ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        // Test 1: Basic instantiation
+        try {
+            const pathGenerator = new PathGenerator(800, 600, 20);
+            addResult('✅ PathGenerator created successfully');
+            
+            // Test 2: Error statistics
+            const stats = pathGenerator.getErrorStats();
+            addResult(`✅ Error stats: ${stats.totalErrors} total errors, uptime: ${stats.uptimeFormatted}`);
+            
+            // Test 3: Point validation
+            try {
+                pathGenerator.validatePoint({ x: 100, y: 100 });
+                addResult('✅ Valid point accepted');
+            } catch (e) {
+                addResult(`❌ Valid point rejected: ${e.message}`, false);
+            }
+            
+            // Test 4: Invalid point rejection
+            try {
+                pathGenerator.validatePoint({ x: -100, y: 100 });
+                addResult('❌ Invalid point should have been rejected', false);
+            } catch (e) {
+                addResult('✅ Invalid point correctly rejected');
+            }
+            
+            // Test 5: Path generation
+            try {
+                const path = pathGenerator.generateBasePath(1, 12345, 'cyber', 'hybrid');
+                addResult(`✅ Path generated: ${path.length} points`);
+                
+                if (path.metadata) {
+                    addResult(`✅ Metadata: ${JSON.stringify(path.metadata, null, 2)}`);
+                }
+                
+                // Draw the path
+                drawPath(path);
+                
+            } catch (e) {
+                addResult(`❌ Path generation failed: ${e.message}`, false);
+            }
+            
+            // Test 6: Fallback mechanism
+            try {
+                const originalConfig = pathGenerator.getErrorHandlingConfig();
+                pathGenerator.setErrorHandlingConfig({
+                    ...originalConfig,
+                    maxPathGenerationRetries: 0,
+                    enableFallbackGeneration: true
+                });
+                
+                const fallbackPath = pathGenerator.generateBasePath(2, null, 'cyber', 'dynamic');
+                
+                if (fallbackPath.metadata && fallbackPath.metadata.isFallback) {
+                    addResult('✅ Fallback mechanism working');
+                } else {
+                    addResult('⚠️ Expected fallback but got normal generation');
+                }
+                
+                // Restore config
+                pathGenerator.setErrorHandlingConfig(originalConfig);
+                
+            } catch (e) {
+                addResult(`❌ Fallback test failed: ${e.message}`, false);
+            }
+            
+            // Test 7: Final error statistics
+            const finalStats = pathGenerator.getErrorStats();
+            addResult(`📊 Final stats: ${finalStats.totalErrors} errors, ${finalStats.fallbacksUsed} fallbacks used`);
+            
+        } catch (e) {
+            addResult(`❌ PathGenerator creation failed: ${e.message}`, false);
+        }
+        
+        function drawPath(path) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!path || path.length < 2) return;
+            
+            // Scale path to fit canvas
+            const scaleX = canvas.width / 800;
+            const scaleY = canvas.height / 600;
+            
+            ctx.strokeStyle = path.metadata && path.metadata.isFallback ? '#ff9800' : '#4caf50';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let i = 0; i < path.length; i++) {
+                const point = path[i];
+                const x = point.x * scaleX;
+                const y = point.y * scaleY;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                    // Start point
+                    ctx.fillStyle = '#2196f3';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // End point
+                if (i === path.length - 1) {
+                    ctx.stroke();
+                    ctx.fillStyle = '#f44336';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+            
+            ctx.stroke();
+        }
+    </script>
+</body>
+</html>

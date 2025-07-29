@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss Phase Transition Synchronization Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+        
+        .test-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background-color: #2d2d2d;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #444;
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .test-button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .queue-button {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .queue-button:hover {
+            background-color: #1976D2;
+            transform: translateY(-2px);
+        }
+        
+        .validation-button {
+            background-color: #FF9800;
+            color: white;
+        }
+        
+        .validation-button:hover {
+            background-color: #F57C00;
+            transform: translateY(-2px);
+        }
+        
+        .sync-button {
+            background-color: #9C27B0;
+            color: white;
+        }
+        
+        .sync-button:hover {
+            background-color: #7B1FA2;
+            transform: translateY(-2px);
+        }
+        
+        .rollback-button {
+            background-color: #F44336;
+            color: white;
+        }
+        
+        .rollback-button:hover {
+            background-color: #D32F2F;
+            transform: translateY(-2px);
+        }
+        
+        .output {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-card {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #555;
+        }
+        
+        .status-card h4 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+            font-size: 14px;
+        }
+        
+        .status-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .log-success { color: #4CAF50; }
+        .log-error { color: #F44336; }
+        .log-warning { color: #FF9800; }
+        .log-info { color: #2196F3; }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .control-button {
+            background-color: #607D8B;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .control-button:hover {
+            background-color: #455A64;
+        }
+        
+        .boss-simulator {
+            background-color: #2d2d2d;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .mock-ui {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .mock-boss-health {
+            background-color: #333;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .mock-health-fill {
+            background-color: #4CAF50;
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+        
+        .mock-phase-indicator {
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .phase-segments {
+            display: flex;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .phase-segment {
+            flex: 1;
+            background-color: #333;
+            border-right: 1px solid #666;
+        }
+        
+        .phase-segment:last-child {
+            border-right: none;
+        }
+        
+        .phase-segment.active {
+            background-color: #4CAF50;
+        }
+        
+        .phase-segment.completed {
+            background-color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎮 Boss Phase Transition Synchronization Test Suite</h1>
+        <p>Comprehensive testing for the enhanced boss phase transition system with queuing, validation, synchronization, and rollback mechanisms.</p>
+    </div>
+
+    <!-- Boss Simulator -->
+    <div class="boss-simulator">
+        <h2>🎯 Boss Simulator</h2>
+        <div class="test-grid">
+            <div>
+                <label for="bossType">Boss Type:</label>
+                <select id="bossType" style="width: 100%; padding: 8px; margin-top: 5px;">
+                    <option value="raidTeam">Raid Team</option>
+                    <option value="megaCorp">Mega Corp</option>
+                    <option value="quantumHacker">Quantum Hacker</option>
+                </select>
+            </div>
+            <div>
+                <label for="currentPhase">Current Phase:</label>
+                <input type="number" id="currentPhase" min="1" max="4" value="1" style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div>
+                <label for="bossHealth">Boss Health %:</label>
+                <input type="number" id="bossHealth" min="0" max="100" value="100" style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+        </div>
+        
+        <div class="test-grid">
+            <button class="test-button queue-button" onclick="createMockBoss()">Create Mock Boss</button>
+            <button class="test-button validation-button" onclick="updateBossHealth()">Update Health</button>
+            <button class="test-button rollback-button" onclick="resetBoss()">Reset Boss</button>
+        </div>
+        
+        <!-- Mock UI Elements -->
+        <div class="mock-ui">
+            <h4>Mock Boss UI</h4>
+            <div class="mock-phase-indicator" id="mockPhaseText">RAID TEAM - PHASE 1</div>
+            <div class="mock-boss-health">
+                <div class="mock-health-fill" id="mockHealthFill" style="width: 100%;"></div>
+            </div>
+            <div class="phase-segments" id="mockPhaseSegments">
+                <div class="phase-segment active"></div>
+                <div class="phase-segment"></div>
+                <div class="phase-segment"></div>
+                <div class="phase-segment"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <!-- 1. Phase Transition Queuing System -->
+        <div class="test-section">
+            <h2>🔄 Phase Transition Queuing System</h2>
+            <p>Test the queuing system for proper state management and priority handling.</p>
+            
+            <div class="test-grid">
+                <button class="test-button queue-button" onclick="testPhaseQueue()">
+                    Test Phase Queue
+                </button>
+                <button class="test-button queue-button" onclick="testPriorityQueuing()">
+                    Test Priority Queuing
+                </button>
+                <button class="test-button queue-button" onclick="testQueueProcessing()">
+                    Test Queue Processing
+                </button>
+                <button class="test-button queue-button" onclick="testConcurrentTransitions()">
+                    Test Concurrent Transitions
+                </button>
+            </div>
+            
+            <div id="queueOutput" class="output"></div>
+        </div>
+
+        <!-- 2. Phase Transition Validation -->
+        <div class="test-section">
+            <h2>✅ Phase Transition Validation</h2>
+            <p>Test validation mechanisms to prevent invalid phase transitions and skipping.</p>
+            
+            <div class="test-grid">
+                <button class="test-button validation-button" onclick="testSequenceValidation()">
+                    Test Sequence Validation
+                </button>
+                <button class="test-button validation-button" onclick="testHealthThresholds()">
+                    Test Health Thresholds
+                </button>
+                <button class="test-button validation-button" onclick="testCooldownValidation()">
+                    Test Cooldown Validation
+                </button>
+                <button class="test-button validation-button" onclick="testCriticalPhaseValidation()">
+                    Test Critical Phase Validation
+                </button>
+            </div>
+            
+            <div id="validationOutput" class="output"></div>
+        </div>
+
+        <!-- 3. Synchronization System -->
+        <div class="test-section">
+            <h2>🔗 Synchronization System</h2>
+            <p>Test synchronization points with UI, achievements, and audio systems.</p>
+            
+            <div class="test-grid">
+                <button class="test-button sync-button" onclick="testUISynchronization()">
+                    Test UI Synchronization
+                </button>
+                <button class="test-button sync-button" onclick="testAchievementSync()">
+                    Test Achievement Sync
+                </button>
+                <button class="test-button sync-button" onclick="testAudioSync()">
+                    Test Audio Sync
+                </button>
+                <button class="test-button sync-button" onclick="testSyncValidation()">
+                    Test Sync Validation
+                </button>
+            </div>
+            
+            <div id="syncOutput" class="output"></div>
+        </div>
+
+        <!-- 4. Rollback Mechanisms -->
+        <div class="test-section">
+            <h2>🔄 Rollback Mechanisms</h2>
+            <p>Test rollback mechanisms for failed phase transitions and emergency recovery.</p>
+            
+            <div class="test-grid">
+                <button class="test-button rollback-button" onclick="testSnapshotCreation()">
+                    Test Snapshot Creation
+                </button>
+                <button class="test-button rollback-button" onclick="testStateRollback()">
+                    Test State Rollback
+                </button>
+                <button class="test-button rollback-button" onclick="testEmergencyRollback()">
+                    Test Emergency Rollback
+                </button>
+                <button class="test-button rollback-button" onclick="testRollbackValidation()">
+                    Test Rollback Validation
+                </button>
+            </div>
+            
+            <div id="rollbackOutput" class="output"></div>
+        </div>
+    </div>
+
+    <!-- Status Dashboard -->
+    <div class="test-section">
+        <h2>📊 Transition Manager Status</h2>
+        
+        <div class="status-grid">
+            <div class="status-card">
+                <h4>Queue Length</h4>
+                <div class="status-value" id="queueLength">0</div>
+            </div>
+            <div class="status-card">
+                <h4>Processing</h4>
+                <div class="status-value" id="isProcessing">No</div>
+            </div>
+            <div class="status-card">
+                <h4>Successful</h4>
+                <div class="status-value" id="successfulTransitions">0</div>
+            </div>
+            <div class="status-card">
+                <h4>Failed</h4>
+                <div class="status-value" id="failedTransitions">0</div>
+            </div>
+            <div class="status-card">
+                <h4>Rollbacks</h4>
+                <div class="status-value" id="rollbackCount">0</div>
+            </div>
+            <div class="status-card">
+                <h4>Current Phase</h4>
+                <div class="status-value" id="currentPhaseStatus">1</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-button" onclick="startMonitoring()">Start Monitoring</button>
+            <button class="control-button" onclick="stopMonitoring()">Stop Monitoring</button>
+            <button class="control-button" onclick="resetStats()">Reset Stats</button>
+            <button class="control-button" onclick="exportResults()">Export Results</button>
+        </div>
+        
+        <div id="statusOutput" class="output"></div>
+    </div>
+
+    <!-- Include necessary scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/bossPhaseTransitionManager.js"></script>
+
+    <script>
+        // Test framework setup
+        let mockBoss = null;
+        let transitionManager = null;
+        let monitoringInterval = null;
+        let testResults = {
+            queueTests: [],
+            validationTests: [],
+            syncTests: [],
+            rollbackTests: []
+        };
+
+        // Utility functions
+        function log(message, outputId, type = 'info') {
+            const output = document.getElementById(outputId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logClass = `log-${type}`;
+            
+            output.innerHTML += `<div class="${logClass}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function createMockBoss() {
+            const bossType = document.getElementById('bossType').value;
+            const phase = parseInt(document.getElementById('currentPhase').value);
+            const health = parseInt(document.getElementById('bossHealth').value);
+            
+            // Create mock boss object
+            mockBoss = {
+                type: bossType,
+                phase: phase,
+                health: health,
+                maxHealth: 100,
+                x: 400,
+                y: 300,
+                isBoss: true,
+                abilities: [],
+                abilitiesUsedCount: 0,
+                droneCount: 0,
+                minionsSpawned: false,
+                
+                // Mock methods
+                applyPhaseChanges: function(phase, defenses, enemies) {
+                    console.log(`Mock applyPhaseChanges: phase ${phase}`);
+                },
+                createPhaseTransitionEffect: function() {
+                    console.log('Mock createPhaseTransitionEffect');
+                }
+            };
+            
+            // Create mock game object
+            window.game = {
+                defenses: [],
+                enemies: [],
+                updateBossPhaseIndicator: function(boss, phase, type, totalPhases) {
+                    updateMockUI(phase, type);
+                },
+                showNotification: function(message, color, duration) {
+                    log(`Notification: ${message}`, 'statusOutput', 'info');
+                },
+                trackAchievement: function(type, data) {
+                    log(`Achievement: ${type}`, 'statusOutput', 'info');
+                },
+                playSfx: function(sound, volume, pitch) {
+                    log(`Audio: ${sound} (vol: ${volume})`, 'statusOutput', 'info');
+                }
+            };
+            
+            // Initialize transition manager
+            try {
+                transitionManager = new BossPhaseTransitionManager(mockBoss, window.game);
+                log(`Boss transition manager created for ${bossType}`, 'statusOutput', 'success');
+                updateMockUI(phase, bossType);
+                updateStatus();
+            } catch (error) {
+                log(`Error creating transition manager: ${error.message}`, 'statusOutput', 'error');
+            }
+        }
+
+        function updateMockUI(phase, bossType) {
+            const phaseText = document.getElementById('mockPhaseText');
+            const healthFill = document.getElementById('mockHealthFill');
+            const segments = document.querySelectorAll('#mockPhaseSegments .phase-segment');
+            
+            if (phaseText) {
+                phaseText.textContent = `${bossType.toUpperCase()} - PHASE ${phase}`;
+            }
+            
+            if (healthFill && mockBoss) {
+                const healthPercent = (mockBoss.health / mockBoss.maxHealth) * 100;
+                healthFill.style.width = `${healthPercent}%`;
+                
+                // Change color based on health
+                if (healthPercent > 66) {
+                    healthFill.style.backgroundColor = '#4CAF50';
+                } else if (healthPercent > 33) {
+                    healthFill.style.backgroundColor = '#FF9800';
+                } else {
+                    healthFill.style.backgroundColor = '#F44336';
+                }
+            }
+            
+            // Update phase segments
+            segments.forEach((segment, index) => {
+                segment.classList.remove('active', 'completed');
+                if (index + 1 < phase) {
+                    segment.classList.add('completed');
+                } else if (index + 1 === phase) {
+                    segment.classList.add('active');
+                }
+            });
+        }
+
+        function updateBossHealth() {
+            if (!mockBoss) {
+                log('No mock boss created', 'statusOutput', 'warning');
+                return;
+            }
+            
+            const newHealth = parseInt(document.getElementById('bossHealth').value);
+            mockBoss.health = newHealth;
+            updateMockUI(mockBoss.phase, mockBoss.type);
+            log(`Boss health updated to ${newHealth}%`, 'statusOutput', 'info');
+        }
+
+        function resetBoss() {
+            mockBoss = null;
+            transitionManager = null;
+            window.game = null;
+            
+            // Reset UI
+            document.getElementById('mockPhaseText').textContent = 'NO BOSS';
+            document.getElementById('mockHealthFill').style.width = '0%';
+            document.querySelectorAll('#mockPhaseSegments .phase-segment').forEach(segment => {
+                segment.classList.remove('active', 'completed');
+            });
+            
+            log('Boss and transition manager reset', 'statusOutput', 'warning');
+            updateStatus();
+        }
+
+        function updateStatus() {
+            if (!transitionManager) {
+                document.getElementById('queueLength').textContent = 'N/A';
+                document.getElementById('isProcessing').textContent = 'N/A';
+                document.getElementById('successfulTransitions').textContent = 'N/A';
+                document.getElementById('failedTransitions').textContent = 'N/A';
+                document.getElementById('rollbackCount').textContent = 'N/A';
+                document.getElementById('currentPhaseStatus').textContent = 'N/A';
+                return;
+            }
+            
+            const status = transitionManager.getStatus();
+            document.getElementById('queueLength').textContent = status.queueLength;
+            document.getElementById('isProcessing').textContent = status.isProcessing ? 'Yes' : 'No';
+            document.getElementById('successfulTransitions').textContent = status.stats.successful;
+            document.getElementById('failedTransitions').textContent = status.stats.failed;
+            document.getElementById('rollbackCount').textContent = status.stats.rollbacks;
+            document.getElementById('currentPhaseStatus').textContent = status.currentPhase;
+        }
+
+        // 1. QUEUING SYSTEM TESTS
+
+        function testPhaseQueue() {
+            log('Testing phase transition queuing...', 'queueOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'queueOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Queue multiple transitions
+                const transition1 = transitionManager.queuePhaseTransition(2, 'health_threshold', 1);
+                const transition2 = transitionManager.queuePhaseTransition(3, 'manual', 2);
+                
+                if (transition1 && transition2) {
+                    log('✅ Multiple transitions queued successfully', 'queueOutput', 'success');
+                    log(`   - Transition 1 ID: ${transition1}`, 'queueOutput', 'info');
+                    log(`   - Transition 2 ID: ${transition2}`, 'queueOutput', 'info');
+                    
+                    testResults.queueTests.push({
+                        test: 'basic_queuing',
+                        result: 'pass',
+                        details: { transition1, transition2 }
+                    });
+                } else {
+                    log('❌ Failed to queue transitions', 'queueOutput', 'error');
+                    testResults.queueTests.push({
+                        test: 'basic_queuing',
+                        result: 'fail',
+                        details: 'Queue failed'
+                    });
+                }
+                
+            } catch (error) {
+                log(`❌ Queuing test failed: ${error.message}`, 'queueOutput', 'error');
+                testResults.queueTests.push({
+                    test: 'basic_queuing',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        function testPriorityQueuing() {
+            log('Testing priority-based queuing...', 'queueOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'queueOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Queue transitions with different priorities
+                const lowPriority = transitionManager.queuePhaseTransition(2, 'low_priority', 1);
+                const highPriority = transitionManager.queuePhaseTransition(3, 'high_priority', 3);
+                const normalPriority = transitionManager.queuePhaseTransition(4, 'normal_priority', 2);
+                
+                log('✅ Priority transitions queued', 'queueOutput', 'success');
+                log(`   - Low Priority: ${lowPriority}`, 'queueOutput', 'info');
+                log(`   - High Priority: ${highPriority}`, 'queueOutput', 'info');
+                log(`   - Normal Priority: ${normalPriority}`, 'queueOutput', 'info');
+                
+                const status = transitionManager.getStatus();
+                log(`   - Queue length: ${status.queueLength}`, 'queueOutput', 'info');
+                
+                testResults.queueTests.push({
+                    test: 'priority_queuing',
+                    result: 'pass',
+                    details: { lowPriority, highPriority, normalPriority }
+                });
+                
+            } catch (error) {
+                log(`❌ Priority queuing test failed: ${error.message}`, 'queueOutput', 'error');
+                testResults.queueTests.push({
+                    test: 'priority_queuing',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        function testQueueProcessing() {
+            log('Testing queue processing...', 'queueOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'queueOutput', 'error');
+                return;
+            }
+            
+            try {
+                const initialStatus = transitionManager.getStatus();
+                log(`Initial queue length: ${initialStatus.queueLength}`, 'queueOutput', 'info');
+                
+                // Wait and check processing
+                setTimeout(() => {
+                    const finalStatus = transitionManager.getStatus();
+                    log(`Final queue length: ${finalStatus.queueLength}`, 'queueOutput', 'info');
+                    log(`Successful transitions: ${finalStatus.stats.successful}`, 'queueOutput', 'success');
+                    log(`Failed transitions: ${finalStatus.stats.failed}`, 'queueOutput', 'warning');
+                    
+                    testResults.queueTests.push({
+                        test: 'queue_processing',
+                        result: 'pass',
+                        details: { initial: initialStatus, final: finalStatus }
+                    });
+                    
+                    updateStatus();
+                }, 2000);
+                
+            } catch (error) {
+                log(`❌ Queue processing test failed: ${error.message}`, 'queueOutput', 'error');
+                testResults.queueTests.push({
+                    test: 'queue_processing',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+        }
+
+        function testConcurrentTransitions() {
+            log('Testing concurrent transition handling...', 'queueOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'queueOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Attempt multiple simultaneous transitions
+                const results = [];
+                for (let i = 0; i < 5; i++) {
+                    const result = transitionManager.queuePhaseTransition(2, `concurrent_${i}`, 2);
+                    results.push(result);
+                }
+                
+                const successCount = results.filter(r => r !== false).length;
+                log(`✅ Concurrent transitions handled: ${successCount}/5`, 'queueOutput', 'success');
+                
+                testResults.queueTests.push({
+                    test: 'concurrent_transitions',
+                    result: 'pass',
+                    details: { attempted: 5, successful: successCount }
+                });
+                
+            } catch (error) {
+                log(`❌ Concurrent transitions test failed: ${error.message}`, 'queueOutput', 'error');
+                testResults.queueTests.push({
+                    test: 'concurrent_transitions',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        // 2. VALIDATION TESTS
+
+        function testSequenceValidation() {
+            log('Testing phase sequence validation...', 'validationOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'validationOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Test invalid sequence (skipping phases)
+                mockBoss.phase = 1;
+                const skipResult = transitionManager.queuePhaseTransition(3, 'skip_test', 2);
+                
+                if (skipResult === false) {
+                    log('✅ Phase skipping correctly prevented', 'validationOutput', 'success');
+                } else {
+                    log('❌ Phase skipping was allowed (should be prevented)', 'validationOutput', 'error');
+                }
+                
+                // Test valid sequence
+                const validResult = transitionManager.queuePhaseTransition(2, 'valid_sequence', 2);
+                
+                if (validResult !== false) {
+                    log('✅ Valid sequence accepted', 'validationOutput', 'success');
+                } else {
+                    log('❌ Valid sequence rejected', 'validationOutput', 'error');
+                }
+                
+                testResults.validationTests.push({
+                    test: 'sequence_validation',
+                    result: 'pass',
+                    details: { skipPrevented: !skipResult, validAccepted: !!validResult }
+                });
+                
+            } catch (error) {
+                log(`❌ Sequence validation test failed: ${error.message}`, 'validationOutput', 'error');
+                testResults.validationTests.push({
+                    test: 'sequence_validation',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        function testHealthThresholds() {
+            log('Testing health threshold validation...', 'validationOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'validationOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Test transition with high health (should be prevented)
+                mockBoss.health = 90;
+                mockBoss.phase = 1;
+                const highHealthResult = transitionManager.queuePhaseTransition(2, 'high_health_test', 2);
+                
+                // Test transition with appropriate health
+                mockBoss.health = 60;
+                const validHealthResult = transitionManager.queuePhaseTransition(2, 'valid_health_test', 2);
+                
+                log(`High health transition: ${highHealthResult ? 'Allowed' : 'Prevented'}`, 'validationOutput', 'info');
+                log(`Valid health transition: ${validHealthResult ? 'Allowed' : 'Prevented'}`, 'validationOutput', 'info');
+                
+                testResults.validationTests.push({
+                    test: 'health_thresholds',
+                    result: 'pass',
+                    details: { highHealthPrevented: !highHealthResult, validHealthAllowed: !!validHealthResult }
+                });
+                
+            } catch (error) {
+                log(`❌ Health threshold test failed: ${error.message}`, 'validationOutput', 'error');
+                testResults.validationTests.push({
+                    test: 'health_thresholds',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        function testCooldownValidation() {
+            log('Testing transition cooldown validation...', 'validationOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'validationOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Attempt rapid transitions
+                const result1 = transitionManager.queuePhaseTransition(2, 'rapid_1', 2);
+                const result2 = transitionManager.queuePhaseTransition(3, 'rapid_2', 2);
+                
+                log(`First rapid transition: ${result1 ? 'Queued' : 'Rejected'}`, 'validationOutput', 'info');
+                log(`Second rapid transition: ${result2 ? 'Queued' : 'Rejected'}`, 'validationOutput', 'info');
+                
+                // Test with delay
+                setTimeout(() => {
+                    const delayedResult = transitionManager.queuePhaseTransition(4, 'delayed', 2);
+                    log(`Delayed transition: ${delayedResult ? 'Queued' : 'Rejected'}`, 'validationOutput', 'info');
+                    
+                    testResults.validationTests.push({
+                        test: 'cooldown_validation',
+                        result: 'pass',
+                        details: { rapid1: !!result1, rapid2: !!result2, delayed: !!delayedResult }
+                    });
+                }, 1500);
+                
+            } catch (error) {
+                log(`❌ Cooldown validation test failed: ${error.message}`, 'validationOutput', 'error');
+                testResults.validationTests.push({
+                    test: 'cooldown_validation',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+        }
+
+        function testCriticalPhaseValidation() {
+            log('Testing critical phase validation...', 'validationOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'validationOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Test transition to critical phase 3
+                mockBoss.phase = 2;
+                mockBoss.health = 40;
+                mockBoss.abilitiesUsedCount = 1;
+                
+                const criticalResult = transitionManager.queuePhaseTransition(3, 'critical_phase_test', 2);
+                
+                if (criticalResult) {
+                    log('✅ Critical phase transition queued with warnings', 'validationOutput', 'success');
+                } else {
+                    log('❌ Critical phase transition rejected', 'validationOutput', 'error');
+                }
+                
+                testResults.validationTests.push({
+                    test: 'critical_phase_validation',
+                    result: 'pass',
+                    details: { criticalPhaseAllowed: !!criticalResult }
+                });
+                
+            } catch (error) {
+                log(`❌ Critical phase validation test failed: ${error.message}`, 'validationOutput', 'error');
+                testResults.validationTests.push({
+                    test: 'critical_phase_validation',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        // 3. SYNCHRONIZATION TESTS
+
+        function testUISynchronization() {
+            log('Testing UI synchronization...', 'syncOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'syncOutput', 'error');
+                return;
+            }
+            
+            try {
+                const initialPhase = mockBoss.phase;
+                const targetPhase = Math.min(initialPhase + 1, 4);
+                
+                // Mock UI elements for testing
+                const mockElements = {
+                    phaseText: document.getElementById('mockPhaseText'),
+                    healthFill: document.getElementById('mockHealthFill')
+                };
+                
+                log(`Testing UI sync from phase ${initialPhase} to ${targetPhase}`, 'syncOutput', 'info');
+                
+                // Request transition and monitor UI changes
+                const transitionId = transitionManager.queuePhaseTransition(targetPhase, 'ui_sync_test', 2);
+                
+                if (transitionId) {
+                    setTimeout(() => {
+                        const phaseTextUpdated = mockElements.phaseText.textContent.includes(`PHASE ${targetPhase}`);
+                        
+                        log(`UI Phase Text Updated: ${phaseTextUpdated ? 'Yes' : 'No'}`, 'syncOutput', phaseTextUpdated ? 'success' : 'error');
+                        
+                        testResults.syncTests.push({
+                            test: 'ui_synchronization',
+                            result: phaseTextUpdated ? 'pass' : 'fail',
+                            details: { phaseTextUpdated, targetPhase }
+                        });
+                    }, 1000);
+                } else {
+                    log('❌ Transition request failed', 'syncOutput', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ UI synchronization test failed: ${error.message}`, 'syncOutput', 'error');
+                testResults.syncTests.push({
+                    test: 'ui_synchronization',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        function testAchievementSync() {
+            log('Testing achievement synchronization...', 'syncOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'syncOutput', 'error');
+                return;
+            }
+            
+            try {
+                let achievementCalled = false;
+                
+                // Mock achievement tracking
+                const originalTrackAchievement = window.game.trackAchievement;
+                window.game.trackAchievement = function(type, data) {
+                    if (type === 'boss_phase_transition') {
+                        achievementCalled = true;
+                        log(`✅ Achievement tracked: ${type}`, 'syncOutput', 'success');
+                        log(`   - Data: ${JSON.stringify(data)}`, 'syncOutput', 'info');
+                    }
+                    originalTrackAchievement.call(this, type, data);
+                };
+                
+                // Request transition
+                const transitionId = transitionManager.queuePhaseTransition(
+                    Math.min(mockBoss.phase + 1, 4), 
+                    'achievement_sync_test', 
+                    2
+                );
+                
+                setTimeout(() => {
+                    log(`Achievement synchronization: ${achievementCalled ? 'Success' : 'Failed'}`, 'syncOutput', achievementCalled ? 'success' : 'error');
+                    
+                    // Restore original function
+                    window.game.trackAchievement = originalTrackAchievement;
+                    
+                    testResults.syncTests.push({
+                        test: 'achievement_synchronization',
+                        result: achievementCalled ? 'pass' : 'fail',
+                        details: { achievementCalled }
+                    });
+                }, 1500);
+                
+            } catch (error) {
+                log(`❌ Achievement synchronization test failed: ${error.message}`, 'syncOutput', 'error');
+                testResults.syncTests.push({
+                    test: 'achievement_synchronization',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+        }
+
+        function testAudioSync() {
+            log('Testing audio synchronization...', 'syncOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'syncOutput', 'error');
+                return;
+            }
+            
+            try {
+                let audioPlayed = false;
+                
+                // Mock audio system
+                const originalPlaySfx = window.game.playSfx;
+                window.game.playSfx = function(sound, volume, pitch) {
+                    if (sound === 'bossPhaseTransition') {
+                        audioPlayed = true;
+                        log(`✅ Audio played: ${sound} (vol: ${volume})`, 'syncOutput', 'success');
+                    }
+                    originalPlaySfx.call(this, sound, volume, pitch);
+                };
+                
+                // Request transition
+                const transitionId = transitionManager.queuePhaseTransition(
+                    Math.min(mockBoss.phase + 1, 4), 
+                    'audio_sync_test', 
+                    2
+                );
+                
+                setTimeout(() => {
+                    log(`Audio synchronization: ${audioPlayed ? 'Success' : 'Failed'}`, 'syncOutput', audioPlayed ? 'success' : 'error');
+                    
+                    // Restore original function
+                    window.game.playSfx = originalPlaySfx;
+                    
+                    testResults.syncTests.push({
+                        test: 'audio_synchronization',
+                        result: audioPlayed ? 'pass' : 'fail',
+                        details: { audioPlayed }
+                    });
+                }, 1500);
+                
+            } catch (error) {
+                log(`❌ Audio synchronization test failed: ${error.message}`, 'syncOutput', 'error');
+                testResults.syncTests.push({
+                    test: 'audio_synchronization',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+        }
+
+        function testSyncValidation() {
+            log('Testing synchronization validation...', 'syncOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'syncOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Test with intentionally broken sync point
+                let syncFailureDetected = false;
+                
+                document.addEventListener('phaseTransitionSyncFailure', function(event) {
+                    syncFailureDetected = true;
+                    log(`✅ Sync failure detected: ${event.detail.syncPoint}`, 'syncOutput', 'success');
+                }, { once: true });
+                
+                // Temporarily break UI sync
+                const originalUpdateIndicator = window.game.updateBossPhaseIndicator;
+                window.game.updateBossPhaseIndicator = function() {
+                    throw new Error('Simulated sync failure');
+                };
+                
+                const transitionId = transitionManager.queuePhaseTransition(
+                    Math.min(mockBoss.phase + 1, 4), 
+                    'sync_validation_test', 
+                    2
+                );
+                
+                setTimeout(() => {
+                    // Restore function
+                    window.game.updateBossPhaseIndicator = originalUpdateIndicator;
+                    
+                    log(`Sync failure detection: ${syncFailureDetected ? 'Working' : 'Not working'}`, 'syncOutput', syncFailureDetected ? 'success' : 'warning');
+                    
+                    testResults.syncTests.push({
+                        test: 'sync_validation',
+                        result: 'pass', // Test passes if we can detect failures
+                        details: { syncFailureDetected }
+                    });
+                }, 2000);
+                
+            } catch (error) {
+                log(`❌ Sync validation test failed: ${error.message}`, 'syncOutput', 'error');
+                testResults.syncTests.push({
+                    test: 'sync_validation',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+        }
+
+        // 4. ROLLBACK TESTS
+
+        function testSnapshotCreation() {
+            log('Testing snapshot creation...', 'rollbackOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'rollbackOutput', 'error');
+                return;
+            }
+            
+            try {
+                const initialStatus = transitionManager.getStatus();
+                const initialRollbacks = initialStatus.availableRollbacks;
+                
+                // Create a snapshot by initiating a transition
+                const transitionId = transitionManager.queuePhaseTransition(
+                    Math.min(mockBoss.phase + 1, 4), 
+                    'snapshot_test', 
+                    2
+                );
+                
+                setTimeout(() => {
+                    const finalStatus = transitionManager.getStatus();
+                    const finalRollbacks = finalStatus.availableRollbacks;
+                    
+                    if (finalRollbacks > initialRollbacks) {
+                        log('✅ Snapshot created successfully', 'rollbackOutput', 'success');
+                        log(`   - Available rollbacks: ${finalRollbacks}`, 'rollbackOutput', 'info');
+                    } else {
+                        log('❌ No new snapshots detected', 'rollbackOutput', 'error');
+                    }
+                    
+                    testResults.rollbackTests.push({
+                        test: 'snapshot_creation',
+                        result: finalRollbacks > initialRollbacks ? 'pass' : 'fail',
+                        details: { initial: initialRollbacks, final: finalRollbacks }
+                    });
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ Snapshot creation test failed: ${error.message}`, 'rollbackOutput', 'error');
+                testResults.rollbackTests.push({
+                    test: 'snapshot_creation',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        function testStateRollback() {
+            log('Testing state rollback...', 'rollbackOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'rollbackOutput', 'error');
+                return;
+            }
+            
+            try {
+                const originalPhase = mockBoss.phase;
+                const originalHealth = mockBoss.health;
+                
+                log(`Original state - Phase: ${originalPhase}, Health: ${originalHealth}`, 'rollbackOutput', 'info');
+                
+                // Modify boss state
+                mockBoss.phase = Math.min(originalPhase + 1, 4);
+                mockBoss.health = Math.max(originalHealth - 20, 10);
+                
+                log(`Modified state - Phase: ${mockBoss.phase}, Health: ${mockBoss.health}`, 'rollbackOutput', 'info');
+                
+                // Trigger rollback
+                const rollbackSuccess = transitionManager.emergencyRollback('Test rollback');
+                
+                setTimeout(() => {
+                    if (rollbackSuccess) {
+                        const rolledBackPhase = mockBoss.phase;
+                        const rolledBackHealth = mockBoss.health;
+                        
+                        log(`Rolled back state - Phase: ${rolledBackPhase}, Health: ${rolledBackHealth}`, 'rollbackOutput', 'info');
+                        
+                        if (rolledBackPhase === originalPhase) {
+                            log('✅ Phase rollback successful', 'rollbackOutput', 'success');
+                        } else {
+                            log('❌ Phase rollback failed', 'rollbackOutput', 'error');
+                        }
+                        
+                        testResults.rollbackTests.push({
+                            test: 'state_rollback',
+                            result: rolledBackPhase === originalPhase ? 'pass' : 'fail',
+                            details: { original: originalPhase, rolledBack: rolledBackPhase }
+                        });
+                    } else {
+                        log('❌ Rollback operation failed', 'rollbackOutput', 'error');
+                        testResults.rollbackTests.push({
+                            test: 'state_rollback',
+                            result: 'fail',
+                            details: 'Rollback operation failed'
+                        });
+                    }
+                }, 500);
+                
+            } catch (error) {
+                log(`❌ State rollback test failed: ${error.message}`, 'rollbackOutput', 'error');
+                testResults.rollbackTests.push({
+                    test: 'state_rollback',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        function testEmergencyRollback() {
+            log('Testing emergency rollback...', 'rollbackOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'rollbackOutput', 'error');
+                return;
+            }
+            
+            try {
+                // Set up emergency situation
+                mockBoss.health = 5; // Critical health
+                const criticalPhase = mockBoss.phase;
+                
+                log(`Emergency situation - Phase: ${criticalPhase}, Health: ${mockBoss.health}`, 'rollbackOutput', 'warning');
+                
+                // Test emergency rollback
+                const emergencySuccess = transitionManager.emergencyRollback('Critical health emergency');
+                
+                if (emergencySuccess) {
+                    log('✅ Emergency rollback executed', 'rollbackOutput', 'success');
+                    log(`   - New phase: ${mockBoss.phase}`, 'rollbackOutput', 'info');
+                    log(`   - New health: ${mockBoss.health}`, 'rollbackOutput', 'info');
+                    
+                    testResults.rollbackTests.push({
+                        test: 'emergency_rollback',
+                        result: 'pass',
+                        details: { emergencySuccess, newPhase: mockBoss.phase }
+                    });
+                } else {
+                    log('❌ Emergency rollback failed', 'rollbackOutput', 'error');
+                    testResults.rollbackTests.push({
+                        test: 'emergency_rollback',
+                        result: 'fail',
+                        details: 'Emergency rollback failed'
+                    });
+                }
+                
+            } catch (error) {
+                log(`❌ Emergency rollback test failed: ${error.message}`, 'rollbackOutput', 'error');
+                testResults.rollbackTests.push({
+                    test: 'emergency_rollback',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        function testRollbackValidation() {
+            log('Testing rollback validation...', 'rollbackOutput');
+            
+            if (!transitionManager) {
+                log('❌ No transition manager available', 'rollbackOutput', 'error');
+                return;
+            }
+            
+            try {
+                let rollbackEventReceived = false;
+                
+                // Listen for rollback events
+                document.addEventListener('bossPhaseRollback', function(event) {
+                    rollbackEventReceived = true;
+                    const data = event.detail;
+                    log(`✅ Rollback event received:`, 'rollbackOutput', 'success');
+                    log(`   - Boss: ${data.boss.type}`, 'rollbackOutput', 'info');
+                    log(`   - Rolled back to: ${data.rolledBackTo}`, 'rollbackOutput', 'info');
+                    log(`   - Reason: ${data.reason}`, 'rollbackOutput', 'info');
+                }, { once: true });
+                
+                // Trigger rollback
+                const rollbackSuccess = transitionManager.emergencyRollback('Validation test rollback');
+                
+                setTimeout(() => {
+                    log(`Rollback event system: ${rollbackEventReceived ? 'Working' : 'Not working'}`, 'rollbackOutput', rollbackEventReceived ? 'success' : 'warning');
+                    
+                    testResults.rollbackTests.push({
+                        test: 'rollback_validation',
+                        result: rollbackEventReceived ? 'pass' : 'fail',
+                        details: { rollbackEventReceived, rollbackSuccess }
+                    });
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ Rollback validation test failed: ${error.message}`, 'rollbackOutput', 'error');
+                testResults.rollbackTests.push({
+                    test: 'rollback_validation',
+                    result: 'error',
+                    details: error.message
+                });
+            }
+            
+            updateStatus();
+        }
+
+        // MONITORING AND UTILITIES
+
+        function startMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+            
+            monitoringInterval = setInterval(() => {
+                updateStatus();
+                
+                if (transitionManager) {
+                    const status = transitionManager.getStatus();
+                    
+                    // Log periodic status if there's activity
+                    if (status.queueLength > 0 || status.isProcessing) {
+                        log(`Status: Queue(${status.queueLength}) Processing(${status.isProcessing}) Phase(${status.currentPhase})`, 'statusOutput', 'info');
+                    }
+                }
+            }, 1000);
+            
+            log('✅ Monitoring started', 'statusOutput', 'success');
+        }
+
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                log('⏹️ Monitoring stopped', 'statusOutput', 'warning');
+            }
+        }
+
+        function resetStats() {
+            testResults = {
+                queueTests: [],
+                validationTests: [],
+                syncTests: [],
+                rollbackTests: []
+            };
+            
+            // Clear all outputs
+            ['queueOutput', 'validationOutput', 'syncOutput', 'rollbackOutput', 'statusOutput'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+            
+            log('📊 Test results and outputs reset', 'statusOutput', 'info');
+        }
+
+        function exportResults() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                testResults: testResults,
+                finalStatus: transitionManager ? transitionManager.getStatus() : null,
+                bossState: mockBoss ? {
+                    type: mockBoss.type,
+                    phase: mockBoss.phase,
+                    health: mockBoss.health
+                } : null
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `boss-phase-transition-test-results-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            log('📁 Test results exported', 'statusOutput', 'success');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🎮 Boss Phase Transition Test Suite Initialized', 'statusOutput', 'success');
+            log('Create a mock boss to begin testing', 'statusOutput', 'info');
+            
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

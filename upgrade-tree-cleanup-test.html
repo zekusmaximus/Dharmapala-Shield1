@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade Tree Cleanup System Test - Dharmapala Shield</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .test-controls {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .test-section {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00aa00;
+        }
+        
+        .test-section.feature-2 { border-left-color: #2196F3; }
+        .test-section.feature-3 { border-left-color: #ff9800; }
+        .test-section.feature-4 { border-left-color: #9c27b0; }
+        
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-button:hover { background: #45a049; }
+        .test-button.warning { background: #ff9800; }
+        .test-button.danger { background: #f44336; }
+        .test-button.info { background: #2196F3; }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        
+        .status-display {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        
+        .pool-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .pool-item {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .pool-utilization {
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .pool-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #ff9800, #f44336);
+            transition: width 0.3s ease;
+        }
+        
+        .mock-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4CAF50;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .mock-modal.active { display: block; }
+        
+        h1 { color: #4CAF50; }
+        h2 { color: #2196F3; }
+        h3 { color: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧹 Upgrade Tree Cleanup System Test</h1>
+        
+        <div class="test-controls">
+            <h2>Comprehensive Cleanup Testing Environment</h2>
+            <p>This system tests all 4 features of the upgrade tree cleanup system:</p>
+            
+            <div class="test-section">
+                <h3>🎯 Feature 1: Comprehensive Event Listener Removal</h3>
+                <p>Tests proper removal of all event listeners when closing modal.</p>
+                <button class="test-button" onclick="testEventListenerTracking()">Test Event Tracking</button>
+                <button class="test-button warning" onclick="createManyListeners()">Create Many Listeners</button>
+                <button class="test-button danger" onclick="testListenerCleanup()">Test Cleanup</button>
+            </div>
+            
+            <div class="test-section feature-2">
+                <h3>🔄 Feature 2: DOM Element Pooling</h3>
+                <p>Tests element pooling for frequently created/destroyed upgrade elements.</p>
+                <button class="test-button" onclick="testElementPooling()">Test Element Pooling</button>
+                <button class="test-button info" onclick="stressTestPooling()">Stress Test Pooling</button>
+                <button class="test-button warning" onclick="fillAllPools()">Fill All Pools</button>
+            </div>
+            
+            <div class="test-section feature-3">
+                <h3>📊 Feature 3: Memory Usage Monitoring</h3>
+                <p>Tests real-time memory monitoring and leak detection.</p>
+                <button class="test-button" onclick="testMemoryMonitoring()">Test Memory Monitoring</button>
+                <button class="test-button warning" onclick="simulateMemoryLeak()">Simulate Memory Leak</button>
+                <button class="test-button info" onclick="takeMemorySnapshot()">Take Memory Snapshot</button>
+            </div>
+            
+            <div class="test-section feature-4">
+                <h3>✅ Feature 4: Cleanup Validation</h3>
+                <p>Tests validation that ensures no dangling references remain.</p>
+                <button class="test-button" onclick="testCleanupValidation()">Test Cleanup Validation</button>
+                <button class="test-button danger" onclick="createDanglingReferences()">Create Dangling Refs</button>
+                <button class="test-button info" onclick="runComprehensiveTest()">Run Full Test Suite</button>
+            </div>
+        </div>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="activeListeners">0</div>
+                <div class="metric-label">Active Event Listeners</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="pooledElements">0</div>
+                <div class="metric-label">Pooled Elements</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="memoryUsage">0 MB</div>
+                <div class="metric-label">Memory Usage</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="cleanupOperations">0</div>
+                <div class="metric-label">Cleanup Operations</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🏊 Element Pool Status</h3>
+            <div class="pool-status" id="poolStatus">
+                <!-- Pool status will be populated here -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Test Log</h3>
+            <div class="status-display" id="statusDisplay">
+System initializing...
+            </div>
+            <button class="test-button" onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔬 Performance Metrics</h3>
+            <div id="performanceMetrics">
+                <div>Average Cleanup Time: <span id="avgCleanupTime">0ms</span></div>
+                <div>Max Cleanup Time: <span id="maxCleanupTime">0ms</span></div>
+                <div>Failed Cleanups: <span id="failedCleanups">0</span></div>
+                <div>Memory Snapshots: <span id="memorySnapshots">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mock upgrade modal for testing -->
+    <div id="mockUpgradeModal" class="mock-modal">
+        <h3>Mock Upgrade Modal</h3>
+        <div id="mockUpgradeContent">
+            <!-- Mock upgrade content will be added here -->
+        </div>
+        <button onclick="closeMockModal()">Close</button>
+    </div>
+
+    <!-- Load the cleanup system -->
+    <script src="js/upgradeTreeCleanupManager.js"></script>
+    
+    <script>
+        // Test environment setup
+        let cleanupManager;
+        let mockGame;
+        let testElements = [];
+        let testListeners = [];
+        
+        // Mock game object for testing
+        class MockGame {
+            constructor() {
+                this.currentUpgradeDefense = null;
+                this.selectedUpgradeChoice = null;
+            }
+        }
+        
+        function initializeTest() {
+            mockGame = new MockGame();
+            
+            if (typeof UpgradeTreeCleanupManager !== 'undefined') {
+                cleanupManager = new UpgradeTreeCleanupManager(mockGame);
+                log('✅ Upgrade Tree Cleanup Manager initialized successfully');
+            } else {
+                log('❌ UpgradeTreeCleanupManager not found');
+                return;
+            }
+            
+            updateMetrics();
+            setInterval(updateMetrics, 1000);
+            
+            log('🚀 Test environment ready');
+        }
+        
+        // Feature 1 Tests: Event Listener Tracking
+        function testEventListenerTracking() {
+            log('Testing event listener tracking...');
+            
+            const testElement = document.createElement('button');
+            testElement.textContent = 'Test Button';
+            testElement.id = 'testButton_' + Date.now();
+            document.body.appendChild(testElement);
+            
+            const handler = () => log('Test button clicked!');
+            
+            const listenerId = cleanupManager.trackEventListener(testElement, 'click', handler);
+            
+            if (listenerId) {
+                log(`✅ Event listener tracked with ID: ${listenerId}`);
+                testElements.push(testElement);
+            } else {
+                log('❌ Failed to track event listener');
+            }
+        }
+        
+        function createManyListeners() {
+            log('Creating many event listeners for stress test...');
+            
+            for (let i = 0; i < 20; i++) {
+                const element = document.createElement('div');
+                element.id = `stressTest_${i}_${Date.now()}`;
+                element.textContent = `Stress Test Element ${i}`;
+                document.body.appendChild(element);
+                
+                const clickHandler = () => log(`Stress element ${i} clicked`);
+                const mouseHandler = () => log(`Stress element ${i} hovered`);
+                
+                cleanupManager.trackEventListener(element, 'click', clickHandler);
+                cleanupManager.trackEventListener(element, 'mouseover', mouseHandler);
+                
+                testElements.push(element);
+            }
+            
+            log(`✅ Created ${testElements.length} test elements with multiple listeners`);
+        }
+        
+        function testListenerCleanup() {
+            log('Testing event listener cleanup...');
+            
+            const removedCount = cleanupManager.removeAllEventListeners();
+            log(`✅ Removed ${removedCount} event listeners`);
+            
+            // Clean up test elements
+            testElements.forEach(element => {
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            });
+            testElements = [];
+        }
+        
+        // Feature 2 Tests: Element Pooling
+        function testElementPooling() {
+            log('Testing DOM element pooling...');
+            
+            // Test creating pooled elements
+            const pooledElements = [];
+            
+            for (let i = 0; i < 5; i++) {
+                const element = cleanupManager.createPooledElement('upgradeChoice', () => {
+                    const div = document.createElement('div');
+                    div.className = 'test-upgrade-choice';
+                    div.textContent = `Pooled Element ${i}`;
+                    return div;
+                });
+                
+                if (element) {
+                    pooledElements.push(element);
+                    log(`✅ Created pooled element ${i}`);
+                } else {
+                    log(`❌ Failed to create pooled element ${i}`);
+                }
+            }
+            
+            // Test returning elements to pool
+            let returnedCount = 0;
+            pooledElements.forEach(element => {
+                if (cleanupManager.returnElementToPool(element)) {
+                    returnedCount++;
+                }
+            });
+            
+            log(`✅ Returned ${returnedCount}/${pooledElements.length} elements to pool`);
+        }
+        
+        function stressTestPooling() {
+            log('Stress testing element pooling...');
+            
+            const elements = [];
+            const startTime = performance.now();
+            
+            // Create many elements rapidly
+            for (let i = 0; i < 50; i++) {
+                const element = cleanupManager.createPooledElement('upgradeChoice', () => {
+                    const div = document.createElement('div');
+                    div.textContent = `Stress Element ${i}`;
+                    return div;
+                });
+                elements.push(element);
+            }
+            
+            // Return them all to pool
+            elements.forEach(element => {
+                cleanupManager.returnElementToPool(element);
+            });
+            
+            const endTime = performance.now();
+            log(`✅ Stress test completed in ${(endTime - startTime).toFixed(2)}ms`);
+            log(`   Created and pooled ${elements.length} elements`);
+        }
+        
+        function fillAllPools() {
+            log('Filling all element pools to capacity...');
+            
+            const poolTypes = ['upgradeChoice', 'statChange', 'abilityTag', 'previewSection'];
+            
+            poolTypes.forEach(poolType => {
+                for (let i = 0; i < 15; i++) { // More than pool capacity
+                    const element = cleanupManager.createPooledElement(poolType, () => {
+                        const div = document.createElement('div');
+                        div.className = `test-${poolType}`;
+                        return div;
+                    });
+                    
+                    if (element) {
+                        cleanupManager.returnElementToPool(element);
+                    }
+                }
+            });
+            
+            log('✅ Attempted to fill all pools beyond capacity');
+        }
+        
+        // Feature 3 Tests: Memory Monitoring
+        function testMemoryMonitoring() {
+            log('Testing memory monitoring system...');
+            
+            const snapshot = cleanupManager.takeMemorySnapshot('test_monitoring');
+            if (snapshot) {
+                log('✅ Memory snapshot taken:', JSON.stringify(snapshot, null, 2));
+            } else {
+                log('❌ Failed to take memory snapshot');
+            }
+            
+            // Test memory metrics
+            const metrics = cleanupManager.getMemoryMetrics();
+            log('📊 Current memory metrics:', JSON.stringify(metrics, null, 2));
+        }
+        
+        function simulateMemoryLeak() {
+            log('⚠️ Simulating memory leak...');
+            
+            // Create elements without proper cleanup
+            const leakyElements = [];
+            for (let i = 0; i < 30; i++) {
+                const element = document.createElement('div');
+                element.textContent = `Leaky Element ${i}`;
+                document.body.appendChild(element);
+                
+                // Add listeners without tracking
+                element.addEventListener('click', () => {
+                    console.log(`Untracked click ${i}`);
+                });
+                
+                leakyElements.push(element);
+            }
+            
+            log(`🔓 Created ${leakyElements.length} elements with untracked listeners`);
+            
+            // Simulate rapid DOM changes
+            setTimeout(() => {
+                leakyElements.forEach(element => {
+                    if (element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                });
+                log('🗑️ Removed leaky elements (but listeners may remain)');
+            }, 2000);
+        }
+        
+        function takeMemorySnapshot() {
+            const snapshot = cleanupManager.takeMemorySnapshot('manual_snapshot');
+            if (snapshot) {
+                log('📸 Manual memory snapshot:', JSON.stringify(snapshot, null, 2));
+            }
+        }
+        
+        // Feature 4 Tests: Cleanup Validation
+        function testCleanupValidation() {
+            log('Testing cleanup validation...');
+            
+            // Create some test state
+            createManyListeners();
+            testElementPooling();
+            
+            // Perform comprehensive cleanup
+            const cleanupResult = cleanupManager.performComprehensiveCleanup();
+            
+            if (cleanupResult.success) {
+                log('✅ Cleanup validation PASSED');
+                log(`   Cleanup time: ${cleanupResult.cleanupTime.toFixed(2)}ms`);
+                log(`   Removed listeners: ${cleanupResult.removedListeners}`);
+            } else {
+                log('❌ Cleanup validation FAILED');
+                log('   Validation results:', JSON.stringify(cleanupResult.validation, null, 2));
+            }
+        }
+        
+        function createDanglingReferences() {
+            log('⚠️ Creating dangling references...');
+            
+            // Simulate problematic state
+            mockGame.currentUpgradeDefense = { type: 'test', level: 1 };
+            mockGame.selectedUpgradeChoice = 1;
+            
+            // Create untracked elements
+            const danglingElement = document.createElement('div');
+            danglingElement.id = 'danglingElement';
+            document.body.appendChild(danglingElement);
+            
+            log('🔗 Created dangling references for validation testing');
+        }
+        
+        function runComprehensiveTest() {
+            log('🚀 Running comprehensive test suite...');
+            
+            const startTime = performance.now();
+            
+            // Run all tests in sequence
+            testEventListenerTracking();
+            setTimeout(() => testElementPooling(), 500);
+            setTimeout(() => testMemoryMonitoring(), 1000);
+            setTimeout(() => createDanglingReferences(), 1500);
+            setTimeout(() => {
+                const result = testCleanupValidation();
+                const totalTime = performance.now() - startTime;
+                log(`🏁 Comprehensive test completed in ${totalTime.toFixed(2)}ms`);
+            }, 2000);
+        }
+        
+        // UI Helper Functions
+        function updateMetrics() {
+            if (!cleanupManager) return;
+            
+            const metrics = cleanupManager.getMemoryMetrics();
+            
+            document.getElementById('activeListeners').textContent = metrics.currentListenerCount;
+            document.getElementById('pooledElements').textContent = 
+                Object.values(metrics.poolStatus || {}).reduce((sum, pool) => sum + parseInt(pool.size), 0);
+            document.getElementById('cleanupOperations').textContent = metrics.cleanupOperations;
+            
+            // Update performance metrics
+            document.getElementById('avgCleanupTime').textContent = 
+                metrics.cleanupPerformance.averageCleanupTime.toFixed(2) + 'ms';
+            document.getElementById('maxCleanupTime').textContent = 
+                metrics.cleanupPerformance.maxCleanupTime.toFixed(2) + 'ms';
+            document.getElementById('failedCleanups').textContent = 
+                metrics.cleanupPerformance.failedCleanupOperations;
+            document.getElementById('memorySnapshots').textContent = 
+                metrics.memorySnapshots.length;
+            
+            // Update memory usage if available
+            if (performance.memory) {
+                const memoryMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
+                document.getElementById('memoryUsage').textContent = memoryMB + ' MB';
+            }
+            
+            // Update pool status
+            updatePoolStatus(metrics.poolStatus || {});
+        }
+        
+        function updatePoolStatus(poolStatus) {
+            const container = document.getElementById('poolStatus');
+            container.innerHTML = '';
+            
+            Object.entries(poolStatus).forEach(([poolType, status]) => {
+                const poolItem = document.createElement('div');
+                poolItem.className = 'pool-item';
+                
+                const utilization = parseFloat(status.utilization) || 0;
+                
+                poolItem.innerHTML = `
+                    <div><strong>${poolType}</strong></div>
+                    <div>${status.size}/${status.maxSize}</div>
+                    <div class="pool-utilization">
+                        <div class="pool-fill" style="width: ${utilization}%"></div>
+                    </div>
+                    <div>${status.utilization}</div>
+                `;
+                
+                container.appendChild(poolItem);
+            });
+        }
+        
+        function log(message) {
+            const statusDisplay = document.getElementById('statusDisplay');
+            const timestamp = new Date().toLocaleTimeString();
+            statusDisplay.textContent += `\\n[${timestamp}] ${message}`;
+            statusDisplay.scrollTop = statusDisplay.scrollHeight;
+            
+            // Also log to console
+            console.log(`[CleanupTest] ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('statusDisplay').textContent = 'Log cleared.\\n';
+        }
+        
+        // Mock modal functions
+        function openMockModal() {
+            document.getElementById('mockUpgradeModal').classList.add('active');
+        }
+        
+        function closeMockModal() {
+            document.getElementById('mockUpgradeModal').classList.remove('active');
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(initializeTest, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathGenerator Error Handling Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #FFD700;
+            border-bottom: 2px solid #FFD700;
+            padding-bottom: 10px;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .test-controls input,
+        .test-controls select,
+        .test-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .test-controls button {
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .test-controls button:hover {
+            background: #45a049;
+        }
+        
+        .test-controls button.danger {
+            background: #f44336;
+        }
+        
+        .test-controls button.danger:hover {
+            background: #d32f2f;
+        }
+        
+        .results-area {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #555;
+        }
+        
+        .error {
+            color: #ff6b6b;
+        }
+        
+        .warning {
+            color: #ffd93d;
+        }
+        
+        .success {
+            color: #6bcf7f;
+        }
+        
+        .info {
+            color: #74c0fc;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .canvas-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .canvas-wrapper {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        canvas {
+            border: 2px solid #FFD700;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        .canvas-label {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ PathGenerator Error Handling Test Suite</h1>
+            <p>Comprehensive testing of enhanced error handling, input validation, and fallback mechanisms</p>
+        </div>
+        
+        <!-- Input Validation Tests -->
+        <div class="test-section">
+            <h3>🔍 Input Validation Tests</h3>
+            <div class="test-controls">
+                <button onclick="testValidInputs()">✅ Test Valid Inputs</button>
+                <button onclick="testInvalidCanvas()" class="danger">❌ Invalid Canvas Size</button>
+                <button onclick="testInvalidTheme()" class="danger">❌ Invalid Theme</button>
+                <button onclick="testInvalidLevelId()" class="danger">❌ Invalid Level ID</button>
+                <button onclick="testInvalidSeed()" class="danger">❌ Invalid Seed</button>
+            </div>
+            <div id="validation-results" class="results-area"></div>
+        </div>
+        
+        <!-- Reachability Tests -->
+        <div class="test-section">
+            <h3>🎯 Reachability Tests</h3>
+            <div class="test-controls">
+                <button onclick="testNormalReachability()">✅ Normal Points</button>
+                <button onclick="testTooClosePoints()" class="danger">⚠️ Too Close Points</button>
+                <button onclick="testTooFarPoints()" class="danger">⚠️ Too Far Points</button>
+                <button onclick="testOutOfBoundsPoints()" class="danger">❌ Out of Bounds</button>
+            </div>
+            <div id="reachability-results" class="results-area"></div>
+        </div>
+        
+        <!-- Fallback Mechanism Tests -->
+        <div class="test-section">
+            <h3>🔄 Fallback Mechanism Tests</h3>
+            <div class="test-controls">
+                <button onclick="testNormalGeneration()">✅ Normal Generation</button>
+                <button onclick="testForceFallback()" class="danger">🔄 Force Fallback</button>
+                <button onclick="testMinimalFallback()" class="danger">🚨 Minimal Fallback</button>
+                <button onclick="testRetryMechanism()">🔁 Test Retries</button>
+            </div>
+            <div id="fallback-results" class="results-area"></div>
+        </div>
+        
+        <!-- Path Generation Modes -->
+        <div class="test-section">
+            <h3>⚙️ Path Generation Mode Tests</h3>
+            <div class="test-controls">
+                <select id="pathMode">
+                    <option value="hybrid">Hybrid Mode</option>
+                    <option value="dynamic">Dynamic Mode</option>
+                    <option value="static">Static Mode</option>
+                </select>
+                <select id="theme">
+                    <option value="cyber">Cyber Theme</option>
+                    <option value="urban">Urban Theme</option>
+                    <option value="forest">Forest Theme</option>
+                    <option value="mountain">Mountain Theme</option>
+                </select>
+                <input type="number" id="levelId" placeholder="Level ID" value="1" min="1" max="25">
+                <button onclick="testPathGeneration()">🎲 Generate Path</button>
+                <button onclick="testAllModes()">🎯 Test All Modes</button>
+            </div>
+            <div id="generation-results" class="results-area"></div>
+        </div>
+        
+        <!-- Error Statistics -->
+        <div class="test-section">
+            <h3>📊 Error Statistics & Monitoring</h3>
+            <div class="test-controls">
+                <button onclick="refreshStats()">🔄 Refresh Stats</button>
+                <button onclick="resetStats()" class="danger">🗑️ Reset Stats</button>
+                <button onclick="exportErrorData()">💾 Export Data</button>
+                <button onclick="testStressGeneration()">⚡ Stress Test</button>
+            </div>
+            <div class="stats-grid" id="stats-grid">
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+            <div id="stats-details" class="results-area" style="margin-top: 20px;"></div>
+        </div>
+        
+        <!-- Visual Path Display -->
+        <div class="test-section">
+            <h3>🎨 Visual Path Display</h3>
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <div class="canvas-label">Generated Path</div>
+                    <canvas id="pathCanvas" width="400" height="300"></canvas>
+                </div>
+                <div class="canvas-wrapper">
+                    <div class="canvas-label">Fallback Path</div>
+                    <canvas id="fallbackCanvas" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PathGenerator Test Suite
+        let pathGenerator;
+        let testResults = [];
+        
+        // Initialize PathGenerator with error handling
+        function initializePathGenerator() {
+            try {
+                pathGenerator = new PathGenerator(800, 600, 20);
+                
+                // Configure error handling
+                pathGenerator.setErrorHandlingConfig({
+                    maxValidationRetries: 5,
+                    maxPathGenerationRetries: 3,
+                    enableFallbackGeneration: true,
+                    logErrors: true,
+                    throwOnCriticalErrors: false,
+                    fallbackToSimplePath: true
+                });
+                
+                logResult('✅ PathGenerator initialized successfully', 'success');
+                refreshStats();
+                
+            } catch (error) {
+                logResult(`❌ Failed to initialize PathGenerator: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        }
+        
+        // Logging utility
+        function logResult(message, type = 'info', targetId = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const formattedMessage = `[${timestamp}] ${message}`;
+            
+            const resultAreas = targetId ? [document.getElementById(targetId)] : 
+                                document.querySelectorAll('.results-area');
+            
+            resultAreas.forEach(area => {
+                if (area) {
+                    const div = document.createElement('div');
+                    div.className = type;
+                    div.textContent = formattedMessage;
+                    area.appendChild(div);
+                    area.scrollTop = area.scrollHeight;
+                }
+            });
+            
+            testResults.push({ timestamp, message, type });
+            console.log(formattedMessage);
+        }
+        
+        // Input Validation Tests
+        function testValidInputs() {
+            logResult('🔍 Testing valid inputs...', 'info', 'validation-results');
+            
+            try {
+                const path = pathGenerator.generateBasePath(1, null, 'cyber', 'hybrid');
+                logResult(`✅ Valid inputs accepted, generated ${path.length} points`, 'success', 'validation-results');
+                
+                if (path.metadata) {
+                    logResult(`📊 Metadata: retries=${path.metadata.retryCount}, time=${path.metadata.generationTime}ms`, 'info', 'validation-results');
+                }
+                
+                drawPath(path, 'pathCanvas');
+                
+            } catch (error) {
+                logResult(`❌ Valid inputs failed: ${error.message}`, 'error', 'validation-results');
+            }
+        }
+        
+        function testInvalidCanvas() {
+            logResult('🔍 Testing invalid canvas dimensions...', 'info', 'validation-results');
+            
+            try {
+                const invalidGenerator = new PathGenerator(-100, 50, 20);
+                logResult('❌ Should have thrown error for negative canvas dimensions', 'error', 'validation-results');
+            } catch (error) {
+                logResult(`✅ Correctly caught invalid canvas: ${error.message}`, 'success', 'validation-results');
+            }
+            
+            try {
+                const invalidGenerator2 = new PathGenerator('invalid', 'invalid', 20);
+                logResult('❌ Should have thrown error for non-numeric canvas dimensions', 'error', 'validation-results');
+            } catch (error) {
+                logResult(`✅ Correctly caught non-numeric canvas: ${error.message}`, 'success', 'validation-results');
+            }
+        }
+        
+        function testInvalidTheme() {
+            logResult('🔍 Testing invalid theme...', 'info', 'validation-results');
+            
+            try {
+                const path = pathGenerator.generateBasePath(1, null, 'nonexistent-theme', 'hybrid');
+                logResult(`⚠️ Invalid theme was accepted: ${path ? 'path generated' : 'no path'}`, 'warning', 'validation-results');
+            } catch (error) {
+                logResult(`✅ Correctly caught invalid theme: ${error.message}`, 'success', 'validation-results');
+            }
+        }
+        
+        function testInvalidLevelId() {
+            logResult('🔍 Testing invalid level ID...', 'info', 'validation-results');
+            
+            try {
+                const path = pathGenerator.generateBasePath('invalid', null, 'cyber', 'hybrid');
+                logResult('❌ Should have thrown error for non-numeric level ID', 'error', 'validation-results');
+            } catch (error) {
+                logResult(`✅ Correctly caught invalid level ID: ${error.message}`, 'success', 'validation-results');
+            }
+            
+            try {
+                const path = pathGenerator.generateBasePath(-5, null, 'cyber', 'hybrid');
+                logResult('❌ Should have thrown error for negative level ID', 'error', 'validation-results');
+            } catch (error) {
+                logResult(`✅ Correctly caught negative level ID: ${error.message}`, 'success', 'validation-results');
+            }
+        }
+        
+        function testInvalidSeed() {
+            logResult('🔍 Testing invalid seed...', 'info', 'validation-results');
+            
+            try {
+                const path = pathGenerator.generateBasePath(1, 'invalid-seed', 'cyber', 'hybrid');
+                logResult(`⚠️ Invalid seed was handled: ${path ? 'path generated' : 'no path'}`, 'warning', 'validation-results');
+            } catch (error) {
+                logResult(`✅ Correctly handled invalid seed: ${error.message}`, 'success', 'validation-results');
+            }
+        }
+        
+        // Reachability Tests
+        function testNormalReachability() {
+            logResult('🎯 Testing normal point reachability...', 'info', 'reachability-results');
+            
+            const startPoint = { x: 100, y: 300 };
+            const endPoint = { x: 700, y: 300 };
+            
+            try {
+                const result = pathGenerator.validatePointReachability(startPoint, endPoint, 'normal reachability test');
+                logResult(`✅ Points are reachable: distance=${result.distance.toFixed(2)}`, 'success', 'reachability-results');
+            } catch (error) {
+                logResult(`❌ Reachability test failed: ${error.message}`, 'error', 'reachability-results');
+            }
+        }
+        
+        function testTooClosePoints() {
+            logResult('🎯 Testing points that are too close...', 'info', 'reachability-results');
+            
+            const startPoint = { x: 100, y: 100 };
+            const endPoint = { x: 105, y: 105 };
+            
+            const result = pathGenerator.validatePointReachability(startPoint, endPoint, 'too close points test');
+            if (!result.isReachable) {
+                logResult(`✅ Correctly identified points as too close: ${result.error}`, 'success', 'reachability-results');
+            } else {
+                logResult(`⚠️ Points marked as reachable despite being close: distance=${result.distance.toFixed(2)}`, 'warning', 'reachability-results');
+            }
+        }
+        
+        function testTooFarPoints() {
+            logResult('🎯 Testing points that are too far...', 'info', 'reachability-results');
+            
+            const startPoint = { x: -1000, y: -1000 };
+            const endPoint = { x: 2000, y: 2000 };
+            
+            const result = pathGenerator.validatePointReachability(startPoint, endPoint, 'too far points test');
+            if (!result.isReachable) {
+                logResult(`✅ Correctly identified points as too far: ${result.error}`, 'success', 'reachability-results');
+            } else {
+                logResult(`⚠️ Points marked as reachable despite being far: distance=${result.distance.toFixed(2)}`, 'warning', 'reachability-results');
+            }
+        }
+        
+        function testOutOfBoundsPoints() {
+            logResult('🎯 Testing out-of-bounds points...', 'info', 'reachability-results');
+            
+            const startPoint = { x: -50, y: 300 };
+            const endPoint = { x: 1000, y: 700 };
+            
+            try {
+                pathGenerator.validatePoint(startPoint, 'out of bounds test - start');
+                logResult('❌ Should have caught out-of-bounds start point', 'error', 'reachability-results');
+            } catch (error) {
+                logResult(`✅ Correctly caught out-of-bounds start point: ${error.message}`, 'success', 'reachability-results');
+            }
+            
+            try {
+                pathGenerator.validatePoint(endPoint, 'out of bounds test - end');
+                logResult('❌ Should have caught out-of-bounds end point', 'error', 'reachability-results');
+            } catch (error) {
+                logResult(`✅ Correctly caught out-of-bounds end point: ${error.message}`, 'success', 'reachability-results');
+            }
+        }
+        
+        // Fallback Mechanism Tests
+        function testNormalGeneration() {
+            logResult('🔄 Testing normal path generation...', 'info', 'fallback-results');
+            
+            try {
+                const path = pathGenerator.generateBasePath(5, 12345, 'cyber', 'hybrid');
+                
+                if (path.metadata && path.metadata.isFallback) {
+                    logResult(`⚠️ Normal generation used fallback: ${path.metadata.fallbackReason}`, 'warning', 'fallback-results');
+                } else {
+                    logResult(`✅ Normal generation successful: ${path.length} points`, 'success', 'fallback-results');
+                }
+                
+                drawPath(path, 'pathCanvas');
+                
+            } catch (error) {
+                logResult(`❌ Normal generation failed: ${error.message}`, 'error', 'fallback-results');
+            }
+        }
+        
+        function testForceFallback() {
+            logResult('🔄 Testing forced fallback generation...', 'info', 'fallback-results');
+            
+            // Temporarily disable main generation to force fallback
+            const originalConfig = pathGenerator.getErrorHandlingConfig();
+            pathGenerator.setErrorHandlingConfig({
+                ...originalConfig,
+                maxPathGenerationRetries: 0,
+                enableFallbackGeneration: true
+            });
+            
+            try {
+                const path = pathGenerator.generateBasePath(1, null, 'cyber', 'dynamic');
+                
+                if (path.metadata && path.metadata.isFallback) {
+                    logResult(`✅ Fallback mechanism triggered: ${path.metadata.fallbackType}`, 'success', 'fallback-results');
+                    drawPath(path, 'fallbackCanvas');
+                } else {
+                    logResult('⚠️ Expected fallback but got normal generation', 'warning', 'fallback-results');
+                }
+                
+            } catch (error) {
+                logResult(`❌ Forced fallback failed: ${error.message}`, 'error', 'fallback-results');
+            } finally {
+                // Restore original configuration
+                pathGenerator.setErrorHandlingConfig(originalConfig);
+            }
+        }
+        
+        function testMinimalFallback() {
+            logResult('🚨 Testing minimal fallback (last resort)...', 'info', 'fallback-results');
+            
+            // Disable all fallback mechanisms except minimal
+            const originalConfig = pathGenerator.getErrorHandlingConfig();
+            pathGenerator.setErrorHandlingConfig({
+                ...originalConfig,
+                maxPathGenerationRetries: 0,
+                enableFallbackGeneration: false,
+                throwOnCriticalErrors: false
+            });
+            
+            try {
+                const path = pathGenerator.generateBasePath(1, null, 'cyber', 'dynamic');
+                
+                if (path.metadata && path.metadata.isMinimalFallback) {
+                    logResult(`✅ Minimal fallback activated: ${path.metadata.fallbackType}`, 'success', 'fallback-results');
+                    drawPath(path, 'fallbackCanvas');
+                } else {
+                    logResult('⚠️ Expected minimal fallback but got different result', 'warning', 'fallback-results');
+                }
+                
+            } catch (error) {
+                logResult(`❌ Minimal fallback failed: ${error.message}`, 'error', 'fallback-results');
+            } finally {
+                // Restore original configuration
+                pathGenerator.setErrorHandlingConfig(originalConfig);
+            }
+        }
+        
+        function testRetryMechanism() {
+            logResult('🔁 Testing retry mechanism...', 'info', 'fallback-results');
+            
+            let retryCount = 0;
+            const originalGenerateRawPath = pathGenerator.generateRawPath;
+            
+            // Mock generateRawPath to fail first few times
+            pathGenerator.generateRawPath = function(start, end, themeConfig) {
+                retryCount++;
+                if (retryCount < 3) {
+                    throw new Error(`Simulated failure attempt ${retryCount}`);
+                }
+                return originalGenerateRawPath.call(this, start, end, themeConfig);
+            };
+            
+            try {
+                const path = pathGenerator.generateBasePath(1, null, 'cyber', 'dynamic');
+                logResult(`✅ Retry mechanism worked: succeeded after ${retryCount} attempts`, 'success', 'fallback-results');
+                
+                if (path.metadata) {
+                    logResult(`📊 Final metadata: retries=${path.metadata.retryCount}`, 'info', 'fallback-results');
+                }
+                
+            } catch (error) {
+                logResult(`❌ Retry mechanism failed: ${error.message}`, 'error', 'fallback-results');
+            } finally {
+                // Restore original method
+                pathGenerator.generateRawPath = originalGenerateRawPath;
+            }
+        }
+        
+        // Path Generation Tests
+        function testPathGeneration() {
+            const pathMode = document.getElementById('pathMode').value;
+            const theme = document.getElementById('theme').value;
+            const levelId = parseInt(document.getElementById('levelId').value);
+            
+            logResult(`🎲 Testing ${pathMode} generation with ${theme} theme for level ${levelId}...`, 'info', 'generation-results');
+            
+            try {
+                const startTime = performance.now();
+                const path = pathGenerator.generateBasePath(levelId, null, theme, pathMode);
+                const endTime = performance.now();
+                
+                const generationTime = (endTime - startTime).toFixed(2);
+                logResult(`✅ Generated ${path.length} points in ${generationTime}ms`, 'success', 'generation-results');
+                
+                if (path.metadata) {
+                    logResult(`📊 Path metadata: ${JSON.stringify(path.metadata, null, 2)}`, 'info', 'generation-results');
+                }
+                
+                drawPath(path, 'pathCanvas');
+                
+            } catch (error) {
+                logResult(`❌ Generation failed: ${error.message}`, 'error', 'generation-results');
+            }
+        }
+        
+        function testAllModes() {
+            const modes = ['hybrid', 'dynamic', 'static'];
+            const themes = ['cyber', 'urban', 'forest', 'mountain'];
+            
+            logResult('🎯 Testing all path generation modes and themes...', 'info', 'generation-results');
+            
+            modes.forEach(mode => {
+                themes.forEach(theme => {
+                    try {
+                        const path = pathGenerator.generateBasePath(1, null, theme, mode);
+                        logResult(`✅ ${mode}/${theme}: ${path.length} points`, 'success', 'generation-results');
+                    } catch (error) {
+                        logResult(`❌ ${mode}/${theme}: ${error.message}`, 'error', 'generation-results');
+                    }
+                });
+            });
+        }
+        
+        // Statistics and Monitoring
+        function refreshStats() {
+            try {
+                const stats = pathGenerator.getErrorStats();
+                const config = pathGenerator.getErrorHandlingConfig();
+                
+                updateStatsDisplay(stats);
+                logResult('📊 Statistics refreshed', 'info', 'stats-details');
+                logResult(`Error Rate: ${stats.errorRate}/sec, Uptime: ${stats.uptimeFormatted}`, 'info', 'stats-details');
+                
+            } catch (error) {
+                logResult(`❌ Failed to refresh stats: ${error.message}`, 'error', 'stats-details');
+            }
+        }
+        
+        function updateStatsDisplay(stats) {
+            const statsGrid = document.getElementById('stats-grid');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${stats.totalErrors}</div>
+                    <div class="stat-label">Total Errors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.validationErrors}</div>
+                    <div class="stat-label">Validation Errors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.generationErrors}</div>
+                    <div class="stat-label">Generation Errors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.fallbacksUsed}</div>
+                    <div class="stat-label">Fallbacks Used</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.criticalErrors}</div>
+                    <div class="stat-label">Critical Errors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.errorRate}</div>
+                    <div class="stat-label">Error Rate (/sec)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.uptimeFormatted}</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.recentErrors.length}</div>
+                    <div class="stat-label">Recent Errors</div>
+                </div>
+            `;
+        }
+        
+        function resetStats() {
+            try {
+                const oldStats = pathGenerator.resetErrorStats();
+                logResult(`📊 Statistics reset. Previous: ${oldStats.totalErrors} total errors`, 'info', 'stats-details');
+                refreshStats();
+            } catch (error) {
+                logResult(`❌ Failed to reset stats: ${error.message}`, 'error', 'stats-details');
+            }
+        }
+        
+        function exportErrorData() {
+            try {
+                const errorData = pathGenerator.exportErrorHandlingData();
+                const dataStr = JSON.stringify(errorData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `pathgenerator-error-data-${Date.now()}.json`;
+                link.click();
+                
+                logResult('💾 Error data exported successfully', 'success', 'stats-details');
+                
+            } catch (error) {
+                logResult(`❌ Failed to export error data: ${error.message}`, 'error', 'stats-details');
+            }
+        }
+        
+        function testStressGeneration() {
+            logResult('⚡ Starting stress test (100 generations)...', 'info', 'stats-details');
+            
+            const testCount = 100;
+            let successCount = 0;
+            let errorCount = 0;
+            let fallbackCount = 0;
+            
+            const startTime = performance.now();
+            
+            for (let i = 0; i < testCount; i++) {
+                try {
+                    const levelId = Math.floor(Math.random() * 10) + 1;
+                    const themes = ['cyber', 'urban', 'forest', 'mountain'];
+                    const theme = themes[Math.floor(Math.random() * themes.length)];
+                    const modes = ['hybrid', 'dynamic'];
+                    const mode = modes[Math.floor(Math.random() * modes.length)];
+                    
+                    const path = pathGenerator.generateBasePath(levelId, null, theme, mode);
+                    
+                    if (path.metadata && path.metadata.isFallback) {
+                        fallbackCount++;
+                    } else {
+                        successCount++;
+                    }
+                    
+                } catch (error) {
+                    errorCount++;
+                }
+            }
+            
+            const endTime = performance.now();
+            const totalTime = (endTime - startTime).toFixed(2);
+            
+            logResult(`⚡ Stress test complete in ${totalTime}ms:`, 'info', 'stats-details');
+            logResult(`  ✅ Successful: ${successCount}`, 'success', 'stats-details');
+            logResult(`  🔄 Fallbacks: ${fallbackCount}`, 'warning', 'stats-details');
+            logResult(`  ❌ Errors: ${errorCount}`, 'error', 'stats-details');
+            logResult(`  📊 Average: ${(parseFloat(totalTime) / testCount).toFixed(2)}ms per generation`, 'info', 'stats-details');
+            
+            refreshStats();
+        }
+        
+        // Visual Path Drawing
+        function drawPath(path, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!path || path.length < 2) {
+                ctx.fillStyle = '#ff6b6b';
+                ctx.font = '16px Arial';
+                ctx.fillText('No valid path', 10, 30);
+                return;
+            }
+            
+            // Scale path to fit canvas
+            const scaleX = canvas.width / 800;
+            const scaleY = canvas.height / 600;
+            
+            // Draw path
+            ctx.strokeStyle = path.metadata && path.metadata.isFallback ? '#ffd93d' : '#6bcf7f';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            for (let i = 0; i < path.length; i++) {
+                const point = path[i];
+                const x = point.x * scaleX;
+                const y = point.y * scaleY;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                    // Draw start point
+                    ctx.fillStyle = '#74c0fc';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // Draw end point
+                if (i === path.length - 1) {
+                    ctx.stroke();
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+            
+            ctx.stroke();
+            
+            // Draw metadata
+            ctx.fillStyle = 'white';
+            ctx.font = '12px monospace';
+            const metadata = path.metadata || {};
+            ctx.fillText(`Points: ${path.length}`, 10, 20);
+            if (metadata.isFallback) {
+                ctx.fillStyle = '#ffd93d';
+                ctx.fillText(`Fallback: ${metadata.fallbackType || 'yes'}`, 10, 35);
+            }
+            if (metadata.generationTime) {
+                ctx.fillStyle = 'white';
+                ctx.fillText(`Time: ${metadata.generationTime}ms`, 10, 50);
+            }
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            logResult('🚀 PathGenerator Error Handling Test Suite loaded', 'info');
+            initializePathGenerator();
+        });
+        
+        // Auto-refresh stats every 10 seconds
+        setInterval(refreshStats, 10000);
+    </script>
+</body>
+</html>

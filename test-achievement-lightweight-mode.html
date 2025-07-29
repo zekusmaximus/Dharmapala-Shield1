@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AchievementManager Lightweight Mode Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+            line-height: 1.4;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+        
+        .control-group h3 {
+            margin: 0 0 10px 0;
+            color: #ffff00;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #004400;
+            color: #00ff00;
+            border: 1px solid #00aa00;
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+        }
+        
+        button:hover {
+            background: #006600;
+            border-color: #00ff00;
+        }
+        
+        button.active {
+            background: #006600;
+            border-color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+        
+        .metric-card h4 {
+            margin: 0 0 10px 0;
+            color: #ffff00;
+            font-size: 14px;
+        }
+        
+        .metric-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .performance-good { color: #00ff00; }
+        .performance-warning { color: #ffaa00; }
+        .performance-critical { color: #ff0000; }
+        
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 11px;
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        
+        .achievement-list {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #000;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .achievement-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #1a1a1a;
+            border-radius: 4px;
+            border-left: 3px solid #555;
+        }
+        
+        .achievement-item.unlocked {
+            border-left-color: #00ff00;
+            background: #002200;
+        }
+        
+        .achievement-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #004400;
+            color: #00ff00;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 4px 20px rgba(0, 255, 0, 0.3);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .achievement-notification.show {
+            transform: translateX(0);
+        }
+        
+        .stats-bar {
+            background: #333;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .stats-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #004400, #00ff00);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AchievementManager Lightweight Mode Test Suite</h1>
+            <p>Real-time Achievement Processing Performance Testing</p>
+            <div id="mode-indicator">Mode: <span id="current-mode">Loading...</span></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Control Panel</h2>
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Processing Mode</h3>
+                    <button id="enable-lightweight" class="active">Enable Lightweight</button>
+                    <button id="enable-complex">Enable Complex</button>
+                    <button id="toggle-async-notifications">Toggle Async Notifications</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Test Events</h3>
+                    <button id="test-single-event">Single Event</button>
+                    <button id="test-cumulative">Cumulative Test</button>
+                    <button id="test-streak">Streak Test</button>
+                    <button id="test-rapid-fire">Rapid Fire (1000 events)</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Performance Tests</h3>
+                    <button id="performance-stress">Stress Test</button>
+                    <button id="performance-frame-rate">Frame Rate Test</button>
+                    <button id="reset-performance">Reset Performance</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>System Actions</h3>
+                    <button id="reset-achievements">Reset All</button>
+                    <button id="unlock-sample">Unlock Sample</button>
+                    <button id="show-debug">Show Debug Info</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Real-time Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h4>Processing Performance</h4>
+                    <div>Avg Processing Time: <span id="avg-processing-time" class="metric-value performance-good">0.00ms</span></div>
+                    <div>Max Processing Time: <span id="max-processing-time" class="metric-value">0.00ms</span></div>
+                    <div>Performance Warnings: <span id="performance-warnings" class="metric-value">0</span></div>
+                    <div class="stats-bar">
+                        <div id="performance-bar" class="stats-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>Achievement Status</h4>
+                    <div>Total Achievements: <span id="total-achievements" class="metric-value">0</span></div>
+                    <div>Unlocked: <span id="unlocked-count" class="metric-value">0</span></div>
+                    <div>Progress Tracking: <span id="progress-count" class="metric-value">0</span></div>
+                    <div class="stats-bar">
+                        <div id="achievement-bar" class="stats-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>Event Processing</h4>
+                    <div>Events Processed: <span id="events-processed" class="metric-value">0</span></div>
+                    <div>Duplicates Filtered: <span id="duplicates-filtered" class="metric-value">0</span></div>
+                    <div>Processing Mode: <span id="processing-mode" class="metric-value">Lightweight</span></div>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>Memory Usage</h4>
+                    <div>Tracked Event Types: <span id="tracked-types" class="metric-value">0</span></div>
+                    <div>Deduplication Entries: <span id="dedup-entries" class="metric-value">0</span></div>
+                    <div>Notification Queue: <span id="notification-queue" class="metric-value">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Achievement Progress</h2>
+            <div id="achievement-list" class="achievement-list">
+                Loading achievements...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Console Output</h2>
+            <div id="console-output" class="console-output">
+AchievementManager Lightweight Mode Test Suite Started
+============================================
+Initializing test environment...
+            </div>
+        </div>
+    </div>
+
+    <div id="achievement-notification" class="achievement-notification">
+        <div id="notification-content"></div>
+    </div>
+
+    <!-- Include the AchievementManager and its dependencies -->
+    <script src="js/saveSystem.js"></script>
+    <script src="js/audioManager.js"></script>
+    <script src="js/achievementManager.js"></script>
+
+    <script>
+        class LightweightAchievementTest {
+            constructor() {
+                this.achievementManager = null;
+                this.testStats = {
+                    eventsProcessed: 0,
+                    duplicatesFiltered: 0,
+                    lastProcessingTime: 0
+                };
+                
+                this.init();
+                this.startMetricsUpdate();
+                this.setupEventListeners();
+            }
+
+            init() {
+                this.log('Initializing AchievementManager...');
+                
+                // Create minimal save system and audio manager mocks
+                const mockSaveSystem = {
+                    saveAchievementProgress: () => true,
+                    loadAchievementProgress: () => null
+                };
+                
+                const mockAudioManager = {
+                    playSfx: (sound, volume) => {
+                        this.log(`Audio: Playing ${sound} at volume ${volume}`);
+                    }
+                };
+
+                // Initialize AchievementManager
+                this.achievementManager = new AchievementManager(mockSaveSystem, mockAudioManager);
+                
+                // Ensure lightweight mode is enabled by default
+                this.achievementManager.setLightweightMode(true);
+                
+                this.log('AchievementManager initialized in lightweight mode');
+                this.updateModeIndicator();
+                this.updateAchievementList();
+            }
+
+            log(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logMessage = `[${timestamp}] ${message}`;
+                console.log(logMessage);
+                
+                const output = document.getElementById('console-output');
+                output.textContent += logMessage + '\n';
+                output.scrollTop = output.scrollHeight;
+            }
+
+            updateModeIndicator() {
+                const modeInfo = this.achievementManager.getProcessingMode();
+                const indicator = document.getElementById('current-mode');
+                const processingMode = document.getElementById('processing-mode');
+                
+                indicator.textContent = modeInfo.lightweightMode ? 'Lightweight' : 'Complex';
+                processingMode.textContent = modeInfo.lightweightMode ? 'Lightweight' : 'Complex';
+                
+                // Update button states
+                document.getElementById('enable-lightweight').classList.toggle('active', modeInfo.lightweightMode);
+                document.getElementById('enable-complex').classList.toggle('active', !modeInfo.lightweightMode);
+            }
+
+            updateMetrics() {
+                try {
+                    const metrics = this.achievementManager.getSimplifiedMetrics();
+                    const perfMetrics = this.achievementManager.getPerformanceMetrics();
+                    
+                    if (perfMetrics.enabled) {
+                        // Performance metrics
+                        const avgTime = perfMetrics.avgProcessingTime || 0;
+                        const maxTime = perfMetrics.maxProcessingTime || 0;
+                        const warnings = perfMetrics.totalWarnings || 0;
+                        
+                        document.getElementById('avg-processing-time').textContent = avgTime.toFixed(2) + 'ms';
+                        document.getElementById('max-processing-time').textContent = maxTime.toFixed(2) + 'ms';
+                        document.getElementById('performance-warnings').textContent = warnings;
+                        
+                        // Performance indicator color
+                        const avgElement = document.getElementById('avg-processing-time');
+                        avgElement.className = 'metric-value ' + (
+                            avgTime < 1 ? 'performance-good' :
+                            avgTime < 2 ? 'performance-warning' : 'performance-critical'
+                        );
+                        
+                        // Performance bar
+                        const performanceBar = document.getElementById('performance-bar');
+                        const perfPercent = Math.min((avgTime / perfMetrics.frameImpactThreshold) * 100, 100);
+                        performanceBar.style.width = perfPercent + '%';
+                    }
+                    
+                    // Achievement metrics
+                    const totalAchievements = metrics.achievements?.total || 0;
+                    const unlockedCount = metrics.achievements?.unlocked || 0;
+                    const progressCount = metrics.achievements?.progress || 0;
+                    
+                    document.getElementById('total-achievements').textContent = totalAchievements;
+                    document.getElementById('unlocked-count').textContent = unlockedCount;
+                    document.getElementById('progress-count').textContent = progressCount;
+                    
+                    // Achievement progress bar
+                    const achievementBar = document.getElementById('achievement-bar');
+                    const achievementPercent = totalAchievements > 0 ? (unlockedCount / totalAchievements) * 100 : 0;
+                    achievementBar.style.width = achievementPercent + '%';
+                    
+                    // Event processing metrics
+                    document.getElementById('events-processed').textContent = this.testStats.eventsProcessed;
+                    document.getElementById('duplicates-filtered').textContent = this.testStats.duplicatesFiltered;
+                    
+                    // Memory metrics
+                    const trackedTypes = metrics.deduplication?.trackedEventTypes || 0;
+                    const dedupEntries = metrics.deduplication?.totalTrackedEvents || 0;
+                    
+                    document.getElementById('tracked-types').textContent = trackedTypes;
+                    document.getElementById('dedup-entries').textContent = dedupEntries;
+                    document.getElementById('notification-queue').textContent = this.achievementManager.notificationQueue?.length || 0;
+                    
+                } catch (error) {
+                    this.log('Error updating metrics: ' + error.message);
+                }
+            }
+
+            updateAchievementList() {
+                const listElement = document.getElementById('achievement-list');
+                const achievements = this.achievementManager.achievements;
+                const unlocked = this.achievementManager.unlockedAchievements;
+                const progress = this.achievementManager.progressTracking;
+                
+                let html = '';
+                Object.values(achievements).forEach(achievement => {
+                    const isUnlocked = unlocked.has(achievement.id);
+                    const currentProgress = progress[achievement.id] || 0;
+                    
+                    let progressText = '';
+                    if (achievement.condition.type === 'cumulative' && achievement.condition.target && !isUnlocked) {
+                        progressText = ` (${currentProgress}/${achievement.condition.target})`;
+                    } else if (achievement.condition.type === 'streak' && !isUnlocked) {
+                        const streakKey = `${achievement.id}_streak`;
+                        const currentStreak = progress[streakKey] || 0;
+                        progressText = ` (Streak: ${currentStreak}/${achievement.condition.target})`;
+                    }
+                    
+                    html += `
+                        <div class="achievement-item ${isUnlocked ? 'unlocked' : ''}">
+                            <strong>${achievement.icon} ${achievement.name}</strong> ${isUnlocked ? '✓' : ''}
+                            <br>
+                            <small>${achievement.description}${progressText}</small>
+                        </div>
+                    `;
+                });
+                
+                listElement.innerHTML = html;
+            }
+
+            showAchievementNotification(achievement) {
+                const notification = document.getElementById('achievement-notification');
+                const content = document.getElementById('notification-content');
+                
+                content.innerHTML = `
+                    <strong>${achievement.icon} Achievement Unlocked!</strong><br>
+                    <strong>${achievement.name}</strong><br>
+                    ${achievement.description}
+                `;
+                
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            setupEventListeners() {
+                // Mode switching
+                document.getElementById('enable-lightweight').addEventListener('click', () => {
+                    this.achievementManager.setLightweightMode(true);
+                    this.updateModeIndicator();
+                    this.log('Switched to lightweight mode');
+                });
+                
+                document.getElementById('enable-complex').addEventListener('click', () => {
+                    this.achievementManager.setLightweightMode(false);
+                    this.updateModeIndicator();
+                    this.log('Switched to complex mode');
+                });
+                
+                document.getElementById('toggle-async-notifications').addEventListener('click', () => {
+                    const current = this.achievementManager.asyncNotifications;
+                    this.achievementManager.setAsyncNotifications(!current);
+                    this.log(`Async notifications: ${!current ? 'ENABLED' : 'DISABLED'}`);
+                });
+
+                // Test events
+                document.getElementById('test-single-event').addEventListener('click', () => {
+                    this.testSingleEvent();
+                });
+                
+                document.getElementById('test-cumulative').addEventListener('click', () => {
+                    this.testCumulative();
+                });
+                
+                document.getElementById('test-streak').addEventListener('click', () => {
+                    this.testStreak();
+                });
+                
+                document.getElementById('test-rapid-fire').addEventListener('click', () => {
+                    this.testRapidFire();
+                });
+
+                // Performance tests
+                document.getElementById('performance-stress').addEventListener('click', () => {
+                    this.performanceStressTest();
+                });
+                
+                document.getElementById('performance-frame-rate').addEventListener('click', () => {
+                    this.frameRateTest();
+                });
+                
+                document.getElementById('reset-performance').addEventListener('click', () => {
+                    this.achievementManager.resetPerformanceMonitor();
+                    this.testStats.eventsProcessed = 0;
+                    this.testStats.duplicatesFiltered = 0;
+                    this.log('Performance metrics reset');
+                });
+
+                // System actions
+                document.getElementById('reset-achievements').addEventListener('click', () => {
+                    this.achievementManager.unlockedAchievements.clear();
+                    this.achievementManager.progressTracking = {};
+                    this.updateAchievementList();
+                    this.log('All achievements reset');
+                });
+                
+                document.getElementById('unlock-sample').addEventListener('click', () => {
+                    const sampleId = 'first_defense';
+                    if (this.achievementManager.achievements[sampleId]) {
+                        this.achievementManager.unlockAchievement(sampleId);
+                        this.updateAchievementList();
+                        this.log(`Manually unlocked: ${sampleId}`);
+                    }
+                });
+                
+                document.getElementById('show-debug').addEventListener('click', () => {
+                    this.showDebugInfo();
+                });
+
+                // Override achievement notification display
+                const originalQueueNotification = this.achievementManager.queueNotification;
+                this.achievementManager.queueNotification = (achievement) => {
+                    const result = originalQueueNotification.call(this.achievementManager, achievement);
+                    if (result && this.achievementManager.lightweightMode && !this.achievementManager.asyncNotifications) {
+                        this.showAchievementNotification(achievement);
+                    }
+                    return result;
+                };
+            }
+
+            testSingleEvent() {
+                this.log('Testing single event achievement...');
+                this.achievementManager.checkAchievements('defense_placed', { value: 1 });
+                this.testStats.eventsProcessed++;
+                this.updateAchievementList();
+            }
+
+            testCumulative() {
+                this.log('Testing cumulative achievement (5 events)...');
+                for (let i = 0; i < 5; i++) {
+                    this.achievementManager.checkAchievements('enemy_killed', { amount: 1 });
+                    this.testStats.eventsProcessed++;
+                }
+                this.updateAchievementList();
+            }
+
+            testStreak() {
+                this.log('Testing streak achievement...');
+                for (let i = 0; i < 3; i++) {
+                    this.achievementManager.checkAchievements('defense_success', { success: true });
+                    this.testStats.eventsProcessed++;
+                }
+                this.updateAchievementList();
+            }
+
+            testRapidFire() {
+                this.log('Starting rapid fire test (1000 events)...');
+                const startTime = performance.now();
+                
+                for (let i = 0; i < 1000; i++) {
+                    const eventType = ['enemy_killed', 'defense_placed', 'level_completed'][i % 3];
+                    this.achievementManager.checkAchievements(eventType, { 
+                        amount: Math.floor(Math.random() * 10) + 1,
+                        success: Math.random() > 0.3
+                    });
+                    this.testStats.eventsProcessed++;
+                }
+                
+                const duration = performance.now() - startTime;
+                this.log(`Rapid fire test completed in ${duration.toFixed(2)}ms (${(1000/duration*1000).toFixed(0)} events/sec)`);
+                this.updateAchievementList();
+            }
+
+            performanceStressTest() {
+                this.log('Starting performance stress test...');
+                const iterations = 5000;
+                const startTime = performance.now();
+                
+                for (let i = 0; i < iterations; i++) {
+                    // Mix of different event types
+                    const events = [
+                        { type: 'enemy_killed', data: { amount: 1 } },
+                        { type: 'defense_placed', data: { value: 100 } },
+                        { type: 'level_completed', data: { success: true } },
+                        { type: 'resource_gained', data: { amount: 50 } }
+                    ];
+                    
+                    const event = events[i % events.length];
+                    this.achievementManager.checkAchievements(event.type, event.data);
+                    this.testStats.eventsProcessed++;
+                }
+                
+                const duration = performance.now() - startTime;
+                const avgTime = duration / iterations;
+                
+                this.log(`Stress test: ${iterations} events in ${duration.toFixed(2)}ms`);
+                this.log(`Average: ${avgTime.toFixed(4)}ms per event`);
+                this.log(`Throughput: ${(iterations/duration*1000).toFixed(0)} events/sec`);
+                
+                this.updateAchievementList();
+            }
+
+            frameRateTest() {
+                this.log('Starting frame rate impact test...');
+                let frameCount = 0;
+                let totalFrameTime = 0;
+                
+                const frameTest = () => {
+                    const frameStart = performance.now();
+                    
+                    // Simulate 10 achievement checks per frame
+                    for (let i = 0; i < 10; i++) {
+                        this.achievementManager.checkAchievements('enemy_killed', { amount: 1 });
+                        this.testStats.eventsProcessed++;
+                    }
+                    
+                    const frameTime = performance.now() - frameStart;
+                    totalFrameTime += frameTime;
+                    frameCount++;
+                    
+                    if (frameCount < 300) {  // Test for 300 frames (~5 seconds at 60fps)
+                        requestAnimationFrame(frameTest);
+                    } else {
+                        const avgFrameTime = totalFrameTime / frameCount;
+                        const fps = 1000 / (16.67 + avgFrameTime);  // Assuming 60fps baseline
+                        
+                        this.log(`Frame rate test completed:`);
+                        this.log(`Average frame time impact: ${avgFrameTime.toFixed(4)}ms`);
+                        this.log(`Estimated FPS impact: ${fps.toFixed(1)} fps`);
+                        this.log(`Performance status: ${avgFrameTime < 2 ? 'GOOD' : avgFrameTime < 5 ? 'WARNING' : 'CRITICAL'}`);
+                    }
+                };
+                
+                requestAnimationFrame(frameTest);
+            }
+
+            showDebugInfo() {
+                const info = {
+                    mode: this.achievementManager.getProcessingMode(),
+                    metrics: this.achievementManager.getSimplifiedMetrics(),
+                    performance: this.achievementManager.getPerformanceMetrics(),
+                    achievements: {
+                        total: Object.keys(this.achievementManager.achievements).length,
+                        unlocked: Array.from(this.achievementManager.unlockedAchievements),
+                        progress: this.achievementManager.progressTracking
+                    }
+                };
+                
+                this.log('=== DEBUG INFO ===');
+                this.log(JSON.stringify(info, null, 2));
+                this.log('=== END DEBUG ===');
+            }
+
+            startMetricsUpdate() {
+                setInterval(() => {
+                    this.updateMetrics();
+                }, 100);  // Update metrics every 100ms
+            }
+        }
+
+        // Initialize the test suite when the page loads
+        window.addEventListener('load', () => {
+            window.testSuite = new LightweightAchievementTest();
+        });
+    </script>
+</body>
+</html>

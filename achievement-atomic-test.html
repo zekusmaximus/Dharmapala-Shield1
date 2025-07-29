@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievement Manager Atomic Operations Test</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            background-color: #1a1a2e;
+            color: #e94560;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-family: monospace;
+        }
+        .success { background-color: #1b5e20; color: #c8e6c9; }
+        .error { background-color: #b71c1c; color: #ffcdd2; }
+        .info { background-color: #1565c0; color: #bbdefb; }
+        .warning { background-color: #ef6c00; color: #ffe0b2; }
+        .metrics {
+            background: #0f3460;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .metric-item {
+            background: #16213e;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #e94560;
+        }
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #c73650;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        #eventStorm {
+            background: #ff6b35;
+        }
+        #eventStorm:hover {
+            background: #e55a2b;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #16213e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e94560, #ff6b35);
+            transition: width 0.3s ease;
+        }
+        h1, h2 {
+            color: #ff6b35;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🏆 Achievement Manager Atomic Operations Test</h1>
+        <p style="color: #0fb9b1;">Testing enhanced atomic operations, concurrent event handling, and advanced deduplication mechanisms.</p>
+        
+        <div class="test-section">
+            <h2>📋 Test Controls</h2>
+            <button onclick="runBasicAtomicTests()" id="basicTest">Run Basic Atomic Tests</button>
+            <button onclick="runConcurrencyTest()" id="concurrencyTest">Test Concurrency Control</button>
+            <button onclick="runDeduplicationTest()" id="deduplicationTest">Test Enhanced Deduplication</button>
+            <button onclick="simulateEventStorm()" id="eventStorm">Simulate Event Storm</button>
+            <button onclick="showMetrics()" id="metricsBtn">Show Detailed Metrics</button>
+            <button onclick="resetTests()" id="resetBtn">Reset All Tests</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Real-time Metrics</h2>
+            <div id="liveMetrics" class="metrics">
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <strong>Queue Size:</strong> <span id="queueSize">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <strong>Events Processed:</strong> <span id="eventsProcessed">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <strong>Duplicates Filtered:</strong> <span id="duplicatesFiltered">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <strong>Lock Acquisitions:</strong> <span id="lockAcquisitions">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <strong>Lock Timeouts:</strong> <span id="lockTimeouts">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <strong>Avg Lock Hold:</strong> <span id="avgLockHold">0ms</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📈 Test Progress</h2>
+            <div id="testProgress">
+                <div>Basic Atomic Operations: <div class="progress-bar"><div class="progress-fill" id="basicProgress" style="width: 0%"></div></div></div>
+                <div>Concurrency Control: <div class="progress-bar"><div class="progress-fill" id="concurrencyProgress" style="width: 0%"></div></div></div>
+                <div>Deduplication: <div class="progress-bar"><div class="progress-fill" id="deduplicationProgress" style="width: 0%"></div></div></div>
+                <div>Event Storm: <div class="progress-bar"><div class="progress-fill" id="stormProgress" style="width: 0%"></div></div></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Test Results</h2>
+            <div id="results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>⚡ Performance Metrics</h2>
+            <div id="performanceMetrics" class="metrics"></div>
+        </div>
+    </div>
+
+    <!-- Include required JavaScript files -->
+    <script src="js/achievementManager.js"></script>
+    
+    <script>
+        let achievementManager;
+        let testResults = [];
+        let metricsInterval;
+
+        // Mock save system and audio manager for testing
+        const mockSaveSystem = {
+            loadData: () => ({}),
+            saveData: () => {},
+            getAchievementProgress: () => ({})
+        };
+
+        const mockAudioManager = {
+            playSound: () => {},
+            playMusic: () => {}
+        };
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            document.getElementById('results').appendChild(div);
+            testResults.push({ message, type, timestamp: Date.now() });
+            
+            // Auto-scroll to latest result
+            div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function updateProgress(testId, percentage) {
+            document.getElementById(testId).style.width = `${percentage}%`;
+        }
+
+        function updateLiveMetrics() {
+            if (!achievementManager) return;
+
+            try {
+                const metrics = achievementManager.getAtomicOperationMetrics();
+                
+                document.getElementById('queueSize').textContent = metrics.queueSize || 0;
+                document.getElementById('eventsProcessed').textContent = metrics.deduplication?.uniqueEvents || 0;
+                document.getElementById('duplicatesFiltered').textContent = metrics.deduplication?.duplicatesFiltered || 0;
+                document.getElementById('lockAcquisitions').textContent = metrics.atomic?.lockAcquisitions || 0;
+                document.getElementById('lockTimeouts').textContent = metrics.atomic?.lockTimeouts || 0;
+                document.getElementById('avgLockHold').textContent = `${Math.round(metrics.atomic?.averageLockHoldTime || 0)}ms`;
+            } catch (error) {
+                console.error('Error updating live metrics:', error);
+            }
+        }
+
+        async function initializeTests() {
+            try {
+                addResult('🚀 Initializing Achievement Manager with atomic operations...', 'info');
+                achievementManager = new AchievementManager(mockSaveSystem, mockAudioManager);
+                
+                // Wait for initialization
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                addResult('✅ Achievement Manager initialized successfully', 'success');
+                
+                // Start live metrics updates
+                metricsInterval = setInterval(updateLiveMetrics, 1000);
+                updateLiveMetrics();
+                
+            } catch (error) {
+                addResult(`❌ Failed to initialize Achievement Manager: ${error.message}`, 'error');
+            }
+        }
+
+        async function runBasicAtomicTests() {
+            addResult('🔧 Starting Basic Atomic Operations Tests...', 'info');
+            updateProgress('basicProgress', 10);
+            
+            try {
+                // Test 1: Basic lock acquisition
+                const atomicOps = achievementManager.atomicOperations;
+                const lockResult = await atomicOps.acquireLock('test_lock', 1000);
+                
+                if (lockResult.acquired) {
+                    addResult('✅ Successfully acquired atomic lock', 'success');
+                    updateProgress('basicProgress', 30);
+                    
+                    // Hold lock briefly
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Release lock
+                    const released = await atomicOps.releaseLock('test_lock', lockResult.lockId);
+                    if (released) {
+                        addResult('✅ Successfully released atomic lock', 'success');
+                        updateProgress('basicProgress', 50);
+                    } else {
+                        addResult('❌ Failed to release atomic lock', 'error');
+                    }
+                } else {
+                    addResult('❌ Failed to acquire atomic lock', 'error');
+                }
+
+                // Test 2: WithLock helper function
+                const lockResult2 = await atomicOps.withLock('test_lock_2', async () => {
+                    addResult('🔒 Executing code within atomic lock', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    return 'test_completed';
+                });
+
+                if (lockResult2 === 'test_completed') {
+                    addResult('✅ WithLock helper function works correctly', 'success');
+                    updateProgress('basicProgress', 80);
+                } else {
+                    addResult('❌ WithLock helper function failed', 'error');
+                }
+
+                // Test 3: Lock timeout
+                const timeoutTest = await atomicOps.acquireLock('timeout_test', 100);
+                if (timeoutTest.acquired) {
+                    // Try to acquire same lock with timeout
+                    const timeoutResult = await atomicOps.acquireLock('timeout_test', 200);
+                    if (!timeoutResult.acquired && timeoutResult.error === 'timeout') {
+                        addResult('✅ Lock timeout mechanism works correctly', 'success');
+                        updateProgress('basicProgress', 100);
+                    } else {
+                        addResult('❌ Lock timeout mechanism failed', 'error');
+                    }
+                    await atomicOps.releaseLock('timeout_test', timeoutTest.lockId);
+                }
+
+                addResult('🎉 Basic Atomic Operations Tests Completed', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Basic atomic tests failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function runConcurrencyTest() {
+            addResult('🔄 Starting Concurrency Control Tests...', 'info');
+            updateProgress('concurrencyProgress', 10);
+            
+            try {
+                const concurrencyMgr = achievementManager.concurrencyManager;
+                
+                // Test semaphore
+                const semaphore = concurrencyMgr.getSemaphore('test_semaphore', 2);
+                const results = [];
+                
+                // Try to acquire 3 permits with only 2 available
+                const promises = [];
+                for (let i = 0; i < 3; i++) {
+                    promises.push(
+                        semaphore.withPermit(async () => {
+                            results.push(`Task ${i + 1} executed`);
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                            return i + 1;
+                        }, 500)
+                    );
+                }
+                
+                updateProgress('concurrencyProgress', 40);
+                
+                const semaphoreResults = await Promise.allSettled(promises);
+                const successful = semaphoreResults.filter(r => r.status === 'fulfilled').length;
+                const failed = semaphoreResults.filter(r => r.status === 'rejected').length;
+                
+                addResult(`✅ Semaphore test: ${successful} successful, ${failed} timed out`, 'success');
+                updateProgress('concurrencyProgress', 70);
+                
+                // Test read-write lock
+                const rwLock = concurrencyMgr.getReadWriteLock('test_rw');
+                const rwResults = [];
+                
+                // Multiple readers should succeed
+                const readerPromises = [];
+                for (let i = 0; i < 3; i++) {
+                    readerPromises.push(
+                        rwLock.acquireRead(1000).then(async (result) => {
+                            if (result.acquired) {
+                                rwResults.push(`Reader ${i + 1}`);
+                                await new Promise(resolve => setTimeout(resolve, 50));
+                                rwLock.releaseRead();
+                                return true;
+                            }
+                            return false;
+                        })
+                    );
+                }
+                
+                const readerResults = await Promise.all(readerPromises);
+                const successfulReaders = readerResults.filter(r => r).length;
+                
+                addResult(`✅ Read-Write Lock: ${successfulReaders}/3 readers succeeded`, 'success');
+                updateProgress('concurrencyProgress', 100);
+                
+                addResult('🎉 Concurrency Control Tests Completed', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Concurrency tests failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function runDeduplicationTest() {
+            addResult('🔍 Starting Enhanced Deduplication Tests...', 'info');
+            updateProgress('deduplicationProgress', 10);
+            
+            try {
+                // Test exact duplicate detection
+                const duplicateEvents = [
+                    { eventType: 'enemy_killed', eventData: { amount: 1 }, timestamp: Date.now() },
+                    { eventType: 'enemy_killed', eventData: { amount: 1 }, timestamp: Date.now() }, // Exact duplicate
+                    { eventType: 'enemy_killed', eventData: { amount: 2 }, timestamp: Date.now() + 5 }
+                ];
+                
+                const deduplicator = achievementManager.eventDeduplication;
+                const uniqueEvents = deduplicator.deduplicateEvents('enemy_killed', duplicateEvents);
+                
+                if (uniqueEvents.length === 2) {
+                    addResult('✅ Exact duplicate detection working correctly', 'success');
+                    updateProgress('deduplicationProgress', 30);
+                } else {
+                    addResult(`❌ Expected 2 unique events, got ${uniqueEvents.length}`, 'error');
+                }
+                
+                // Test semantic duplicate detection
+                const semanticEvents = [
+                    { eventType: 'defense_placed', eventData: { amount: 1, type: 'firewall' }, timestamp: Date.now() },
+                    { eventType: 'defense_placed', eventData: { amount: 1.0, type: 'firewall' }, timestamp: Date.now() + 5 }, // Semantic duplicate
+                    { eventType: 'defense_placed', eventData: { amount: 1, type: 'temple' }, timestamp: Date.now() + 10 }
+                ];
+                
+                const semanticUnique = deduplicator.deduplicateEvents('defense_placed', semanticEvents);
+                
+                if (semanticUnique.length === 2) {
+                    addResult('✅ Semantic duplicate detection working correctly', 'success');
+                    updateProgress('deduplicationProgress', 60);
+                } else {
+                    addResult(`❌ Expected 2 semantic unique events, got ${semanticUnique.length}`, 'error');
+                }
+                
+                // Test timestamp window deduplication
+                const timestampEvents = [];
+                const baseTime = Date.now();
+                for (let i = 0; i < 10; i++) {
+                    timestampEvents.push({
+                        eventType: 'resource_gained',
+                        eventData: { amount: 10 },
+                        timestamp: baseTime + (i * 10) // 10ms apart
+                    });
+                }
+                
+                const windowUnique = deduplicator.deduplicateEvents('resource_gained', timestampEvents);
+                
+                addResult(`✅ Timestamp window test: ${timestampEvents.length} events → ${windowUnique.length} unique`, 'info');
+                updateProgress('deduplicationProgress', 90);
+                
+                // Get deduplication metrics
+                const metrics = deduplicator.getMetrics();
+                addResult(`📊 Deduplication metrics: ${metrics.duplicatesFiltered} filtered, ${metrics.filterRate.toFixed(2)} filter rate`, 'info');
+                updateProgress('deduplicationProgress', 100);
+                
+                addResult('🎉 Enhanced Deduplication Tests Completed', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Deduplication tests failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateEventStorm() {
+            addResult('⚡ Starting Event Storm Simulation...', 'warning');
+            updateProgress('stormProgress', 0);
+            
+            try {
+                const eventTypes = ['enemy_killed', 'defense_placed', 'resource_gained', 'level_completed'];
+                const totalEvents = 1000;
+                let processed = 0;
+                
+                // Generate rapid-fire events
+                const stormPromises = [];
+                for (let i = 0; i < totalEvents; i++) {
+                    const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+                    const eventData = {
+                        amount: Math.floor(Math.random() * 10) + 1,
+                        success: Math.random() > 0.5,
+                        value: Math.floor(Math.random() * 1000)
+                    };
+                    
+                    stormPromises.push(
+                        new Promise(resolve => {
+                            setTimeout(() => {
+                                achievementManager.queueEventForProcessing(eventType, eventData);
+                                processed++;
+                                updateProgress('stormProgress', (processed / totalEvents) * 100);
+                                resolve();
+                            }, Math.random() * 100); // Random timing up to 100ms
+                        })
+                    );
+                }
+                
+                await Promise.all(stormPromises);
+                
+                // Wait for processing to complete
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const finalMetrics = achievementManager.getAtomicOperationMetrics();
+                addResult(`🌪️ Event storm completed: ${totalEvents} events generated`, 'warning');
+                addResult(`📊 Final queue size: ${finalMetrics.queueSize}`, 'info');
+                addResult(`🔧 Duplicates filtered: ${finalMetrics.deduplication?.duplicatesFiltered || 0}`, 'info');
+                addResult(`⏱️ Average lock hold time: ${Math.round(finalMetrics.atomic?.averageLockHoldTime || 0)}ms`, 'info');
+                
+                updateProgress('stormProgress', 100);
+                addResult('🎉 Event Storm Simulation Completed', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Event storm simulation failed: ${error.message}`, 'error');
+            }
+        }
+
+        function showMetrics() {
+            if (!achievementManager) {
+                addResult('❌ Achievement Manager not initialized', 'error');
+                return;
+            }
+            
+            try {
+                const metrics = achievementManager.getAtomicOperationMetrics();
+                const performanceDiv = document.getElementById('performanceMetrics');
+                
+                performanceDiv.innerHTML = `
+                    <h3>🔒 Atomic Operations</h3>
+                    <div class="metric-grid">
+                        <div class="metric-item">Lock Acquisitions: ${metrics.atomic?.acquisitions || 0}</div>
+                        <div class="metric-item">Lock Timeouts: ${metrics.atomic?.timeouts || 0}</div>
+                        <div class="metric-item">Average Wait Time: ${Math.round(metrics.atomic?.averageWaitTime || 0)}ms</div>
+                        <div class="metric-item">Max Wait Time: ${metrics.atomic?.maxWaitTime || 0}ms</div>
+                    </div>
+                    
+                    <h3>🔄 Deduplication</h3>
+                    <div class="metric-grid">
+                        <div class="metric-item">Total Events: ${metrics.deduplication?.totalEvents || 0}</div>
+                        <div class="metric-item">Duplicates Filtered: ${metrics.deduplication?.duplicatesFiltered || 0}</div>
+                        <div class="metric-item">Unique Events: ${metrics.deduplication?.uniqueEvents || 0}</div>
+                        <div class="metric-item">Filter Rate: ${((metrics.deduplication?.filterRate || 0) * 100).toFixed(1)}%</div>
+                    </div>
+                    
+                    <h3>⚙️ System</h3>
+                    <div class="metric-grid">
+                        <div class="metric-item">Queue Size: ${metrics.queueSize || 0}</div>
+                        <div class="metric-item">Processing Active: ${metrics.processingActive ? 'Yes' : 'No'}</div>
+                        <div class="metric-item">Uptime: ${Math.round((metrics.uptime || 0) / 1000)}s</div>
+                        <div class="metric-item">Lock Acquisitions: ${metrics.atomic?.lockAcquisitions || 0}</div>
+                    </div>
+                `;
+                
+                addResult('📊 Detailed metrics displayed', 'info');
+                
+            } catch (error) {
+                addResult(`❌ Failed to show metrics: ${error.message}`, 'error');
+            }
+        }
+
+        function resetTests() {
+            document.getElementById('results').innerHTML = '';
+            testResults = [];
+            
+            // Reset progress bars
+            ['basicProgress', 'concurrencyProgress', 'deduplicationProgress', 'stormProgress'].forEach(id => {
+                updateProgress(id, 0);
+            });
+            
+            // Reset metrics if available
+            if (achievementManager?.eventDeduplication) {
+                achievementManager.eventDeduplication.reset();
+            }
+            
+            addResult('🔄 Tests reset successfully', 'info');
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeTests);
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (metricsInterval) {
+                clearInterval(metricsInterval);
+            }
+            if (achievementManager) {
+                achievementManager.stopEventProcessing();
+            }
+        });
+    </script>
+</body>
+</html>

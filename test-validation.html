@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade Validation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .test-section {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .pass {
+            color: #4ecdc4;
+        }
+        .fail {
+            color: #ff6b6b;
+        }
+        button {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a3a3;
+        }
+        #console {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛡️ Dharmapala Shield - Upgrade Validation Test</h1>
+    
+    <div class="test-section">
+        <h2>Comprehensive Upgrade Validation System</h2>
+        <p>This test validates all 4 requirements:</p>
+        <ul>
+            <li>✅ Validate upgrade choices exist before applying in Defense class</li>
+            <li>✅ Add schema validation for CONFIG.UPGRADE_TREES structure</li>
+            <li>✅ Implement error handling for invalid upgrade selections</li>
+            <li>✅ Add fallback mechanisms for corrupted upgrade data</li>
+        </ul>
+        
+        <button onclick="runValidationTests()">Run Comprehensive Tests</button>
+        <button onclick="testConfigValidation()">Test CONFIG Validation</button>
+        <button onclick="testDefenseValidation()">Test Defense Validation</button>
+        <button onclick="testErrorHandling()">Test Error Handling</button>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Output Console</h3>
+        <div id="console"></div>
+    </div>
+
+    <!-- Load our validated upgrade system -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/defense.js"></script>
+    <script src="js/game.js"></script>
+    
+    <script>
+        // Console output capture
+        function log(message, isError = false) {
+            const console_div = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = isError ? '#ff6b6b' : '#4ecdc4';
+            console_div.innerHTML += `<span style="color: #888">[${timestamp}]</span> <span style="color: ${color}">${message}</span>\n`;
+            console_div.scrollTop = console_div.scrollHeight;
+            
+            // Also log to browser console
+            if (isError) {
+                console.error(message);
+            } else {
+                console.log(message);
+            }
+        }
+        
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+        }
+        
+        function runValidationTests() {
+            log('=== STARTING COMPREHENSIVE UPGRADE VALIDATION TESTS ===');
+            
+            testConfigValidation();
+            testDefenseValidation();
+            testErrorHandling();
+            testFallbackMechanisms();
+            
+            log('=== ALL TESTS COMPLETED ===');
+        }
+        
+        function testConfigValidation() {
+            log('\n--- Testing CONFIG.UPGRADE_TREES Schema Validation ---');
+            
+            try {
+                if (typeof CONFIG.validateUpgradeTreesStructure === 'function') {
+                    const isValid = CONFIG.validateUpgradeTreesStructure();
+                    log(`CONFIG validation result: ${isValid ? 'PASSED ✅' : 'FAILED ❌'}`, !isValid);
+                } else {
+                    log('CONFIG validation method not found ❌', true);
+                }
+            } catch (error) {
+                log(`CONFIG validation error: ${error.message} ❌`, true);
+            }
+        }
+        
+        function testDefenseValidation() {
+            log('\n--- Testing Defense Class Validation Methods ---');
+            
+            const defenseTypes = ['firewall', 'encryption', 'decoy', 'mirror'];
+            
+            defenseTypes.forEach(type => {
+                try {
+                    const defense = new Defense(type, 100, 100);
+                    defense.level = 2; // Make upgradeable
+                    
+                    log(`Testing ${type.toUpperCase()} defense:`);
+                    
+                    // Test canUpgrade with validation
+                    const canUpgrade = defense.canUpgrade();
+                    log(`  canUpgrade(): ${canUpgrade ? 'PASSED ✅' : 'FAILED ❌'}`, !canUpgrade);
+                    
+                    // Test getUpgradeTree with fallback
+                    const upgradeTree = defense.getUpgradeTree();
+                    const hasValidTree = upgradeTree && Object.keys(upgradeTree).length > 0;
+                    log(`  getUpgradeTree(): ${hasValidTree ? 'PASSED ✅' : 'FAILED ❌'}`, !hasValidTree);
+                    
+                    // Test upgrade choice validation
+                    const hasChoice = defense.hasUpgradeChoice();
+                    if (hasChoice) {
+                        const validChoice = defense.validateUpgradeChoiceExists(0);
+                        const invalidChoice = !defense.validateUpgradeChoiceExists(999);
+                        log(`  Choice validation: ${validChoice && invalidChoice ? 'PASSED ✅' : 'FAILED ❌'}`, !(validChoice && invalidChoice));
+                    }
+                    
+                    // Test upgrade with validation
+                    const originalLevel = defense.level;
+                    const upgradeResult = defense.upgrade();
+                    const upgradeSuccess = upgradeResult !== false && defense.level > originalLevel;
+                    log(`  upgrade(): ${upgradeSuccess ? 'PASSED ✅' : 'FAILED ❌'}`, !upgradeSuccess);
+                    
+                } catch (error) {
+                    log(`  Error testing ${type}: ${error.message} ❌`, true);
+                }
+            });
+        }
+        
+        function testErrorHandling() {
+            log('\n--- Testing Error Handling ---');
+            
+            try {
+                // Test with corrupted CONFIG (temporarily)
+                const originalConfig = CONFIG.UPGRADE_TREES;
+                CONFIG.UPGRADE_TREES = null;
+                
+                const defense = new Defense('firewall', 100, 100);
+                const fallbackTree = defense.getUpgradeTree();
+                const hasFallback = fallbackTree && Object.keys(fallbackTree).length > 0;
+                
+                // Restore CONFIG
+                CONFIG.UPGRADE_TREES = originalConfig;
+                
+                log(`Corrupted CONFIG fallback: ${hasFallback ? 'PASSED ✅' : 'FAILED ❌'}`, !hasFallback);
+                
+                // Test invalid choice handling
+                const testDefense = new Defense('firewall', 100, 100);
+                testDefense.level = 2;
+                
+                const invalidChoiceResult = testDefense.validateUpgradeChoiceExists(-1);
+                const invalidChoiceHandling = !invalidChoiceResult;
+                log(`Invalid choice rejection: ${invalidChoiceHandling ? 'PASSED ✅' : 'FAILED ❌'}`, !invalidChoiceHandling);
+                
+            } catch (error) {
+                log(`Error handling test failed: ${error.message} ❌`, true);
+            }
+        }
+        
+        function testFallbackMechanisms() {
+            log('\n--- Testing Fallback Mechanisms ---');
+            
+            try {
+                // Test with invalid defense type
+                const invalidDefense = new Defense('invalid_type', 100, 100);
+                const fallbackTree = invalidDefense.getUpgradeTree();
+                const hasFallback = fallbackTree && Object.keys(fallbackTree).length > 0;
+                log(`Invalid defense type fallback: ${hasFallback ? 'PASSED ✅' : 'FAILED ❌'}`, !hasFallback);
+                
+                // Test max level prevention
+                const maxLevelDefense = new Defense('firewall', 100, 100);
+                maxLevelDefense.level = 5; // Max level
+                const cantUpgrade = !maxLevelDefense.canUpgrade();
+                log(`Max level upgrade prevention: ${cantUpgrade ? 'PASSED ✅' : 'FAILED ❌'}`, !cantUpgrade);
+                
+            } catch (error) {
+                log(`Fallback mechanism test failed: ${error.message} ❌`, true);
+            }
+        }
+        
+        // Run basic validation on page load
+        window.addEventListener('load', () => {
+            log('Upgrade Validation Test Page Loaded');
+            log('Click buttons above to run tests');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss Phase Transition Validation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .test-header {
+            color: #4CAF50;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #4CAF50;
+            color: white;
+        }
+        .error {
+            background: #f44336;
+            color: white;
+        }
+        .warning {
+            background: #ff9800;
+            color: white;
+        }
+        .info {
+            background: #2196F3;
+            color: white;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #testResults {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #333;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .stats-panel {
+            background: #333;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .stat-item {
+            display: inline-block;
+            margin: 5px 15px 5px 0;
+            padding: 5px 10px;
+            background: #444;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛡️ Boss Phase Transition Validation Test</h1>
+    <p>Testing comprehensive state validation for boss phase transitions in the Enemy class.</p>
+
+    <div class="test-container">
+        <h2 class="test-header">Test Controls</h2>
+        <button onclick="runBasicValidationTest()">Basic Validation Test</button>
+        <button onclick="runTransitionTest()">Phase Transition Test</button>
+        <button onclick="runEmergencyTest()">Emergency Transition Test</button>
+        <button onclick="runRollbackTest()">Rollback Test</button>
+        <button onclick="runStressTest()">Stress Test</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-header">Boss Status</h2>
+        <div id="bossStatus">No boss created yet</div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-header">Transition Statistics</h2>
+        <div id="transitionStats">No statistics available</div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-header">Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <!-- Include necessary game files -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/enemy.js"></script>
+
+    <script>
+        let testBoss = null;
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            testResults.push({ message: logEntry, type });
+            updateResultsDisplay();
+            console.log(logEntry);
+        }
+
+        function updateResultsDisplay() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = testResults.map(result => 
+                `<div class="test-result ${result.type}">${result.message}</div>`
+            ).join('');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function updateBossStatus() {
+            const statusDiv = document.getElementById('bossStatus');
+            if (!testBoss) {
+                statusDiv.innerHTML = 'No boss created yet';
+                return;
+            }
+
+            statusDiv.innerHTML = `
+                <div class="stat-item">Type: ${testBoss.type}</div>
+                <div class="stat-item">Phase: ${testBoss.phase}</div>
+                <div class="stat-item">Health: ${testBoss.health}/${testBoss.maxHealth}</div>
+                <div class="stat-item">Alive: ${testBoss.isAlive}</div>
+                <div class="stat-item">Transition Manager: ${testBoss.phaseTransitionManager ? 'Active' : 'Inactive'}</div>
+            `;
+        }
+
+        function updateTransitionStats() {
+            const statsDiv = document.getElementById('transitionStats');
+            if (!testBoss || !testBoss.phaseTransitionManager) {
+                statsDiv.innerHTML = 'No transition manager available';
+                return;
+            }
+
+            const stats = testBoss.getPhaseTransitionStats();
+            if (!stats.available) {
+                statsDiv.innerHTML = `Unavailable: ${stats.reason}`;
+                return;
+            }
+
+            const s = stats.stats;
+            statsDiv.innerHTML = `
+                <div class="stat-item">Successful: ${s.successfulTransitions}</div>
+                <div class="stat-item">Failed: ${s.failedTransitions}</div>
+                <div class="stat-item">Rollbacks: ${s.rollbacks}</div>
+                <div class="stat-item">Emergency: ${s.emergencyTransitions}</div>
+                <div class="stat-item">Validation Failures: ${s.validationFailures}</div>
+                <div class="stat-item">Queue Size: ${s.queueSize}</div>
+                <div class="stat-item">Pending: ${s.pendingTransitions}</div>
+                <div class="stat-item">State History: ${s.stateHistorySize}</div>
+            `;
+        }
+
+        function createTestBoss() {
+            try {
+                // Create a test boss enemy
+                testBoss = new Enemy('raidTeam', 400, 300);
+                testBoss.isBoss = true;
+                testBoss.phase = 1;
+                testBoss.health = 1000;
+                testBoss.maxHealth = 1000;
+                
+                // Initialize phase systems
+                testBoss.updateBossPhases(0);
+                
+                log('Test boss created successfully', 'success');
+                updateBossStatus();
+                updateTransitionStats();
+                return true;
+            } catch (error) {
+                log(`Failed to create test boss: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function runBasicValidationTest() {
+            log('Starting Basic Validation Test...', 'info');
+            
+            if (!testBoss) {
+                if (!createTestBoss()) return;
+            }
+
+            try {
+                // Test validation for next phase
+                const validation = testBoss.validateCurrentState(2);
+                
+                if (validation.error) {
+                    log(`Validation error: ${validation.error}`, 'error');
+                    return;
+                }
+
+                log(`Validation result for phase 2:`, 'info');
+                log(`  - Valid: ${validation.isValid}`, validation.isValid ? 'success' : 'warning');
+                log(`  - Can proceed: ${validation.canProceed}`, validation.canProceed ? 'success' : 'warning');
+                log(`  - Errors: ${validation.errors.length}`, validation.errors.length === 0 ? 'success' : 'error');
+                log(`  - Warnings: ${validation.warnings.length}`, validation.warnings.length === 0 ? 'success' : 'warning');
+
+                validation.errors.forEach(error => {
+                    log(`    ERROR: ${error.message} (${error.rule})`, 'error');
+                });
+
+                validation.warnings.forEach(warning => {
+                    log(`    WARNING: ${warning.message} (${warning.rule})`, 'warning');
+                });
+
+                updateTransitionStats();
+                log('Basic validation test completed', 'success');
+
+            } catch (error) {
+                log(`Basic validation test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function runTransitionTest() {
+            log('Starting Phase Transition Test...', 'info');
+            
+            if (!testBoss) {
+                if (!createTestBoss()) return;
+            }
+
+            try {
+                // Test normal phase transition
+                const currentPhase = testBoss.phase;
+                const targetPhase = currentPhase + 1;
+                
+                log(`Attempting transition: ${currentPhase} -> ${targetPhase}`, 'info');
+                
+                testBoss.transitionToPhase(targetPhase, [], []);
+                
+                setTimeout(() => {
+                    if (testBoss.phase === targetPhase) {
+                        log(`Phase transition successful: ${currentPhase} -> ${testBoss.phase}`, 'success');
+                    } else {
+                        log(`Phase transition may be pending: current phase ${testBoss.phase}`, 'warning');
+                    }
+                    
+                    updateBossStatus();
+                    updateTransitionStats();
+                }, 1000);
+
+            } catch (error) {
+                log(`Phase transition test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function runEmergencyTest() {
+            log('Starting Emergency Transition Test...', 'info');
+            
+            if (!testBoss) {
+                if (!createTestBoss()) return;
+            }
+
+            try {
+                const currentPhase = testBoss.phase;
+                const targetPhase = Math.min(currentPhase + 2, 4); // Jump multiple phases
+                
+                log(`Attempting emergency transition: ${currentPhase} -> ${targetPhase}`, 'warning');
+                
+                const result = testBoss.emergencyPhaseTransition(targetPhase, 'Test emergency transition');
+                
+                setTimeout(() => {
+                    if (result) {
+                        log(`Emergency transition result: ${result}`, 'success');
+                    } else {
+                        log('Emergency transition failed', 'error');
+                    }
+                    
+                    updateBossStatus();
+                    updateTransitionStats();
+                }, 500);
+
+            } catch (error) {
+                log(`Emergency transition test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function runRollbackTest() {
+            log('Starting Rollback Test...', 'info');
+            
+            if (!testBoss) {
+                if (!createTestBoss()) return;
+            }
+
+            try {
+                const currentPhase = testBoss.phase;
+                
+                log(`Current phase: ${currentPhase}`, 'info');
+                log('Attempting emergency rollback...', 'warning');
+                
+                const rollbackResult = testBoss.forceEmergencyRollback('Test rollback');
+                
+                setTimeout(() => {
+                    log(`Rollback result: ${rollbackResult}`, rollbackResult ? 'success' : 'warning');
+                    log(`Phase after rollback: ${testBoss.phase}`, 'info');
+                    
+                    updateBossStatus();
+                    updateTransitionStats();
+                }, 500);
+
+            } catch (error) {
+                log(`Rollback test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function runStressTest() {
+            log('Starting Stress Test...', 'warning');
+            
+            if (!testBoss) {
+                if (!createTestBoss()) return;
+            }
+
+            try {
+                // Rapid-fire transition requests
+                for (let i = 0; i < 10; i++) {
+                    const targetPhase = (i % 3) + 2; // Cycle between phases 2, 3, 4
+                    
+                    setTimeout(() => {
+                        log(`Stress test transition ${i + 1}: -> ${targetPhase}`, 'info');
+                        testBoss.transitionToPhase(targetPhase, [], []);
+                    }, i * 200);
+                }
+
+                // Check results after all attempts
+                setTimeout(() => {
+                    log(`Stress test completed. Final phase: ${testBoss.phase}`, 'success');
+                    updateBossStatus();
+                    updateTransitionStats();
+                }, 3000);
+
+            } catch (error) {
+                log(`Stress test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function clearResults() {
+            testResults = [];
+            updateResultsDisplay();
+            log('Test results cleared', 'info');
+        }
+
+        // Event listeners for boss phase events
+        document.addEventListener('bossPhaseTransitionSuccess', (event) => {
+            const detail = event.detail;
+            log(`EVENT: Boss phase transition success ${detail.oldPhase} -> ${detail.newPhase} (${detail.reason})`, 'success');
+            updateBossStatus();
+            updateTransitionStats();
+        });
+
+        document.addEventListener('bossEmergencyPhaseTransition', (event) => {
+            const detail = event.detail;
+            log(`EVENT: Boss emergency transition ${detail.oldPhase} -> ${detail.newPhase} (${detail.reason})`, 'warning');
+            updateBossStatus();
+            updateTransitionStats();
+        });
+
+        document.addEventListener('bossPhaseRollback', (event) => {
+            const detail = event.detail;
+            log(`EVENT: Boss phase rollback to ${detail.rolledBackTo} (${detail.reason})`, 'warning');
+            updateBossStatus();
+            updateTransitionStats();
+        });
+
+        // Initialize
+        log('Boss Phase Transition Validation Test initialized', 'success');
+        log('Click "Basic Validation Test" to start testing', 'info');
+    </script>
+</body>
+</html>

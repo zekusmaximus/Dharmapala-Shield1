@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathGenerator Integration Test - Dharmapala Shield</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #4ecdc4;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4ecdc4;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(135deg, #45b7d1, #4ecdc4);
+            transform: translateY(-2px);
+        }
+        
+        .boss-button {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .boss-button:hover {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+        }
+        
+        .event-button {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        
+        .event-button:hover {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+        }
+        
+        .output {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+        
+        .status {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #e74c3c;
+        }
+        
+        .success {
+            color: #2ecc71;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        h2 {
+            color: #4ecdc4;
+            border-bottom: 1px solid #4ecdc4;
+            padding-bottom: 5px;
+        }
+        
+        .note {
+            background: rgba(241, 196, 15, 0.1);
+            border: 1px solid #f1c40f;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            color: #f1c40f;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🛡️ PathGenerator Integration Test Suite</h1>
+        
+        <div class="note">
+            <strong>Note:</strong> This test page validates the PathGenerator integration in game.js. 
+            Open the browser console to see detailed test results.
+        </div>
+        
+        <div class="test-section">
+            <h2>📍 Basic Path Generation Tests</h2>
+            <p>Test the core PathGenerator functionality and integration with the game system.</p>
+            
+            <button class="test-button" onclick="testBasicPathGeneration()">
+                Test Path Generation
+            </button>
+            <button class="test-button" onclick="testPathModes()">
+                Test Different Path Modes
+            </button>
+            <button class="test-button" onclick="getPathInfo()">
+                Get Current Path Info
+            </button>
+            <button class="test-button" onclick="validatePathIntegration()">
+                Validate Integration
+            </button>
+            
+            <div id="basicOutput" class="output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Interactive Path Regeneration</h2>
+            <p>Test path regeneration in response to game events.</p>
+            
+            <button class="test-button" onclick="regeneratePath('test_event')">
+                Basic Regeneration
+            </button>
+            <button class="test-button" onclick="regeneratePath('boss_ability_maze')">
+                Maze Generation
+            </button>
+            <button class="test-button" onclick="regeneratePath('boss_ability_portal')">
+                Portal Network
+            </button>
+            <button class="test-button" onclick="regeneratePath('boss_ability_corruption')">
+                Reality Distortion
+            </button>
+            
+            <div id="regenOutput" class="output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>👹 Boss Ability Simulation</h2>
+            <p>Simulate boss abilities that trigger path changes.</p>
+            
+            <button class="boss-button" onclick="simulateBossPhase('Corporate_AI', 2)">
+                Corporate AI Phase 2
+            </button>
+            <button class="boss-button" onclick="simulateBossPhase('Federal_Director', 3)">
+                Federal Director Phase 3
+            </button>
+            <button class="boss-button" onclick="simulateBossAbility('maze_creation')">
+                Maze Creation
+            </button>
+            <button class="boss-button" onclick="simulateBossAbility('system_corruption')">
+                System Corruption
+            </button>
+            
+            <div id="bossOutput" class="output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>⚡ Special Events Simulation</h2>
+            <p>Test environmental events that affect paths.</p>
+            
+            <button class="event-button" onclick="simulateSpecialEvent('earthquake')">
+                Earthquake
+            </button>
+            <button class="event-button" onclick="simulateSpecialEvent('flood')">
+                Flood
+            </button>
+            <button class="event-button" onclick="simulateSpecialEvent('data_storm')">
+                Data Storm
+            </button>
+            <button class="event-button" onclick="simulateSpecialEvent('solar_flare')">
+                Solar Flare
+            </button>
+            
+            <div id="eventOutput" class="output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔍 Debug & Analytics</h2>
+            <p>Advanced testing and debugging tools.</p>
+            
+            <button class="test-button" onclick="runComprehensiveTest()">
+                Run Full Test Suite
+            </button>
+            <button class="test-button" onclick="measurePathPerformance()">
+                Performance Test
+            </button>
+            <button class="test-button" onclick="testPathValidation()">
+                Path Validation Test
+            </button>
+            <button class="test-button" onclick="exportPathData()">
+                Export Path Data
+            </button>
+            
+            <div id="debugOutput" class="output"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test Functions
+        function log(message, outputId = 'basicOutput', type = 'info') {
+            const output = document.getElementById(outputId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'status';
+            
+            output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+            
+            // Also log to console
+            console.log(`[PathGen Test] ${message}`);
+        }
+        
+        function testBasicPathGeneration() {
+            log('Starting basic path generation test...', 'basicOutput');
+            
+            if (typeof testPathGeneration === 'function') {
+                try {
+                    testPathGeneration();
+                    log('✅ Basic path generation test completed', 'basicOutput', 'success');
+                } catch (error) {
+                    log(`❌ Error in path generation: ${error.message}`, 'basicOutput', 'error');
+                }
+            } else {
+                log('❌ testPathGeneration function not available. Is the game loaded?', 'basicOutput', 'error');
+            }
+        }
+        
+        function testPathModes() {
+            log('Testing different path generation modes...', 'basicOutput');
+            
+            if (window.game && window.game.pathGenerator) {
+                const modes = ['static', 'dynamic', 'hybrid'];
+                modes.forEach(mode => {
+                    try {
+                        const result = window.game.pathGenerator.generateBasePath(1, null, 'cyber', mode);
+                        log(`✅ ${mode} mode: Generated ${result?.points?.length || 0} points`, 'basicOutput', 'success');
+                    } catch (error) {
+                        log(`❌ ${mode} mode failed: ${error.message}`, 'basicOutput', 'error');
+                    }
+                });
+            } else {
+                log('❌ Game or PathGenerator not available', 'basicOutput', 'error');
+            }
+        }
+        
+        function validatePathIntegration() {
+            log('Validating PathGenerator integration...', 'basicOutput');
+            
+            const checks = [
+                () => window.game ? '✅ Game instance available' : '❌ Game instance missing',
+                () => window.game?.pathGenerator ? '✅ PathGenerator instantiated' : '❌ PathGenerator missing',
+                () => window.game?.getCurrentPathPoints ? '✅ Helper methods available' : '❌ Helper methods missing',
+                () => window.game?.regeneratePathForEvent ? '✅ Regeneration methods available' : '❌ Regeneration methods missing',
+                () => window.game?.handleBossAbility ? '✅ Boss ability handlers available' : '❌ Boss ability handlers missing'
+            ];
+            
+            checks.forEach(check => {
+                log(check(), 'basicOutput');
+            });
+        }
+        
+        function simulateBossPhase(bossType, phase) {
+            log(`Simulating ${bossType} phase ${phase}...`, 'bossOutput');
+            
+            if (window.game) {
+                try {
+                    // Simulate boss phase transition event
+                    const event = new CustomEvent('bossPhaseTransition', {
+                        detail: {
+                            enemy: { totalPhases: 3 },
+                            oldPhase: phase - 1,
+                            newPhase: phase,
+                            bossType: bossType
+                        }
+                    });
+                    document.dispatchEvent(event);
+                    log(`✅ ${bossType} phase ${phase} transition simulated`, 'bossOutput', 'success');
+                } catch (error) {
+                    log(`❌ Error simulating boss phase: ${error.message}`, 'bossOutput', 'error');
+                }
+            } else {
+                log('❌ Game not available', 'bossOutput', 'error');
+            }
+        }
+        
+        function simulateBossAbility(abilityType) {
+            log(`Simulating boss ability: ${abilityType}...`, 'bossOutput');
+            
+            if (window.game) {
+                try {
+                    const event = new CustomEvent('bossAbilityActivated', {
+                        detail: {
+                            bossType: 'Test_Boss',
+                            abilityType: abilityType,
+                            abilityData: { testMode: true }
+                        }
+                    });
+                    document.dispatchEvent(event);
+                    log(`✅ Boss ability ${abilityType} simulated`, 'bossOutput', 'success');
+                } catch (error) {
+                    log(`❌ Error simulating boss ability: ${error.message}`, 'bossOutput', 'error');
+                }
+            } else {
+                log('❌ Game not available', 'bossOutput', 'error');
+            }
+        }
+        
+        function simulateSpecialEvent(eventType) {
+            log(`Simulating special event: ${eventType}...`, 'eventOutput');
+            
+            if (window.game) {
+                try {
+                    const event = new CustomEvent('specialEvent', {
+                        detail: {
+                            eventType: eventType,
+                            eventData: { testMode: true, intensity: 'medium' }
+                        }
+                    });
+                    document.dispatchEvent(event);
+                    log(`✅ Special event ${eventType} simulated`, 'eventOutput', 'success');
+                } catch (error) {
+                    log(`❌ Error simulating special event: ${error.message}`, 'eventOutput', 'error');
+                }
+            } else {
+                log('❌ Game not available', 'eventOutput', 'error');
+            }
+        }
+        
+        function runComprehensiveTest() {
+            log('Starting comprehensive PathGenerator test suite...', 'debugOutput');
+            
+            // Run all tests in sequence
+            setTimeout(() => testBasicPathGeneration(), 100);
+            setTimeout(() => testPathModes(), 300);
+            setTimeout(() => validatePathIntegration(), 500);
+            setTimeout(() => simulateBossPhase('Corporate_AI', 2), 700);
+            setTimeout(() => simulateSpecialEvent('earthquake'), 900);
+            
+            setTimeout(() => {
+                log('🎉 Comprehensive test suite completed! Check console for details.', 'debugOutput', 'success');
+            }, 1200);
+        }
+        
+        function measurePathPerformance() {
+            log('Measuring path generation performance...', 'debugOutput');
+            
+            if (window.game?.pathGenerator) {
+                const start = performance.now();
+                const iterations = 10;
+                
+                for (let i = 0; i < iterations; i++) {
+                    window.game.pathGenerator.generateBasePath(i + 1, null, 'cyber', 'dynamic');
+                }
+                
+                const end = performance.now();
+                const avgTime = (end - start) / iterations;
+                
+                log(`⏱️ Average generation time: ${avgTime.toFixed(2)}ms (${iterations} iterations)`, 'debugOutput', 'success');
+            } else {
+                log('❌ PathGenerator not available for performance testing', 'debugOutput', 'error');
+            }
+        }
+        
+        function testPathValidation() {
+            log('Testing path validation...', 'debugOutput');
+            
+            if (window.game) {
+                const pathInfo = window.game.getCurrentPathInfo();
+                const points = pathInfo.points;
+                
+                if (points.length < 2) {
+                    log('❌ Path validation failed: Insufficient points', 'debugOutput', 'error');
+                } else {
+                    log(`✅ Path validation passed: ${points.length} points, length: ${pathInfo.length}px`, 'debugOutput', 'success');
+                }
+            } else {
+                log('❌ Game not available for path validation', 'debugOutput', 'error');
+            }
+        }
+        
+        function exportPathData() {
+            log('Exporting current path data...', 'debugOutput');
+            
+            if (window.game) {
+                const pathInfo = window.game.getCurrentPathInfo();
+                const dataStr = JSON.stringify(pathInfo, null, 2);
+                
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dharmapala_path_${Date.now()}.json`;
+                a.click();
+                
+                log('✅ Path data exported successfully', 'debugOutput', 'success');
+            } else {
+                log('❌ Game not available for path export', 'debugOutput', 'error');
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('PathGenerator Integration Test Suite loaded', 'basicOutput', 'success');
+            log('Waiting for game to initialize...', 'basicOutput');
+            
+            // Check for game availability periodically
+            const checkGame = setInterval(() => {
+                if (window.game && window.game.pathGenerator) {
+                    log('✅ Game and PathGenerator detected! Ready for testing.', 'basicOutput', 'success');
+                    clearInterval(checkGame);
+                }
+            }, 1000);
+            
+            // Stop checking after 30 seconds
+            setTimeout(() => {
+                clearInterval(checkGame);
+                if (!window.game?.pathGenerator) {
+                    log('⚠️ Game/PathGenerator not detected after 30s. Load the main game first.', 'basicOutput', 'error');
+                }
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

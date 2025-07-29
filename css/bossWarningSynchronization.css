@@ -1,0 +1,330 @@
+/* Boss Warning Synchronization System CSS */
+
+/* Enhanced boss warning overlay with synchronization indicators */
+.boss-warning-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 0, 0, 0.3);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+    font-size: 2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    animation: warningFlash 0.5s ease-in-out infinite alternate;
+}
+
+.boss-warning-content {
+    text-align: center;
+    position: relative;
+}
+
+.boss-warning-title {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Synchronized timer with accuracy indicators */
+.boss-warning-timer {
+    font-size: 3em;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 
+        0 0 10px #ffffff,
+        0 0 20px #ff0000,
+        0 0 30px #ff0000;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+/* Synchronization accuracy indicators */
+.boss-warning-timer.high-sync {
+    color: #00ff00;
+    text-shadow: 
+        0 0 10px #00ff00,
+        0 0 20px #00ff00,
+        0 0 30px #00ff00;
+}
+
+.boss-warning-timer.high-sync::after {
+    content: "🎯";
+    position: absolute;
+    top: -10px;
+    right: -30px;
+    font-size: 0.5em;
+    animation: syncPulse 1s ease-in-out infinite;
+}
+
+.boss-warning-timer.medium-sync {
+    color: #ffff00;
+    text-shadow: 
+        0 0 10px #ffff00,
+        0 0 20px #ffaa00,
+        0 0 30px #ffaa00;
+}
+
+.boss-warning-timer.medium-sync::after {
+    content: "⚠️";
+    position: absolute;
+    top: -10px;
+    right: -30px;
+    font-size: 0.5em;
+    animation: syncPulse 1.5s ease-in-out infinite;
+}
+
+.boss-warning-timer.low-sync {
+    color: #ff6666;
+    text-shadow: 
+        0 0 10px #ff6666,
+        0 0 20px #ff0000,
+        0 0 30px #ff0000;
+    animation: desyncShake 0.3s ease-in-out infinite;
+}
+
+.boss-warning-timer.low-sync::after {
+    content: "❌";
+    position: absolute;
+    top: -10px;
+    right: -30px;
+    font-size: 0.5em;
+    animation: syncPulse 0.8s ease-in-out infinite;
+}
+
+/* Synchronization status indicator */
+.sync-status-indicator {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 0.4em;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sync-status-indicator.synchronized {
+    border-left: 4px solid #00ff00;
+}
+
+.sync-status-indicator.recalibrating {
+    border-left: 4px solid #ffaa00;
+    animation: recalibrationPulse 1s ease-in-out infinite;
+}
+
+.sync-status-indicator.fallback {
+    border-left: 4px solid #ff0000;
+    animation: fallbackBlink 0.5s ease-in-out infinite;
+}
+
+/* Animation keyframes */
+@keyframes warningFlash {
+    0% { 
+        background: rgba(255, 0, 0, 0.3);
+    }
+    100% { 
+        background: rgba(255, 100, 100, 0.5);
+    }
+}
+
+@keyframes syncPulse {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+}
+
+@keyframes desyncShake {
+    0%, 100% { 
+        transform: translateX(0);
+    }
+    25% { 
+        transform: translateX(-2px);
+    }
+    75% { 
+        transform: translateX(2px);
+    }
+}
+
+@keyframes recalibrationPulse {
+    0%, 100% { 
+        opacity: 1;
+    }
+    50% { 
+        opacity: 0.6;
+    }
+}
+
+@keyframes fallbackBlink {
+    0%, 100% { 
+        opacity: 1;
+    }
+    50% { 
+        opacity: 0.3;
+    }
+}
+
+/* Game speed adjustment indicators */
+.speed-adjusted-warning {
+    position: relative;
+}
+
+.speed-adjusted-warning::before {
+    content: "⚡";
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5em;
+    color: #00aaff;
+    animation: speedIndicator 0.8s ease-in-out infinite;
+}
+
+@keyframes speedIndicator {
+    0%, 100% { 
+        transform: translateX(-50%) scale(1);
+    }
+    50% { 
+        transform: translateX(-50%) scale(1.3);
+    }
+}
+
+/* Pause state indicator */
+.warning-paused {
+    animation-play-state: paused !important;
+    opacity: 0.7;
+}
+
+.warning-paused::after {
+    content: "⏸️";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8em;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    border-radius: 50%;
+}
+
+/* Debug information overlay (for development) */
+.sync-debug-info {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 10000;
+    display: none;
+    max-width: 300px;
+}
+
+.sync-debug-info.active {
+    display: block;
+}
+
+.sync-debug-info h4 {
+    margin: 0 0 10px 0;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+}
+
+.sync-debug-info .debug-line {
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.sync-debug-info .debug-value {
+    color: #ffaa00;
+}
+
+.sync-debug-info .debug-good {
+    color: #00ff00;
+}
+
+.sync-debug-info .debug-warn {
+    color: #ffaa00;
+}
+
+.sync-debug-info .debug-error {
+    color: #ff0000;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .boss-warning-overlay {
+        font-size: 1.5em;
+    }
+    
+    .boss-warning-timer {
+        font-size: 2em;
+    }
+    
+    .sync-status-indicator {
+        font-size: 0.3em;
+        bottom: 10px;
+        right: 10px;
+        padding: 5px 8px;
+    }
+    
+    .sync-debug-info {
+        font-size: 10px;
+        max-width: 200px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .boss-warning-timer.high-sync {
+        color: #ffffff;
+        background: #008000;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+    
+    .boss-warning-timer.medium-sync {
+        color: #000000;
+        background: #ffff00;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+    
+    .boss-warning-timer.low-sync {
+        color: #ffffff;
+        background: #ff0000;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .boss-warning-overlay,
+    .boss-warning-timer,
+    .sync-status-indicator {
+        animation: none !important;
+    }
+    
+    .boss-warning-timer::after {
+        animation: none !important;
+    }
+}

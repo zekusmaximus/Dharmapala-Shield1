@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievement Manager Error Handling Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: #2a2a2a;
+        }
+        .test-button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background-color: #45a049;
+        }
+        .error-button {
+            background-color: #f44336;
+        }
+        .error-button:hover {
+            background-color: #da190b;
+        }
+        #console-output {
+            background-color: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛡️ Achievement Manager Error Handling Test</h1>
+    
+    <div class="test-section">
+        <h2>Normal Operations</h2>
+        <button class="test-button" onclick="testNormalOperation()">Test Normal Achievement Check</button>
+        <button class="test-button" onclick="testLoadProgress()">Test Load Progress</button>
+        <button class="test-button" onclick="testSaveProgress()">Test Save Progress</button>
+        <button class="test-button" onclick="testUnlockAchievement()">Test Unlock Achievement</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Error Conditions</h2>
+        <button class="test-button error-button" onclick="testInvalidAchievementId()">Test Invalid Achievement ID</button>
+        <button class="test-button error-button" onclick="testInvalidEventType()">Test Invalid Event Type</button>
+        <button class="test-button error-button" onclick="testCorruptedSaveData()">Test Corrupted Save Data</button>
+        <button class="test-button error-button" onclick="testMissingDOM()">Test Missing DOM Elements</button>
+        <button class="test-button error-button" onclick="testNullData()">Test Null/Undefined Data</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Session Stats Tests</h2>
+        <button class="test-button" onclick="testSessionStats()">Test Session Stats Update</button>
+        <button class="test-button" onclick="testInvalidSessionData()">Test Invalid Session Data</button>
+        <button class="test-button" onclick="testResetSessionStats()">Test Reset Session Stats</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Debug Methods</h2>
+        <button class="test-button" onclick="testDebugMethods()">Test Debug Methods</button>
+        <button class="test-button" onclick="testExportAchievements()">Test Export Achievements</button>
+        <button class="test-button" onclick="testNearCompletion()">Test Near Completion</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output"></div>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+    </div>
+    
+    <div class="test-results">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <!-- Mock Save System -->
+    <script>
+        // Mock Save System
+        class MockSaveSystem {
+            constructor() {
+                this.data = {};
+            }
+            
+            save(key, data) {
+                this.data[key] = JSON.parse(JSON.stringify(data));
+                return true;
+            }
+            
+            load(key) {
+                return this.data[key] || null;
+            }
+            
+            // Method to simulate corrupted data
+            setCorruptedData(key, data) {
+                this.data[key] = data;
+            }
+        }
+        
+        // Mock Audio Manager
+        class MockAudioManager {
+            playSound(soundId) {
+                console.log('MockAudioManager: Playing sound:', soundId);
+            }
+        }
+        
+        // Console capture
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn
+        };
+        
+        function captureConsole() {
+            const output = document.getElementById('console-output');
+            
+            ['log', 'error', 'warn'].forEach(method => {
+                console[method] = function(...args) {
+                    originalConsole[method].apply(console, args);
+                    const timestamp = new Date().toLocaleTimeString();
+                    const message = args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ');
+                    output.textContent += `[${timestamp}] ${method.toUpperCase()}: ${message}\n`;
+                    output.scrollTop = output.scrollHeight;
+                };
+            });
+        }
+        
+        function clearConsole() {
+            document.getElementById('console-output').textContent = '';
+        }
+        
+        function addTestResult(test, result, details = '') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultElement = document.createElement('div');
+            resultElement.innerHTML = `
+                <div style="margin: 5px 0; padding: 5px; background-color: ${result ? '#2d5a27' : '#5a2727'}; border-radius: 3px;">
+                    <strong>${test}:</strong> ${result ? '✅ PASS' : '❌ FAIL'} ${details}
+                </div>
+            `;
+            resultsDiv.appendChild(resultElement);
+        }
+        
+        // Initialize
+        let achievementManager;
+        let mockSaveSystem;
+        let mockAudioManager;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            captureConsole();
+            
+            mockSaveSystem = new MockSaveSystem();
+            mockAudioManager = new MockAudioManager();
+            
+            try {
+                achievementManager = new AchievementManager(mockSaveSystem, mockAudioManager);
+                addTestResult('AchievementManager Initialization', true, '- Manager created successfully');
+            } catch (error) {
+                addTestResult('AchievementManager Initialization', false, '- ' + error.message);
+            }
+        });
+        
+        // Test Functions
+        function testNormalOperation() {
+            try {
+                achievementManager.checkAchievements('defense_placed', { amount: 1 });
+                addTestResult('Normal Achievement Check', true, '- No errors thrown');
+            } catch (error) {
+                addTestResult('Normal Achievement Check', false, '- ' + error.message);
+            }
+        }
+        
+        function testLoadProgress() {
+            try {
+                // Set up valid save data
+                mockSaveSystem.save('achievements', {
+                    unlocked: ['first_defense'],
+                    progress: { tower_master: 5 }
+                });
+                
+                achievementManager.loadProgress();
+                addTestResult('Load Progress', true, '- Loaded successfully');
+            } catch (error) {
+                addTestResult('Load Progress', false, '- ' + error.message);
+            }
+        }
+        
+        function testSaveProgress() {
+            try {
+                achievementManager.saveProgress();
+                addTestResult('Save Progress', true, '- Saved successfully');
+            } catch (error) {
+                addTestResult('Save Progress', false, '- ' + error.message);
+            }
+        }
+        
+        function testUnlockAchievement() {
+            try {
+                achievementManager.unlockAchievement('first_defense');
+                addTestResult('Unlock Achievement', true, '- Achievement unlocked');
+            } catch (error) {
+                addTestResult('Unlock Achievement', false, '- ' + error.message);
+            }
+        }
+        
+        function testInvalidAchievementId() {
+            try {
+                achievementManager.unlockAchievement('invalid_achievement_id');
+                addTestResult('Invalid Achievement ID', true, '- Handled gracefully');
+            } catch (error) {
+                addTestResult('Invalid Achievement ID', false, '- Unexpected error: ' + error.message);
+            }
+        }
+        
+        function testInvalidEventType() {
+            try {
+                // Test with null, undefined, and non-string event types
+                achievementManager.checkAchievements(null, { amount: 1 });
+                achievementManager.checkAchievements(undefined, { amount: 1 });
+                achievementManager.checkAchievements(123, { amount: 1 });
+                addTestResult('Invalid Event Type', true, '- All invalid types handled gracefully');
+            } catch (error) {
+                addTestResult('Invalid Event Type', false, '- Unexpected error: ' + error.message);
+            }
+        }
+        
+        function testCorruptedSaveData() {
+            try {
+                // Set corrupted save data
+                mockSaveSystem.setCorruptedData('achievements', 'this is not json');
+                achievementManager.loadProgress();
+                
+                // Try with object that's missing required properties
+                mockSaveSystem.setCorruptedData('achievements', { invalidProperty: true });
+                achievementManager.loadProgress();
+                
+                addTestResult('Corrupted Save Data', true, '- Handled gracefully');
+            } catch (error) {
+                addTestResult('Corrupted Save Data', false, '- Unexpected error: ' + error.message);
+            }
+        }
+        
+        function testMissingDOM() {
+            try {
+                // Test with DOM manipulation when elements don't exist
+                const originalGetElementById = document.getElementById;
+                document.getElementById = () => null;
+                
+                achievementManager.displayAchievementToast({
+                    id: 'test',
+                    name: 'Test Achievement',
+                    description: 'Test description'
+                });
+                
+                // Restore original function
+                document.getElementById = originalGetElementById;
+                
+                addTestResult('Missing DOM Elements', true, '- DOM errors handled gracefully');
+            } catch (error) {
+                addTestResult('Missing DOM Elements', false, '- Unexpected error: ' + error.message);
+            }
+        }
+        
+        function testNullData() {
+            try {
+                achievementManager.checkAchievements('test_event', null);
+                achievementManager.checkAchievements('test_event', undefined);
+                achievementManager.updateSessionStats(null, null);
+                achievementManager.updateSessionStats('valid_event', null);
+                
+                addTestResult('Null/Undefined Data', true, '- All null data handled gracefully');
+            } catch (error) {
+                addTestResult('Null/Undefined Data', false, '- Unexpected error: ' + error.message);
+            }
+        }
+        
+        function testSessionStats() {
+            try {
+                achievementManager.updateSessionStats('enemy_killed', { amount: 5 });
+                achievementManager.updateSessionStats('defense_placed', { amount: 1 });
+                
+                const stats = achievementManager.getSessionStats();
+                const hasValidStats = stats && typeof stats === 'object';
+                
+                addTestResult('Session Stats Update', hasValidStats, '- Stats updated and retrieved');
+            } catch (error) {
+                addTestResult('Session Stats Update', false, '- ' + error.message);
+            }
+        }
+        
+        function testInvalidSessionData() {
+            try {
+                achievementManager.updateSessionStats('', { amount: 1 });
+                achievementManager.updateSessionStats('test_event', { amount: -5 });
+                achievementManager.updateSessionStats('test_event', { amount: 'invalid' });
+                
+                addTestResult('Invalid Session Data', true, '- Invalid data handled gracefully');
+            } catch (error) {
+                addTestResult('Invalid Session Data', false, '- Unexpected error: ' + error.message);
+            }
+        }
+        
+        function testResetSessionStats() {
+            try {
+                achievementManager.resetSessionStats();
+                const stats = achievementManager.getSessionStats();
+                const isReset = Object.values(stats).every(value => value === 0);
+                
+                addTestResult('Reset Session Stats', isReset, '- Session stats reset successfully');
+            } catch (error) {
+                addTestResult('Reset Session Stats', false, '- ' + error.message);
+            }
+        }
+        
+        function testDebugMethods() {
+            try {
+                achievementManager.debugUnlockAchievement('first_defense');
+                achievementManager.debugUnlockAllAchievements();
+                achievementManager.debugResetAchievements();
+                
+                addTestResult('Debug Methods', true, '- All debug methods executed without errors');
+            } catch (error) {
+                addTestResult('Debug Methods', false, '- ' + error.message);
+            }
+        }
+        
+        function testExportAchievements() {
+            try {
+                const exportData = achievementManager.exportAchievements();
+                const isValid = exportData && 
+                               Array.isArray(exportData.unlocked) &&
+                               typeof exportData.progress === 'object' &&
+                               typeof exportData.stats === 'object' &&
+                               typeof exportData.timestamp === 'number';
+                
+                addTestResult('Export Achievements', isValid, '- Export data structure is valid');
+            } catch (error) {
+                addTestResult('Export Achievements', false, '- ' + error.message);
+            }
+        }
+        
+        function testNearCompletion() {
+            try {
+                const nearCompletion = achievementManager.getNearCompletionAchievements(0.5);
+                const isValid = Array.isArray(nearCompletion);
+                
+                // Test with invalid threshold
+                const invalidResult = achievementManager.getNearCompletionAchievements(-1);
+                const invalidHandled = Array.isArray(invalidResult);
+                
+                addTestResult('Near Completion Achievements', isValid && invalidHandled, 
+                             '- Results returned and invalid threshold handled');
+            } catch (error) {
+                addTestResult('Near Completion Achievements', false, '- ' + error.message);
+            }
+        }
+    </script>
+    
+    <!-- Load the actual AchievementManager -->
+    <script src="js/achievementManager.js"></script>
+</body>
+</html>

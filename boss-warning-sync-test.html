@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss Warning Synchronization Test - Dharmapala Shield</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-controls {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .test-section {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00aa00;
+        }
+        
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-button:hover {
+            background: #45a049;
+        }
+        
+        .test-button.warning {
+            background: #ff9800;
+        }
+        
+        .test-button.danger {
+            background: #f44336;
+        }
+        
+        .status-display {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .mock-boss {
+            width: 60px;
+            height: 60px;
+            background: #ff4444;
+            border-radius: 50%;
+            margin: 10px;
+            display: inline-block;
+            position: relative;
+            animation: bossFloat 2s ease-in-out infinite;
+        }
+        
+        @keyframes bossFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .mock-boss::after {
+            content: "👹";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+        }
+        
+        .feature-demo {
+            border-left: 4px solid #2196F3;
+        }
+        
+        h1 { color: #4CAF50; }
+        h2 { color: #2196F3; }
+        h3 { color: #ff9800; }
+    </style>
+    <link rel="stylesheet" href="css/bossWarningSynchronization.css">
+</head>
+<body>
+    <div class="test-container">
+        <h1>🛡️ Boss Warning Synchronization System Test</h1>
+        
+        <div class="test-controls">
+            <h2>Test Environment</h2>
+            <p>This page tests the 4 key features of the synchronized boss warning system:</p>
+            
+            <div class="test-section">
+                <h3>🎯 Feature 1: Synchronized Warning Timers</h3>
+                <p>Warning timers are directly linked to boss ability cooldowns for perfect accuracy.</p>
+                <div class="mock-boss" id="testBoss1"></div>
+                <button class="test-button" onclick="testSynchronizedWarning()">Test Synchronized Warning</button>
+                <button class="test-button" onclick="testFallbackWarning()">Test Fallback Warning</button>
+            </div>
+            
+            <div class="test-section feature-demo">
+                <h3>⏸️ Feature 2: Pause/Resume Handling</h3>
+                <p>Warning timers properly pause and resume with the game state.</p>
+                <button class="test-button" onclick="testPauseResume()">Test Pause/Resume</button>
+                <button class="test-button warning" onclick="pauseAllWarnings()">Pause Warnings</button>
+                <button class="test-button" onclick="resumeAllWarnings()">Resume Warnings</button>
+            </div>
+            
+            <div class="test-section feature-demo">
+                <h3>⚡ Feature 3: Game Speed Adjustment</h3>
+                <p>Warning displays adapt to game speed changes (1x, 2x, etc.).</p>
+                <button class="test-button" onclick="testSpeedAdjustment(1)">1x Speed</button>
+                <button class="test-button" onclick="testSpeedAdjustment(2)">2x Speed</button>
+                <button class="test-button" onclick="testSpeedAdjustment(0.5)">0.5x Speed</button>
+            </div>
+            
+            <div class="test-section feature-demo">
+                <h3>🔧 Feature 4: Fallback Mechanisms</h3>
+                <p>System handles desynchronization and timing issues gracefully.</p>
+                <button class="test-button danger" onclick="testDesyncDetection()">Simulate Desync</button>
+                <button class="test-button danger" onclick="testEmergencyFallback()">Emergency Fallback</button>
+                <button class="test-button warning" onclick="testRecalibration()">Test Recalibration</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 System Status</h3>
+            <div class="status-display" id="statusDisplay">
+System initializing...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔬 Performance Metrics</h3>
+            <div id="metricsDisplay">
+                <div>Active Warnings: <span id="activeWarnings">0</span></div>
+                <div>Synchronized Warnings: <span id="syncedWarnings">0</span></div>
+                <div>Desync Events: <span id="desyncEvents">0</span></div>
+                <div>Fallback Activations: <span id="fallbackActivations">0</span></div>
+                <div>Average Accuracy: <span id="averageAccuracy">100%</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mock game environment scripts -->
+    <script>
+        // Mock boss class for testing
+        class MockBoss {
+            constructor(type = 'raidTeam') {
+                this.type = type;
+                this.phase = 1;
+                this.abilityTimer = 0;
+                this.maxHealth = 1000;
+                this.health = 1000;
+                this.isAlive = true;
+                this.isBoss = true;
+                
+                // Start ability timer simulation
+                this.startAbilitySimulation();
+            }
+            
+            startAbilitySimulation() {
+                setInterval(() => {
+                    if (!this.isPaused) {
+                        this.abilityTimer += 100;
+                    }
+                }, 100);
+            }
+            
+            getPhaseAbilityCooldown() {
+                return 4000 - (this.phase * 500);
+            }
+        }
+        
+        // Mock game object for testing
+        class MockGame {
+            constructor() {
+                this.gameSpeed = 1;
+                this.isPaused = false;
+                this.bossWarningSynchronizer = null;
+            }
+            
+            showBossWarning(enemy, abilityType, duration) {
+                this.log(`[MockGame] Fallback warning: ${abilityType} for ${duration}ms`);
+            }
+            
+            playSfx(sound, volume) {
+                this.log(`[MockGame] Playing sound: ${sound} at volume ${volume}`);
+            }
+            
+            log(message) {
+                const statusDisplay = document.getElementById('statusDisplay');
+                const timestamp = new Date().toLocaleTimeString();
+                statusDisplay.textContent += `\\n[${timestamp}] ${message}`;
+                statusDisplay.scrollTop = statusDisplay.scrollHeight;
+            }
+        }
+        
+        // Initialize test environment
+        let mockGame;
+        let mockBoss;
+        let synchronizer;
+        
+        function initializeTest() {
+            mockGame = new MockGame();
+            mockBoss = new MockBoss();
+            
+            // Initialize the synchronizer (will load when script loads)
+            if (typeof BossWarningSynchronizer !== 'undefined') {
+                synchronizer = new BossWarningSynchronizer(mockGame);
+                mockGame.bossWarningSynchronizer = synchronizer;
+                mockGame.log('Boss Warning Synchronizer initialized successfully');
+            } else {
+                mockGame.log('ERROR: BossWarningSynchronizer not found');
+            }
+            
+            updateMetrics();
+            setInterval(updateMetrics, 1000);
+        }
+        
+        // Test functions for each feature
+        function testSynchronizedWarning() {
+            if (synchronizer) {
+                const warningId = synchronizer.synchronizeWarningToCooldown(mockBoss, 'empBurst', 3000);
+                mockGame.log(`Synchronized warning created: ${warningId}`);
+            } else {
+                mockGame.log('ERROR: Synchronizer not available');
+            }
+        }
+        
+        function testFallbackWarning() {
+            mockGame.showBossWarning(mockBoss, 'systemHack', 2500);
+        }
+        
+        function testPauseResume() {
+            // Create a warning first
+            testSynchronizedWarning();
+            
+            // Pause after 1 second, resume after 3 seconds
+            setTimeout(() => {
+                mockGame.log('Testing pause...');
+                pauseAllWarnings();
+            }, 1000);
+            
+            setTimeout(() => {
+                mockGame.log('Testing resume...');
+                resumeAllWarnings();
+            }, 3000);
+        }
+        
+        function pauseAllWarnings() {
+            mockGame.isPaused = true;
+            if (synchronizer) {
+                synchronizer.pauseWarnings();
+            }
+            mockGame.log('All warnings paused');
+        }
+        
+        function resumeAllWarnings() {
+            mockGame.isPaused = false;
+            if (synchronizer) {
+                synchronizer.resumeWarnings();
+            }
+            mockGame.log('All warnings resumed');
+        }
+        
+        function testSpeedAdjustment(speed) {
+            mockGame.gameSpeed = speed;
+            if (synchronizer) {
+                synchronizer.adjustWarningSpeedMultiplier(speed);
+            }
+            mockGame.log(`Game speed adjusted to ${speed}x`);
+            
+            // Test with a new warning
+            setTimeout(() => testSynchronizedWarning(), 500);
+        }
+        
+        function testDesyncDetection() {
+            if (synchronizer) {
+                // Artificially create desync by manipulating boss timer
+                mockBoss.abilityTimer += 2000;
+                synchronizer.detectAndHandleDesynchronization();
+                mockGame.log('Desynchronization detection triggered');
+            }
+        }
+        
+        function testEmergencyFallback() {
+            if (synchronizer) {
+                const mockSyncData = {
+                    warningId: 'test_emergency',
+                    boss: mockBoss,
+                    abilityType: 'emergencyTest',
+                    syncAccuracy: 10
+                };
+                synchronizer.activateEmergencyFallback('test_emergency', mockSyncData);
+                mockGame.log('Emergency fallback activated');
+            }
+        }
+        
+        function testRecalibration() {
+            if (synchronizer) {
+                // Create a warning and test recalibration
+                const warningId = synchronizer.synchronizeWarningToCooldown(mockBoss, 'shieldRegen', 3000);
+                
+                setTimeout(() => {
+                    mockBoss.abilityTimer += 1000; // Create artificial desync
+                    synchronizer.detectAndHandleDesynchronization();
+                    mockGame.log('Recalibration test completed');
+                }, 1000);
+            }
+        }
+        
+        function updateMetrics() {
+            if (synchronizer) {
+                const stats = synchronizer.getSynchronizationStats();
+                document.getElementById('activeWarnings').textContent = stats.activeWarnings;
+                document.getElementById('syncedWarnings').textContent = stats.synchronizedWarnings;
+                document.getElementById('desyncEvents').textContent = stats.desyncEvents;
+                document.getElementById('fallbackActivations').textContent = stats.fallbackActivations;
+                document.getElementById('averageAccuracy').textContent = Math.round(stats.averageAccuracy) + '%';
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(initializeTest, 500); // Wait for scripts to load
+        });
+    </script>
+    
+    <!-- Load the synchronizer script -->
+    <script src="js/bossWarningSynchronizer.js"></script>
+</body>
+</html>

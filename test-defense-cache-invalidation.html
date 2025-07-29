@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defense Cache Invalidation Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0f0a;
+            color: #00ff88;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.4;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1, h2 {
+            color: #ffaa00;
+            text-shadow: 0 0 10px #ffaa00;
+            border-bottom: 2px solid #ffaa00;
+            padding-bottom: 10px;
+        }
+        
+        .test-section {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #1a3d1a;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #00ff88;
+            color: #0a0f0a;
+            box-shadow: 0 0 15px #00ff88;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid #ffaa00;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        
+        .stat-title {
+            color: #ffaa00;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            color: #00ff88;
+            font-size: 1.1em;
+        }
+        
+        .log-area {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+        
+        .log-info { color: #00ff88; }
+        .log-warning { color: #ffaa00; }
+        .log-error { color: #ff4444; }
+        .log-success { color: #44ff44; }
+        
+        .memory-bar {
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 1px solid #666;
+        }
+        
+        .memory-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #ffaa00 70%, #ff4444 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .test-results {
+            background: rgba(68, 255, 68, 0.1);
+            border: 1px solid #44ff44;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+        }
+        
+        .performance-metrics {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .metric {
+            background: rgba(0, 255, 136, 0.2);
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .metric-label {
+            color: #ffaa00;
+            font-size: 0.9em;
+        }
+        
+        .metric-value {
+            color: #00ff88;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Defense Cache Invalidation Test Suite</h1>
+        <p>Testing content-based cache invalidation, CONFIG.UPGRADE_TREES hash versioning, and memory pressure detection</p>
+        
+        <div class="test-section">
+            <h2>Cache Control & Testing</h2>
+            <div class="controls">
+                <button onclick="initializeCache()">Initialize Cache</button>
+                <button onclick="testContentInvalidation()">Test Content Invalidation</button>
+                <button onclick="testMemoryPressure()">Simulate Memory Pressure</button>
+                <button onclick="testVersioning()">Test Hash Versioning</button>
+                <button onclick="performStressTest()">Stress Test</button>
+                <button onclick="resetCache()">Reset All</button>
+                <button onclick="clearLogs()">Clear Logs</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Cache Performance Metrics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Cache Statistics</div>
+                    <div id="cache-stats" class="stat-value">Not initialized</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Memory Usage</div>
+                    <div id="memory-stats" class="stat-value">0 KB</div>
+                    <div class="memory-bar">
+                        <div id="memory-bar-fill" class="memory-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Cache Version</div>
+                    <div id="version-stats" class="stat-value">N/A</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Invalidation Events</div>
+                    <div id="invalidation-stats" class="stat-value">0</div>
+                </div>
+            </div>
+            
+            <div class="performance-metrics">
+                <div class="metric">
+                    <div class="metric-label">Hit Rate</div>
+                    <div id="hit-rate-metric" class="metric-value">0%</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Avg Time</div>
+                    <div id="avg-time-metric" class="metric-value">0ms</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Total Validations</div>
+                    <div id="total-validations-metric" class="metric-value">0</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Cache Size</div>
+                    <div id="cache-size-metric" class="metric-value">0</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Memory Cleanups</div>
+                    <div id="memory-cleanups-metric" class="metric-value">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="test-results" class="test-results">
+                Click "Initialize Cache" to begin testing...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Activity Log</h2>
+            <div id="log-area" class="log-area">
+                <div class="log-entry log-info">Ready to start testing...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/defense.js"></script>
+    <script>
+        let testCache = null;
+        let testResults = [];
+        let updateInterval = null;
+        
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('log-area');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logArea.appendChild(entry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('log-area').innerHTML = '<div class="log-entry log-info">Logs cleared...</div>';
+        }
+        
+        function updateStats() {
+            if (!testCache) return;
+            
+            const stats = testCache.getPerformanceStats();
+            
+            // Update main stats
+            document.getElementById('cache-stats').innerHTML = `
+                Hits: ${stats.cacheHits} | Misses: ${stats.cacheMisses}<br>
+                Hit Rate: ${stats.hitRate}
+            `;
+            
+            document.getElementById('memory-stats').innerHTML = `
+                ${stats.memoryUsage}<br>
+                Pressure: ${stats.memoryPressure ? 'HIGH' : 'LOW'}
+            `;
+            
+            document.getElementById('version-stats').textContent = stats.currentVersion;
+            document.getElementById('invalidation-stats').textContent = stats.invalidationCount;
+            
+            // Update performance metrics
+            document.getElementById('hit-rate-metric').textContent = stats.hitRate;
+            document.getElementById('avg-time-metric').textContent = stats.avgValidationTime;
+            document.getElementById('total-validations-metric').textContent = stats.totalValidations;
+            document.getElementById('memory-cleanups-metric').textContent = stats.memoryCleanups;
+            
+            const totalCacheSize = Object.values(stats.cacheSize).reduce((sum, size) => sum + size, 0);
+            document.getElementById('cache-size-metric').textContent = totalCacheSize;
+            
+            // Update memory bar
+            const memoryKB = parseFloat(stats.memoryUsage.replace('KB', ''));
+            const maxMemoryKB = 1000; // Assuming 1MB threshold for visualization
+            const memoryPercent = Math.min((memoryKB / maxMemoryKB) * 100, 100);
+            document.getElementById('memory-bar-fill').style.width = `${memoryPercent}%`;
+        }
+        
+        function initializeCache() {
+            log('Initializing DefenseUpgradeValidationCache...', 'info');
+            
+            try {
+                testCache = new DefenseUpgradeValidationCache();
+                log('Cache initialized successfully', 'success');
+                
+                // Start stats update interval
+                if (updateInterval) clearInterval(updateInterval);
+                updateInterval = setInterval(updateStats, 1000);
+                
+                updateStats();
+                document.getElementById('test-results').innerHTML = 'Cache initialized and ready for testing.';
+                
+            } catch (error) {
+                log(`Failed to initialize cache: ${error.message}`, 'error');
+                document.getElementById('test-results').innerHTML = `<span style="color: #ff4444">Initialization failed: ${error.message}</span>`;
+            }
+        }
+        
+        function testContentInvalidation() {
+            if (!testCache) {
+                log('Cache not initialized', 'warning');
+                return;
+            }
+            
+            log('Testing content-based cache invalidation...', 'info');
+            
+            const startTime = performance.now();
+            let results = [];
+            
+            try {
+                // Get initial version
+                const initialVersion = testCache.getPerformanceStats().currentVersion;
+                log(`Initial cache version: ${initialVersion}`, 'info');
+                
+                // Perform some cached operations
+                const testDefenseType = 'turret';
+                const tree1 = testCache.getUpgradeTree(testDefenseType);
+                const tree2 = testCache.getUpgradeTree(testDefenseType); // Should hit cache
+                
+                results.push(`Tree retrieval - First: ${tree1 ? 'SUCCESS' : 'FAILED'}, Second: ${tree2 ? 'HIT' : 'MISS'}`);
+                
+                // Simulate CONFIG change by modifying and restoring
+                const originalConfig = JSON.stringify(CONFIG.UPGRADE_TREES);
+                
+                // Modify config temporarily
+                if (CONFIG.UPGRADE_TREES.turret) {
+                    CONFIG.UPGRADE_TREES.turret.testProperty = 'modified';
+                    testCache.updateConfigHash(); // Trigger version update
+                    
+                    const newVersion = testCache.getPerformanceStats().currentVersion;
+                    log(`Config modified, new version: ${newVersion}`, 'info');
+                    
+                    // Try to get cached tree - should miss due to version change
+                    const tree3 = testCache.getUpgradeTree(testDefenseType);
+                    results.push(`Post-modification retrieval: ${tree3 ? 'SUCCESS' : 'FAILED'}`);
+                    
+                    // Restore config
+                    delete CONFIG.UPGRADE_TREES.turret.testProperty;
+                    testCache.updateConfigHash();
+                    
+                    log('Config restored to original state', 'info');
+                }
+                
+                const invalidationCount = testCache.getPerformanceStats().invalidationCount;
+                results.push(`Invalidation events triggered: ${invalidationCount}`);
+                
+                const endTime = performance.now();
+                const testDuration = (endTime - startTime).toFixed(2);
+                
+                log(`Content invalidation test completed in ${testDuration}ms`, 'success');
+                
+                document.getElementById('test-results').innerHTML = `
+                    <h3>Content Invalidation Test Results</h3>
+                    <ul>
+                        ${results.map(result => `<li>${result}</li>`).join('')}
+                    </ul>
+                    <p>Test Duration: ${testDuration}ms</p>
+                `;
+                
+            } catch (error) {
+                log(`Content invalidation test failed: ${error.message}`, 'error');
+                document.getElementById('test-results').innerHTML = `<span style="color: #ff4444">Test failed: ${error.message}</span>`;
+            }
+            
+            updateStats();
+        }
+        
+        function testMemoryPressure() {
+            if (!testCache) {
+                log('Cache not initialized', 'warning');
+                return;
+            }
+            
+            log('Testing memory pressure detection and cleanup...', 'info');
+            
+            const startTime = performance.now();
+            let results = [];
+            
+            try {
+                // Fill cache with many entries
+                log('Filling cache with test data...', 'info');
+                
+                for (let i = 0; i < 500; i++) {
+                    const testPath = [`upgrade_${i}`, `level_${i % 5}`, `ability_${i % 10}`];
+                    testCache.validateUpgradePath(testPath, 'turret');
+                    
+                    const testAbilities = [`ability_${i}`, `skill_${i % 8}`];
+                    testCache.validateAbilities(testAbilities, 'scanner');
+                }
+                
+                const beforeStats = testCache.getPerformanceStats();
+                log(`Cache filled - Memory usage: ${beforeStats.memoryUsage}`, 'info');
+                
+                // Force memory pressure check
+                const memoryPressure = testCache.isMemoryPressureHigh();
+                results.push(`Memory pressure detected: ${memoryPressure ? 'YES' : 'NO'}`);
+                
+                if (memoryPressure) {
+                    log('High memory pressure detected, triggering cleanup...', 'warning');
+                    testCache.performAdaptiveCleanup();
+                }
+                
+                const afterStats = testCache.getPerformanceStats();
+                log(`After cleanup - Memory usage: ${afterStats.memoryUsage}`, 'info');
+                
+                results.push(`Memory usage before: ${beforeStats.memoryUsage}`);
+                results.push(`Memory usage after: ${afterStats.memoryUsage}`);
+                results.push(`Memory cleanups performed: ${afterStats.memoryCleanups}`);
+                
+                const endTime = performance.now();
+                const testDuration = (endTime - startTime).toFixed(2);
+                
+                log(`Memory pressure test completed in ${testDuration}ms`, 'success');
+                
+                document.getElementById('test-results').innerHTML = `
+                    <h3>Memory Pressure Test Results</h3>
+                    <ul>
+                        ${results.map(result => `<li>${result}</li>`).join('')}
+                    </ul>
+                    <p>Test Duration: ${testDuration}ms</p>
+                `;
+                
+            } catch (error) {
+                log(`Memory pressure test failed: ${error.message}`, 'error');
+                document.getElementById('test-results').innerHTML = `<span style="color: #ff4444">Test failed: ${error.message}</span>`;
+            }
+            
+            updateStats();
+        }
+        
+        function testVersioning() {
+            if (!testCache) {
+                log('Cache not initialized', 'warning');
+                return;
+            }
+            
+            log('Testing hash-based versioning system...', 'info');
+            
+            const startTime = performance.now();
+            let results = [];
+            
+            try {
+                // Get initial hash
+                const initialHash = testCache.generateConfigHash();
+                log(`Initial CONFIG hash: ${initialHash}`, 'info');
+                
+                // Create stable configuration strings for testing
+                const testConfig1 = { a: 1, b: { c: 2, d: [3, 4] } };
+                const testConfig2 = { b: { d: [3, 4], c: 2 }, a: 1 }; // Same content, different order
+                
+                const hash1 = testCache.createStableConfigString(testConfig1);
+                const hash2 = testCache.createStableConfigString(testConfig2);
+                
+                results.push(`Stable string test - Same content: ${hash1 === hash2 ? 'PASS' : 'FAIL'}`);
+                log(`Stable string consistency: ${hash1 === hash2 ? 'PASS' : 'FAIL'}`, hash1 === hash2 ? 'success' : 'error');
+                
+                // Test hash regeneration
+                const regeneratedHash = testCache.generateConfigHash();
+                results.push(`Hash consistency: ${initialHash === regeneratedHash ? 'PASS' : 'FAIL'}`);
+                
+                // Test version-based cache entry validation
+                const testEntry = {
+                    result: 'test_data',
+                    timestamp: Date.now(),
+                    version: testCache.cacheVersion
+                };
+                
+                const isValid = testCache.isCacheEntryValid(testEntry);
+                results.push(`Cache entry validation: ${isValid ? 'VALID' : 'INVALID'}`);
+                
+                const endTime = performance.now();
+                const testDuration = (endTime - startTime).toFixed(2);
+                
+                log(`Versioning test completed in ${testDuration}ms`, 'success');
+                
+                document.getElementById('test-results').innerHTML = `
+                    <h3>Hash Versioning Test Results</h3>
+                    <ul>
+                        ${results.map(result => `<li>${result}</li>`).join('')}
+                    </ul>
+                    <p>Initial Hash: ${initialHash}</p>
+                    <p>Test Duration: ${testDuration}ms</p>
+                `;
+                
+            } catch (error) {
+                log(`Versioning test failed: ${error.message}`, 'error');
+                document.getElementById('test-results').innerHTML = `<span style="color: #ff4444">Test failed: ${error.message}</span>`;
+            }
+            
+            updateStats();
+        }
+        
+        function performStressTest() {
+            if (!testCache) {
+                log('Cache not initialized', 'warning');
+                return;
+            }
+            
+            log('Performing comprehensive stress test...', 'info');
+            
+            const startTime = performance.now();
+            let results = [];
+            const iterations = 1000;
+            
+            try {
+                log(`Running ${iterations} cache operations...`, 'info');
+                
+                // Stress test with various operations
+                for (let i = 0; i < iterations; i++) {
+                    // Mix of different cache operations
+                    const defenseType = ['turret', 'scanner', 'mirror', 'decoy'][i % 4];
+                    
+                    // Upgrade tree retrieval
+                    testCache.getUpgradeTree(defenseType);
+                    
+                    // Path validation
+                    const path = [`upgrade_${i % 20}`, `level_${i % 5}`];
+                    testCache.validateUpgradePath(path, defenseType);
+                    
+                    // Ability validation
+                    const abilities = [`ability_${i % 15}`, `skill_${i % 8}`];
+                    testCache.validateAbilities(abilities, defenseType);
+                    
+                    // Periodic version updates (simulate config changes)
+                    if (i % 100 === 0 && i > 0) {
+                        testCache.updateConfigHash();
+                        log(`Version update triggered at iteration ${i}`, 'info');
+                    }
+                    
+                    // Memory pressure checks
+                    if (i % 200 === 0 && i > 0) {
+                        if (testCache.isMemoryPressureHigh()) {
+                            testCache.performAdaptiveCleanup();
+                            log(`Memory cleanup triggered at iteration ${i}`, 'warning');
+                        }
+                    }
+                }
+                
+                const finalStats = testCache.getPerformanceStats();
+                
+                results.push(`Total operations: ${iterations * 3}`);
+                results.push(`Cache hit rate: ${finalStats.hitRate}`);
+                results.push(`Average validation time: ${finalStats.avgValidationTime}`);
+                results.push(`Memory usage: ${finalStats.memoryUsage}`);
+                results.push(`Invalidation events: ${finalStats.invalidationCount}`);
+                results.push(`Memory cleanups: ${finalStats.memoryCleanups}`);
+                
+                const endTime = performance.now();
+                const testDuration = (endTime - startTime).toFixed(2);
+                const opsPerSecond = ((iterations * 3) / (testDuration / 1000)).toFixed(0);
+                
+                log(`Stress test completed: ${iterations * 3} operations in ${testDuration}ms (${opsPerSecond} ops/sec)`, 'success');
+                
+                document.getElementById('test-results').innerHTML = `
+                    <h3>Stress Test Results</h3>
+                    <ul>
+                        ${results.map(result => `<li>${result}</li>`).join('')}
+                    </ul>
+                    <p>Test Duration: ${testDuration}ms (${opsPerSecond} operations/second)</p>
+                `;
+                
+            } catch (error) {
+                log(`Stress test failed: ${error.message}`, 'error');
+                document.getElementById('test-results').innerHTML = `<span style="color: #ff4444">Test failed: ${error.message}</span>`;
+            }
+            
+            updateStats();
+        }
+        
+        function resetCache() {
+            if (!testCache) {
+                log('Cache not initialized', 'warning');
+                return;
+            }
+            
+            log('Resetting cache...', 'info');
+            testCache.reset();
+            updateStats();
+            log('Cache reset completed', 'success');
+            document.getElementById('test-results').innerHTML = 'Cache has been reset. Ready for new tests.';
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            log('Defense Cache Invalidation Test Suite loaded', 'success');
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>

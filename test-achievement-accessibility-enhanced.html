@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Achievement Accessibility Test - Dharmapala Shield</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .test-button:focus {
+            outline: 3px solid #FFD700;
+            outline-offset: 2px;
+        }
+        
+        .danger-button {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+        
+        .info-box {
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid rgba(255, 193, 7, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .accessibility-info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 2px solid rgba(33, 150, 243, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        h1, h2 {
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .keyboard-shortcuts {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .status-display {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 9999;
+            border: 1px solid #4CAF50;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature-item {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .feature-item strong {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧧 Enhanced Achievement Notification Accessibility Test</h1>
+        
+        <div class="accessibility-info">
+            <h3>🔍 Enhanced Accessibility Features:</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <strong>Multiple Live Regions:</strong> Assertive, polite, and status announcers for different types of information
+                </div>
+                <div class="feature-item">
+                    <strong>Comprehensive ARIA:</strong> Labels, descriptions, roles, and semantic structure
+                </div>
+                <div class="feature-item">
+                    <strong>Advanced Keyboard Navigation:</strong> Arrow keys, shortcuts, focus management
+                </div>
+                <div class="feature-item">
+                    <strong>Smart Announcements:</strong> Primary urgent + detailed follow-up information
+                </div>
+                <div class="feature-item">
+                    <strong>User Preferences:</strong> Reduced motion, high contrast, screen reader detection
+                </div>
+                <div class="feature-item">
+                    <strong>Touch Support:</strong> Mobile-friendly interactions and announcements
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🏆 Enhanced Achievement Types</h2>
+            <button class="test-button" onclick="testBasicAchievement()">
+                Basic Achievement
+            </button>
+            <button class="test-button" onclick="testDetailedAchievement()">
+                Detailed Achievement with Full Info
+            </button>
+            <button class="test-button" onclick="testProgressAchievement()">
+                Progress Achievement
+            </button>
+            <button class="test-button" onclick="testRareAchievement()">
+                Legendary Achievement
+            </button>
+            <button class="test-button" onclick="testShareableAchievement()">
+                Shareable Achievement
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>⚙️ Accessibility Feature Tests</h2>
+            <button class="test-button" onclick="testMultipleAchievements()">
+                Multiple Achievements (Stacking)
+            </button>
+            <button class="test-button" onclick="testKeyboardNavigation()">
+                Full Keyboard Navigation
+            </button>
+            <button class="test-button" onclick="testScreenReaderFeatures()">
+                Screen Reader Announcements
+            </button>
+            <button class="test-button" onclick="testUserPreferences()">
+                User Preference Detection
+            </button>
+            <button class="test-button" onclick="showAccessibilityHelp()">
+                Keyboard Help (Ctrl+/)
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Advanced Integration Tests</h2>
+            <button class="test-button" onclick="testFocusManagement()">
+                Focus Management Test
+            </button>
+            <button class="test-button" onclick="testAnnouncementSequencing()">
+                Announcement Sequencing
+            </button>
+            <button class="test-button" onclick="testToastInteractions()">
+                Toast Interaction Features
+            </button>
+            <button class="test-button" onclick="testGameIntegration()">
+                Game System Integration
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧹 System Management</h2>
+            <button class="test-button" onclick="clearAllNotifications()">
+                Clear All Notifications
+            </button>
+            <button class="test-button" onclick="testCleanup()">
+                Test System Cleanup
+            </button>
+            <button class="test-button danger-button" onclick="testAccessibilityDestroy()">
+                Destroy & Reinitialize System
+            </button>
+        </div>
+        
+        <div class="info-box">
+            <h3>💡 Testing Instructions:</h3>
+            <p><strong>Screen Reader Users:</strong> Listen for primary announcements followed by detailed information</p>
+            <p><strong>Keyboard Users:</strong> Focus any toast and use arrow keys, Enter/Space, shortcuts</p>
+            <p><strong>Mobile Users:</strong> Test touch interactions and mobile-specific announcements</p>
+            <p><strong>Accessibility Testing:</strong> Check announcements in multiple live regions</p>
+        </div>
+        
+        <div class="keyboard-shortcuts">
+            <h3>⌨️ Enhanced Keyboard Shortcuts:</h3>
+            <p><strong>Arrow Keys:</strong> Navigate between achievement toasts</p>
+            <p><strong>Enter / Space:</strong> Activate focused button or action</p>
+            <p><strong>Escape:</strong> Dismiss currently focused toast</p>
+            <p><strong>S:</strong> Share achievement (if Web Share API supported)</p>
+            <p><strong>V:</strong> View detailed achievement information</p>
+            <p><strong>D:</strong> Dismiss specific achievement</p>
+            <p><strong>Ctrl+/:</strong> Show comprehensive keyboard shortcuts help</p>
+            <p><strong>Tab:</strong> Navigate between interactive elements</p>
+        </div>
+    </div>
+    
+    <div id="status-display" class="status-display" style="display: none;">
+        Status: Ready
+    </div>
+    
+    <!-- Dependencies -->
+    <script>
+        // Mock CONFIG object
+        window.CONFIG = {
+            ACHIEVEMENT: {
+                DISPLAY_DURATION: 5000,
+                MAX_VISIBLE: 3
+            }
+        };
+        
+        // Mock Utils object
+        window.Utils = {
+            formatNumber: (num) => num.toLocaleString(),
+            capitalize: (str) => str.charAt(0).toUpperCase() + str.slice(1)
+        };
+    </script>
+    <script src="js/achievementNotificationAccessibility.js"></script>
+    
+    <script>
+        // Enhanced mock game object
+        const mockGame = {
+            achievementManager: {
+                achievements: new Map(),
+                unlockedAchievements: new Set(),
+                getAchievement: (id) => null,
+                isUnlocked: (id) => false
+            },
+            saveSystem: {
+                saveData: { 
+                    achievements: [],
+                    unlockedAchievements: []
+                },
+                saveGame: () => console.log('Game saved')
+            },
+            audioManager: {
+                playSound: (sound) => console.log(`Playing sound: ${sound}`)
+            }
+        };
+        
+        // Initialize accessibility system
+        let accessibilitySystem;
+        const statusDisplay = document.getElementById('status-display');
+        
+        function updateStatus(message) {
+            statusDisplay.textContent = `Status: ${message}`;
+            statusDisplay.style.display = 'block';
+            setTimeout(() => {
+                statusDisplay.style.display = 'none';
+            }, 4000);
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                accessibilitySystem = new AchievementNotificationAccessibility(mockGame);
+                updateStatus('Enhanced accessibility system initialized');
+                console.log('Enhanced Achievement Accessibility Test Page Loaded');
+            } catch (error) {
+                console.error('Failed to initialize accessibility system:', error);
+                updateStatus('Failed to initialize - check console');
+            }
+        });
+        
+        // Enhanced Test Functions
+        function testBasicAchievement() {
+            const achievement = {
+                id: 'test_basic_enhanced',
+                name: 'First Guardian',
+                title: 'First Guardian',
+                description: 'You have taken the first step in protecting the digital dharma.',
+                icon: '🛡️',
+                category: 'tutorial',
+                reward: { dharma: 10 }
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+            updateStatus('Basic achievement with enhanced accessibility triggered');
+        }
+        
+        function testDetailedAchievement() {
+            const achievement = {
+                id: 'test_detailed_enhanced',
+                name: 'Cyber Monastery Master',
+                title: 'Cyber Monastery Master',
+                description: 'You have successfully defended the digital monastery against 50 coordinated cyber attacks, demonstrating exceptional strategic thinking and resource management.',
+                icon: '🏯',
+                category: 'combat',
+                rarity: 'epic',
+                reward: { 
+                    dharma: 150, 
+                    experience: 500, 
+                    items: ['Master\'s Cipher', 'Encrypted Scroll', 'Digital Lotus'],
+                    title: 'Monastery Guardian'
+                },
+                requirements: 'Defend against 50 coordinated attacks',
+                tips: 'Upgrade your defenses regularly and watch for attack patterns',
+                progress: { current: 50, total: 50 },
+                unlockTime: new Date().toISOString()
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+            updateStatus('Detailed achievement with comprehensive information triggered');
+        }
+        
+        function testProgressAchievement() {
+            const achievement = {
+                id: 'test_progress_enhanced',
+                name: 'Dharma Accumulator',
+                title: 'Dharma Accumulator',
+                description: 'Your dedication to collecting digital dharma has reached enlightened levels.',
+                icon: '💎',
+                category: 'collection',
+                progress: { current: 2500, total: 2500 },
+                reward: { 
+                    dharma: 250,
+                    experience: 750,
+                    multiplier: 1.5
+                },
+                milestone: true
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+            updateStatus('Progress achievement with milestone indicator triggered');
+        }
+        
+        function testRareAchievement() {
+            const achievement = {
+                id: 'test_legendary_enhanced',
+                name: 'Digital Bodhisattva',
+                title: 'Digital Bodhisattva',
+                description: 'You have achieved the highest level of digital enlightenment, protecting countless data streams and maintaining perfect balance in the cyber realm.',
+                icon: '🏆',
+                category: 'legendary',
+                rarity: 'legendary',
+                reward: { 
+                    dharma: 1000, 
+                    experience: 2500,
+                    title: 'Digital Bodhisattva',
+                    items: ['Crown of Bytes', 'Staff of Infinite Recursion', 'Robe of Quantum Entanglement'],
+                    achievement_points: 100
+                },
+                special: true,
+                shareText: 'I just achieved Digital Bodhisattva status in Dharmapala Shield!'
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+            updateStatus('Legendary achievement with special effects triggered');
+        }
+        
+        function testShareableAchievement() {
+            const achievement = {
+                id: 'test_shareable',
+                name: 'Social Guardian',
+                title: 'Social Guardian',
+                description: 'Share your achievements and inspire others to join the digital protection movement.',
+                icon: '📱',
+                category: 'social',
+                reward: { dharma: 75 },
+                shareable: true,
+                shareText: 'Check out my achievement in Dharmapala Shield - protecting digital dharma!'
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+            updateStatus('Shareable achievement with Web Share API support triggered');
+        }
+        
+        function testMultipleAchievements() {
+            const achievements = [
+                {
+                    id: 'multi_1_enhanced',
+                    name: 'Swift Protector',
+                    description: 'Lightning-fast response to threats',
+                    icon: '⚡',
+                    reward: { dharma: 25 }
+                },
+                {
+                    id: 'multi_2_enhanced',
+                    name: 'Pattern Recognition',
+                    description: 'Identified and countered attack patterns',
+                    icon: '🔍',
+                    reward: { dharma: 40 }
+                },
+                {
+                    id: 'multi_3_enhanced',
+                    name: 'System Optimizer',
+                    description: 'Optimized defense systems for maximum efficiency',
+                    icon: '🔧',
+                    reward: { dharma: 60 }
+                },
+                {
+                    id: 'multi_4_enhanced',
+                    name: 'Data Guardian',
+                    description: 'Successfully protected critical data streams',
+                    icon: '💾',
+                    reward: { dharma: 35 }
+                }
+            ];
+            
+            achievements.forEach((achievement, index) => {
+                setTimeout(() => {
+                    accessibilitySystem.handleAchievementUnlock(achievement);
+                }, index * 800);
+            });
+            
+            updateStatus('Multiple achievements with staggered timing triggered');
+        }
+        
+        function testKeyboardNavigation() {
+            updateStatus('Keyboard navigation test - focus will move to new toast');
+            
+            const achievement = {
+                id: 'keyboard_master_enhanced',
+                name: 'Accessibility Master',
+                description: 'Demonstrate mastery of keyboard navigation. Use arrow keys to navigate, Enter/Space to interact, Escape to dismiss, and keyboard shortcuts for actions.',
+                icon: '⌨️',
+                category: 'accessibility',
+                reward: { dharma: 50 },
+                instructions: 'Try all keyboard shortcuts and navigation features'
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+            
+            // Auto-focus the new toast for immediate testing
+            setTimeout(() => {
+                const toasts = document.querySelectorAll('[role="article"][data-achievement-id]');
+                if (toasts.length > 0) {
+                    const latestToast = toasts[toasts.length - 1];
+                    latestToast.focus();
+                    updateStatus('Toast focused - try keyboard navigation now');
+                }
+            }, 600);
+        }
+        
+        function testScreenReaderFeatures() {
+            updateStatus('Screen reader test - listen for primary and detailed announcements');
+            
+            const achievement = {
+                id: 'screen_reader_master',
+                name: 'Accessibility Champion',
+                description: 'This achievement demonstrates comprehensive screen reader support with multiple announcement types, structured content, and semantic markup.',
+                icon: '👂',
+                category: 'accessibility',
+                reward: { 
+                    dharma: 80,
+                    experience: 200,
+                    items: ['Accessibility Badge']
+                },
+                requirements: 'Enable screen reader for full experience',
+                tips: 'Listen for primary announcements followed by detailed information',
+                special_announcement: 'Congratulations on testing screen reader accessibility!'
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+        }
+        
+        function testUserPreferences() {
+            updateStatus('Testing user preference detection and adaptation');
+            
+            // Update preferences first
+            accessibilitySystem.updateUserPreferences();
+            
+            const achievement = {
+                id: 'preferences_test',
+                name: 'Adaptive Interface',
+                description: 'The system has detected and adapted to your accessibility preferences for optimal experience.',
+                icon: '⚙️',
+                category: 'system',
+                reward: { dharma: 30 }
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+            
+            // Log detected preferences
+            setTimeout(() => {
+                console.log('Detected user preferences:', accessibilitySystem.userPreferences);
+                updateStatus('Check console for detected preferences');
+            }, 1000);
+        }
+        
+        function testFocusManagement() {
+            updateStatus('Testing advanced focus management features');
+            
+            // Create multiple toasts for focus testing
+            const achievements = [
+                {
+                    id: 'focus_1',
+                    name: 'Focus Point Alpha',
+                    description: 'First focus test achievement',
+                    icon: '🎯',
+                    reward: { dharma: 20 }
+                },
+                {
+                    id: 'focus_2',
+                    name: 'Focus Point Beta',
+                    description: 'Second focus test achievement',
+                    icon: '🔴',
+                    reward: { dharma: 20 }
+                }
+            ];
+            
+            achievements.forEach((achievement, index) => {
+                setTimeout(() => {
+                    accessibilitySystem.handleAchievementUnlock(achievement);
+                    if (index === achievements.length - 1) {
+                        setTimeout(() => {
+                            const toasts = document.querySelectorAll('[role="article"][data-achievement-id]');
+                            if (toasts.length > 0) {
+                                toasts[0].focus();
+                                updateStatus('Use arrow keys to test focus management between toasts');
+                            }
+                        }, 500);
+                    }
+                }, index * 600);
+            });
+        }
+        
+        function testAnnouncementSequencing() {
+            updateStatus('Testing announcement sequencing with multiple live regions');
+            
+            const achievement = {
+                id: 'announcement_sequence',
+                name: 'Communication Master',
+                description: 'This achievement tests the sophisticated announcement sequencing system with primary urgent announcements followed by detailed information in separate live regions.',
+                icon: '📢',
+                category: 'communication',
+                reward: { 
+                    dharma: 70,
+                    experience: 150
+                },
+                detailed_info: 'Primary announcement uses assertive live region for immediate attention, followed by detailed information in polite live region'
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+        }
+        
+        function testToastInteractions() {
+            updateStatus('Testing enhanced toast interaction features');
+            
+            const achievement = {
+                id: 'interaction_test',
+                name: 'Interactive Guardian',
+                description: 'Test all interactive features including sharing, viewing details, and dismissing with both keyboard and mouse.',
+                icon: '🎮',
+                category: 'interaction',
+                reward: { dharma: 45 },
+                shareable: true,
+                shareText: 'Testing interactive features in Dharmapala Shield!'
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+        }
+        
+        function testGameIntegration() {
+            updateStatus('Testing comprehensive game system integration');
+            
+            const achievement = {
+                id: 'integration_master',
+                name: 'System Integration Master',
+                description: 'Successfully integrated with all game systems including save data, audio feedback, and achievement tracking.',
+                icon: '🔗',
+                category: 'system',
+                reward: { dharma: 90 }
+            };
+            
+            accessibilitySystem.handleAchievementUnlock(achievement);
+        }
+        
+        function showAccessibilityHelp() {
+            accessibilitySystem.showKeyboardHelp();
+            updateStatus('Comprehensive keyboard help dialog opened');
+        }
+        
+        function clearAllNotifications() {
+            accessibilitySystem.clearAllToasts();
+            updateStatus('All achievement notifications cleared');
+        }
+        
+        function testCleanup() {
+            updateStatus('Testing system cleanup procedures');
+            
+            // Create some toasts first
+            testMultipleAchievements();
+            
+            // Then clear them after a delay
+            setTimeout(() => {
+                accessibilitySystem.clearAllToasts();
+                updateStatus('Cleanup test completed - all toasts cleared');
+            }, 3000);
+        }
+        
+        function testAccessibilityDestroy() {
+            if (confirm('This will destroy and reinitialize the accessibility system. Continue?')) {
+                updateStatus('Destroying accessibility system...');
+                
+                accessibilitySystem.destroy();
+                
+                setTimeout(() => {
+                    updateStatus('Reinitializing accessibility system...');
+                    accessibilitySystem = new AchievementNotificationAccessibility(mockGame);
+                    updateStatus('Accessibility system successfully reinitialized');
+                }, 2000);
+            }
+        }
+        
+        // Global keyboard listener for help shortcut
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                showAccessibilityHelp();
+            }
+        });
+        
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (accessibilitySystem) {
+                accessibilitySystem.destroy();
+            }
+        });
+        
+        // Log when system is ready
+        console.log('Enhanced Achievement Notification Accessibility Test Ready');
+        console.log('Available test functions:', Object.getOwnPropertyNames(window).filter(name => name.startsWith('test')));
+    </script>
+</body>
+</html>

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defense Upgrade Tree Validation Optimization Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .test-container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #444;
+        }
+        .test-header {
+            color: #4CAF50;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success {
+            background: #2e7d32;
+            color: white;
+        }
+        .error {
+            background: #c62828;
+            color: white;
+        }
+        .warning {
+            background: #f57c00;
+            color: white;
+        }
+        .info {
+            background: #1565c0;
+            color: white;
+        }
+        .performance {
+            background: #6a1b9a;
+            color: white;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        #testResults {
+            max-height: 500px;
+            overflow-y: auto;
+            background: #333;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .stats-panel {
+            background: #333;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .stat-item {
+            padding: 8px 12px;
+            background: #444;
+            border-radius: 3px;
+            border-left: 3px solid #4CAF50;
+        }
+        .stat-label {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-value {
+            color: #fff;
+            font-size: 14px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛡️ Defense Upgrade Tree Validation Optimization Test</h1>
+    <p>Testing the enhanced caching and lazy validation system for defense upgrade trees.</p>
+
+    <div class="test-container">
+        <h2 class="test-header">Test Controls</h2>
+        <button onclick="runCacheInitTest()">Initialize Cache System</button>
+        <button onclick="runPerformanceTest()">Performance Comparison</button>
+        <button onclick="runStressTest()">Stress Test (1000 validations)</button>
+        <button onclick="runLazyValidationTest()">Lazy Validation Test</button>
+        <button onclick="runCacheEfficiencyTest()">Cache Efficiency Test</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-header">Cache Performance Statistics</h2>
+        <div id="cacheStats">No statistics available</div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-header">Defense Status</h2>
+        <div id="defenseStatus">No defenses created yet</div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-header">Test Progress</h2>
+        <div class="progress-bar">
+            <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+        </div>
+        <div id="progressText">Ready to test</div>
+    </div>
+
+    <div class="test-container">
+        <h2 class="test-header">Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <!-- Mock CONFIG for testing -->
+    <script>
+        // Mock CONFIG for testing
+        window.CONFIG = {
+            DEFENSE_TYPES: {
+                firewall: {
+                    damage: 20,
+                    range: 100,
+                    fireRate: 1000,
+                    cost: 50,
+                    color: '#ff6b6b',
+                    abilities: ['armor_piercing']
+                },
+                encryption: {
+                    damage: 15,
+                    range: 120,
+                    fireRate: 1200,
+                    cost: 60,
+                    color: '#4ecdc4',
+                    abilities: ['slow_field']
+                },
+                decoy: {
+                    damage: 10,
+                    range: 80,
+                    fireRate: 800,
+                    cost: 40,
+                    color: '#45b7d1',
+                    abilities: ['confusion']
+                }
+            },
+            UPGRADE_TREES: {
+                firewall: {
+                    2: {
+                        description: 'Enhanced Firewall',
+                        modifiers: { damage: 1.3, fireRate: 0.9 },
+                        abilities: ['improved_targeting']
+                    },
+                    3: {
+                        description: 'Advanced Firewall',
+                        modifiers: { damage: 1.2, range: 1.1 },
+                        abilities: ['explosive_rounds'],
+                        choices: [
+                            {
+                                name: 'Damage Focus',
+                                modifiers: { damage: 1.5 },
+                                abilities: ['armor_piercing']
+                            },
+                            {
+                                name: 'Speed Focus',  
+                                modifiers: { fireRate: 0.7 },
+                                abilities: ['rapid_fire']
+                            }
+                        ]
+                    },
+                    4: {
+                        description: 'Master Firewall',
+                        modifiers: { damage: 1.4, range: 1.2, fireRate: 0.8 },
+                        abilities: ['chain_lightning']
+                    },
+                    5: {
+                        description: 'Ultimate Firewall',
+                        modifiers: { damage: 1.6, range: 1.3, fireRate: 0.7 },
+                        abilities: ['quantum_bypass']
+                    }
+                },
+                encryption: {
+                    2: {
+                        description: 'Enhanced Encryption',
+                        modifiers: { range: 1.3, fireRate: 0.9 },
+                        abilities: ['improved_targeting']
+                    },
+                    3: {
+                        description: 'Advanced Encryption',
+                        modifiers: { damage: 1.2, range: 1.2 },
+                        abilities: ['viral_spread']
+                    }
+                },
+                decoy: {
+                    2: {
+                        description: 'Enhanced Decoy',
+                        modifiers: { range: 1.4 },
+                        abilities: ['mass_confusion']
+                    },
+                    3: {
+                        description: 'Advanced Decoy',
+                        modifiers: { damage: 1.3, range: 1.2 },
+                        abilities: ['phantom_army']
+                    }
+                }
+            }
+        };
+        
+        // Mock Utils
+        window.Utils = {
+            distance: (x1, y1, x2, y2) => Math.sqrt((x2-x1)**2 + (y2-y1)**2)
+        };
+    </script>
+
+    <!-- Include defense system -->
+    <script src="js/defense.js"></script>
+
+    <script>
+        let testDefenses = [];
+        let testResults = [];
+        let testProgress = 0;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            testResults.push({ message: logEntry, type });
+            updateResultsDisplay();
+            console.log(logEntry);
+        }
+
+        function updateResultsDisplay() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = testResults.map(result => 
+                `<div class="test-result ${result.type}">${result.message}</div>`
+            ).join('');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function updateProgress(percent, text) {
+            document.getElementById('progressFill').style.width = `${percent}%`;
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function updateCacheStats() {
+            const statsDiv = document.getElementById('cacheStats');
+            
+            if (!window.DEFENSE_VALIDATION_CACHE) {
+                statsDiv.innerHTML = '<div class="error">Cache system not available</div>';
+                return;
+            }
+
+            const stats = DEFENSE_VALIDATION_CACHE.getPerformanceStats();
+            
+            statsDiv.innerHTML = `
+                <div class="stats-panel">
+                    <div class="stat-item">
+                        <div class="stat-label">Cache Hit Rate</div>
+                        <div class="stat-value">${stats.hitRate}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Cache Hits</div>
+                        <div class="stat-value">${stats.cacheHits}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Cache Misses</div>
+                        <div class="stat-value">${stats.cacheMisses}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Avg Validation Time</div>
+                        <div class="stat-value">${stats.avgValidationTime}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Total Validations</div>
+                        <div class="stat-value">${stats.totalValidations}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Upgrade Trees Cached</div>
+                        <div class="stat-value">${stats.cacheSize.upgradeTrees}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Validation Results Cached</div>
+                        <div class="stat-value">${stats.cacheSize.validationResults}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Lazy Queue Size</div>
+                        <div class="stat-value">${stats.lazyQueueSize}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateDefenseStatus() {
+            const statusDiv = document.getElementById('defenseStatus');
+            
+            if (testDefenses.length === 0) {
+                statusDiv.innerHTML = 'No defenses created yet';
+                return;
+            }
+
+            const defenseInfo = testDefenses.map(defense => {
+                const info = defense.getInfo();
+                const cacheStats = defense.getCachePerformanceStats();
+                
+                return `
+                    <div class="stat-item">
+                        <div class="stat-label">${info.type} (Level ${info.level})</div>
+                        <div class="stat-value">
+                            Damage: ${info.damage}, Range: ${info.range}, Can Upgrade: ${info.canUpgrade}<br>
+                            Local Cache Age: ${cacheStats.local.treeCacheAge || 'N/A'}ms
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            statusDiv.innerHTML = `<div class="stats-panel">${defenseInfo}</div>`;
+        }
+
+        function runCacheInitTest() {
+            log('Starting Cache Initialization Test...', 'info');
+            updateProgress(10, 'Initializing cache system...');
+
+            try {
+                // Create test defenses
+                testDefenses = [
+                    new Defense('firewall', 100, 100),
+                    new Defense('encryption', 200, 150),
+                    new Defense('decoy', 300, 200)
+                ];
+
+                updateProgress(50, 'Defenses created, testing cache initialization...');
+
+                // Test cache system availability
+                if (!window.DEFENSE_VALIDATION_CACHE) {
+                    throw new Error('Global cache system not available');
+                }
+
+                log('✓ Global cache system initialized', 'success');
+                log(`✓ Created ${testDefenses.length} test defenses`, 'success');
+
+                // Test defense cache integration
+                testDefenses.forEach((defense, index) => {
+                    if (!defense.validationCache) {
+                        throw new Error(`Defense ${index} missing cache reference`);
+                    }
+                    log(`✓ Defense ${defense.type} cache integration verified`, 'success');
+                });
+
+                updateProgress(100, 'Cache initialization test completed');
+                log('Cache initialization test PASSED', 'success');
+
+            } catch (error) {
+                log(`Cache initialization test FAILED: ${error.message}`, 'error');
+                updateProgress(0, 'Test failed');
+            }
+
+            updateCacheStats();
+            updateDefenseStatus();
+        }
+
+        function runPerformanceTest() {
+            log('Starting Performance Comparison Test...', 'info');
+            updateProgress(0, 'Starting performance test...');
+
+            if (testDefenses.length === 0) {
+                log('No test defenses available. Run cache init test first.', 'warning');
+                return;
+            }
+
+            try {
+                const iterations = 100;
+                const defense = testDefenses[0];
+
+                // Warm up cache
+                updateProgress(10, 'Warming up cache...');
+                for (let i = 0; i < 10; i++) {
+                    defense.canUpgrade();
+                    defense.getUpgradePreview();
+                }
+
+                // Test cached performance
+                updateProgress(30, 'Testing cached validation performance...');
+                const cachedStart = performance.now();
+                for (let i = 0; i < iterations; i++) {
+                    defense.canUpgrade();
+                    defense.getUpgradePreview();
+                }
+                const cachedTime = performance.now() - cachedStart;
+
+                // Clear cache for comparison
+                updateProgress(60, 'Clearing cache for comparison...');
+                DEFENSE_VALIDATION_CACHE.reset();
+
+                // Test uncached performance (first access)
+                updateProgress(80, 'Testing uncached validation performance...');
+                const uncachedStart = performance.now();
+                for (let i = 0; i < 10; i++) { // Fewer iterations for uncached
+                    defense.canUpgrade();
+                    defense.getUpgradePreview();
+                }
+                const uncachedTime = performance.now() - uncachedStart;
+
+                // Calculate performance improvement
+                const avgCachedTime = cachedTime / iterations;
+                const avgUncachedTime = uncachedTime / 10;
+                const improvement = ((avgUncachedTime - avgCachedTime) / avgUncachedTime * 100).toFixed(1);
+
+                updateProgress(100, 'Performance test completed');
+                
+                log(`Performance Test Results:`, 'performance');
+                log(`  Cached (${iterations} ops): ${cachedTime.toFixed(2)}ms (${avgCachedTime.toFixed(3)}ms avg)`, 'performance');
+                log(`  Uncached (10 ops): ${uncachedTime.toFixed(2)}ms (${avgUncachedTime.toFixed(3)}ms avg)`, 'performance');
+                log(`  Performance improvement: ${improvement}%`, 'performance');
+
+                if (improvement > 50) {
+                    log('✓ Significant performance improvement achieved', 'success');
+                } else if (improvement > 20) {
+                    log('✓ Moderate performance improvement achieved', 'success');
+                } else {
+                    log('⚠ Limited performance improvement', 'warning');
+                }
+
+            } catch (error) {
+                log(`Performance test FAILED: ${error.message}`, 'error');
+                updateProgress(0, 'Test failed');
+            }
+
+            updateCacheStats();
+        }
+
+        function runStressTest() {
+            log('Starting Stress Test (1000 validations)...', 'info');
+            updateProgress(0, 'Preparing stress test...');
+
+            if (testDefenses.length === 0) {
+                log('No test defenses available. Run cache init test first.', 'warning');
+                return;
+            }
+
+            try {
+                const totalOperations = 1000;
+                const defenseTypes = ['firewall', 'encryption', 'decoy'];
+                let completedOperations = 0;
+
+                const stressStart = performance.now();
+
+                // Create multiple defense instances
+                const stressDefenses = [];
+                for (let i = 0; i < 10; i++) {
+                    const type = defenseTypes[i % defenseTypes.length];
+                    stressDefenses.push(new Defense(type, i * 50, i * 30));
+                }
+
+                updateProgress(10, 'Created stress test defenses...');
+
+                // Perform rapid validations
+                for (let i = 0; i < totalOperations; i++) {
+                    const defense = stressDefenses[i % stressDefenses.length];
+                    const level = 2 + (i % 4); // Test levels 2-5
+                    const choiceIndex = i % 3; // Test different choices
+
+                    try {
+                        DEFENSE_VALIDATION_CACHE.validateUpgradePath(defense.type, level, choiceIndex);
+                        defense.canUpgrade();
+                        
+                        if (i % 4 === 0) {
+                            defense.getUpgradePreview();
+                        }
+
+                        completedOperations++;
+
+                        if (i % 100 === 0) {
+                            const progress = (i / totalOperations) * 80 + 10;
+                            updateProgress(progress, `Completed ${i}/${totalOperations} operations...`);
+                        }
+
+                    } catch (error) {
+                        log(`Stress test error at operation ${i}: ${error.message}`, 'warning');
+                    }
+                }
+
+                const stressTime = performance.now() - stressStart;
+                const opsPerSecond = (completedOperations / (stressTime / 1000)).toFixed(0);
+
+                updateProgress(100, 'Stress test completed');
+
+                log(`Stress Test Results:`, 'performance');
+                log(`  Total operations: ${completedOperations}/${totalOperations}`, 'performance');
+                log(`  Total time: ${stressTime.toFixed(2)}ms`, 'performance');
+                log(`  Operations per second: ${opsPerSecond}`, 'performance');
+                log(`  Average time per operation: ${(stressTime / completedOperations).toFixed(3)}ms`, 'performance');
+
+                if (completedOperations === totalOperations) {
+                    log('✓ Stress test PASSED - All operations completed successfully', 'success');
+                } else {
+                    log(`⚠ Stress test completed with ${totalOperations - completedOperations} failures`, 'warning');
+                }
+
+            } catch (error) {
+                log(`Stress test FAILED: ${error.message}`, 'error');
+                updateProgress(0, 'Test failed');
+            }
+
+            updateCacheStats();
+        }
+
+        function runLazyValidationTest() {
+            log('Starting Lazy Validation Test...', 'info');
+            updateProgress(0, 'Testing lazy validation system...');
+
+            try {
+                const cache = DEFENSE_VALIDATION_CACHE;
+                
+                // Test that validation is deferred until needed
+                updateProgress(20, 'Testing deferred validation...');
+                
+                const defenseType = 'firewall';
+                const testLevel = 3;
+                
+                // Clear cache to ensure clean test
+                cache.reset();
+                
+                // This should trigger lazy validation
+                const validationResult = cache.validateUpgradePath(defenseType, testLevel);
+                
+                if (!validationResult) {
+                    throw new Error('Lazy validation returned null result');
+                }
+                
+                log(`✓ Lazy validation result: ${JSON.stringify(validationResult)}`, 'info');
+                
+                // Test that subsequent calls use cache
+                updateProgress(50, 'Testing cache reuse...');
+                
+                const cachedResult = cache.validateUpgradePath(defenseType, testLevel);
+                if (JSON.stringify(cachedResult) !== JSON.stringify(validationResult)) {
+                    throw new Error('Cached result differs from original');
+                }
+                
+                log('✓ Cache reuse working correctly', 'success');
+                
+                // Test choice-specific validation
+                updateProgress(75, 'Testing choice-specific validation...');
+                
+                const choiceResult = cache.validateUpgradePath(defenseType, testLevel, 1);
+                if (!choiceResult) {
+                    throw new Error('Choice-specific validation failed');
+                }
+                
+                log(`✓ Choice validation result: ${JSON.stringify(choiceResult)}`, 'info');
+                
+                updateProgress(100, 'Lazy validation test completed');
+                log('✓ Lazy validation test PASSED', 'success');
+                
+            } catch (error) {
+                log(`Lazy validation test FAILED: ${error.message}`, 'error');
+                updateProgress(0, 'Test failed');
+            }
+            
+            updateCacheStats();
+        }
+
+        function runCacheEfficiencyTest() {
+            log('Starting Cache Efficiency Test...', 'info');
+            updateProgress(0, 'Testing cache efficiency...');
+
+            try {
+                const cache = DEFENSE_VALIDATION_CACHE;
+                
+                // Reset cache for clean test
+                cache.reset();
+                updateProgress(10, 'Cache reset completed');
+
+                // Pre-validate common paths
+                const defenseTypes = ['firewall', 'encryption', 'decoy'];
+                cache.preValidateCommonPaths(defenseTypes);
+                updateProgress(30, 'Pre-validation triggered');
+
+                // Wait for pre-validation to complete
+                setTimeout(() => {
+                    const statsAfterPrevalidation = cache.getPerformanceStats();
+                    log(`Pre-validation stats: ${JSON.stringify(statsAfterPrevalidation)}`, 'info');
+
+                    // Test cache hit rate with repeated operations
+                    updateProgress(50, 'Testing cache hit rate...');
+
+                    const testOperations = 50;
+                    for (let i = 0; i < testOperations; i++) {
+                        const type = defenseTypes[i % defenseTypes.length];
+                        const level = 2 + (i % 3);
+                        cache.validateUpgradePath(type, level);
+                    }
+
+                    const finalStats = cache.getPerformanceStats();
+                    const hitRate = parseFloat(finalStats.hitRate.replace('%', ''));
+
+                    updateProgress(100, 'Cache efficiency test completed');
+
+                    log(`Cache Efficiency Results:`, 'performance');
+                    log(`  Final hit rate: ${finalStats.hitRate}`, 'performance');
+                    log(`  Total cache operations: ${finalStats.cacheHits + finalStats.cacheMisses}`, 'performance');
+                    log(`  Cache sizes: ${JSON.stringify(finalStats.cacheSize)}`, 'performance');
+
+                    if (hitRate > 70) {
+                        log('✓ Excellent cache efficiency achieved', 'success');
+                    } else if (hitRate > 50) {
+                        log('✓ Good cache efficiency achieved', 'success');
+                    } else {
+                        log('⚠ Cache efficiency could be improved', 'warning');
+                    }
+
+                    updateCacheStats();
+
+                }, 1000);
+
+            } catch (error) {
+                log(`Cache efficiency test FAILED: ${error.message}`, 'error');
+                updateProgress(0, 'Test failed');
+            }
+        }
+
+        function clearResults() {
+            testResults = [];
+            updateResultsDisplay();
+            updateProgress(0, 'Ready to test');
+            log('Test results cleared', 'info');
+        }
+
+        // Auto-update stats every 5 seconds
+        setInterval(() => {
+            if (window.DEFENSE_VALIDATION_CACHE) {
+                updateCacheStats();
+                updateDefenseStatus();
+            }
+        }, 5000);
+
+        // Initialize
+        log('Defense Upgrade Tree Validation Optimization Test initialized', 'success');
+        log('Click "Initialize Cache System" to start testing', 'info');
+    </script>
+</body>
+</html>

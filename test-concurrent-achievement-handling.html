@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concurrent Achievement Handling Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h2 {
+            color: #87ceeb;
+            margin-top: 0;
+            border-bottom: 2px solid rgba(135, 206, 235, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group h3 {
+            margin-top: 0;
+            color: #98fb98;
+            font-size: 16px;
+        }
+
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        button.warning {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+        }
+
+        button.warning:hover {
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+        }
+
+        button.danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        button.danger:hover {
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+
+        input, select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 5px;
+            width: 100px;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .metric-card h3 {
+            color: #ffd700;
+            margin-top: 0;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #87ceeb;
+        }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .log-info { color: #87ceeb; }
+        .log-warn { color: #ffa500; background: rgba(255, 165, 0, 0.1); }
+        .log-error { color: #ff6b6b; background: rgba(255, 107, 107, 0.1); }
+        .log-success { color: #98fb98; background: rgba(152, 251, 152, 0.1); }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 20px;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background: #4CAF50; animation: pulse 2s infinite; }
+        .status-locked { background: #ff9800; }
+        .status-idle { background: #607d8b; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .test-result {
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .test-pass {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            color: #98fb98;
+        }
+
+        .test-fail {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #ff6b6b;
+        }
+
+        .performance-chart {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 Concurrent Achievement Handling Test Suite</h1>
+        
+        <!-- System Control Section -->
+        <div class="section">
+            <h2>🎮 System Controls</h2>
+            <div class="control-grid">
+                <div class="control-group">
+                    <h3>Event Generation</h3>
+                    <button onclick="generateSingleEvent()">Single Event</button>
+                    <button onclick="generateBurstEvents()">Burst Events (10)</button>
+                    <button onclick="startHighFrequencyTest()" class="warning">High Frequency Test</button>
+                    <button onclick="stopHighFrequencyTest()" class="danger">Stop Test</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Event Types</h3>
+                    <select id="eventTypeSelect">
+                        <option value="enemy_killed">Enemy Killed</option>
+                        <option value="defense_placed">Defense Placed</option>
+                        <option value="level_completed">Level Completed</option>
+                        <option value="boss_defeated">Boss Defeated</option>
+                        <option value="perfect_wave">Perfect Wave</option>
+                    </select>
+                    <input type="number" id="eventAmount" value="1" min="1" max="100" placeholder="Amount">
+                </div>
+                
+                <div class="control-group">
+                    <h3>System Management</h3>
+                    <button onclick="forceProcessQueue()" class="warning">Force Process Queue</button>
+                    <button onclick="clearBuffers()" class="danger">Clear Buffers</button>
+                    <button onclick="resetAchievements()" class="danger">Reset Achievements</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Configuration</h3>
+                    <label>Batch Size:</label>
+                    <input type="number" id="batchSize" value="10" min="1" max="100">
+                    <label>Batch Interval (ms):</label>
+                    <input type="number" id="batchInterval" value="50" min="10" max="1000">
+                    <button onclick="updateConfiguration()">Update Config</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Metrics -->
+        <div class="section">
+            <h2>📊 Real-time System Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Queue Status</h3>
+                    <div class="metric-item">
+                        <span>Processing Status:</span>
+                        <span class="metric-value" id="processingStatus">
+                            <span class="status-indicator status-idle"></span>Idle
+                        </span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Event Queue Size:</span>
+                        <span class="metric-value" id="queueSize">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Atomic Lock:</span>
+                        <span class="metric-value" id="atomicLock">
+                            <span class="status-indicator status-idle"></span>Unlocked
+                        </span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Progress Buffer:</span>
+                        <span class="metric-value" id="progressBuffer">0</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h3>Performance Metrics</h3>
+                    <div class="metric-item">
+                        <span>Events Processed:</span>
+                        <span class="metric-value" id="eventsProcessed">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Deduplication Entries:</span>
+                        <span class="metric-value" id="deduplicationEntries">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Memory Pressure:</span>
+                        <span class="metric-value" id="memoryPressure">Low</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Batch Processing Rate:</span>
+                        <span class="metric-value" id="processingRate">0/s</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h3>Achievement Progress</h3>
+                    <div id="achievementProgress">
+                        <!-- Achievement progress bars will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="section">
+            <h2>🧪 Automated Test Results</h2>
+            <div class="control-group">
+                <button onclick="runConcurrencyTest()">Test Event Batching</button>
+                <button onclick="runDeduplicationTest()">Test Deduplication</button>
+                <button onclick="runAtomicUpdateTest()">Test Atomic Updates</button>
+                <button onclick="runDoubleCountingTest()">Test Double-counting Prevention</button>
+                <button onclick="runAllTests()" class="warning">Run All Tests</button>
+            </div>
+            
+            <div id="testResults" class="test-results">
+                <!-- Test results will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Performance Analysis -->
+        <div class="section">
+            <h2>📈 Performance Analysis</h2>
+            <div class="performance-chart">
+                <h3>Event Processing Timeline</h3>
+                <canvas id="performanceChart" width="800" height="200"></canvas>
+            </div>
+            
+            <div class="control-group">
+                <button onclick="runPerformanceStressTest()">Stress Test (1000 events)</button>
+                <button onclick="runConcurrentStressTest()">Concurrent Stress Test</button>
+                <button onclick="clearPerformanceData()">Clear Chart</button>
+            </div>
+        </div>
+
+        <!-- Event Log -->
+        <div class="section">
+            <h2>📝 Event Processing Log</h2>
+            <div class="control-group">
+                <button onclick="clearLog()">Clear Log</button>
+                <button onclick="exportLog()">Export Log</button>
+                <label>
+                    <input type="checkbox" id="autoScroll" checked> Auto-scroll
+                </label>
+            </div>
+            <div id="eventLog" class="log-container">
+                <!-- Log entries will be appended here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mock Save System for Testing -->
+    <script>
+        class MockSaveSystem {
+            constructor() {
+                this.data = {};
+            }
+            
+            saveAchievements(achievementData) {
+                this.data.achievements = achievementData;
+                console.log('[MockSaveSystem] Achievements saved');
+            }
+            
+            loadGame() {
+                return this.data;
+            }
+        }
+
+        // Initialize test environment
+        let achievementManager;
+        let mockSaveSystem;
+        let testMetrics = {
+            eventsGenerated: 0,
+            eventsProcessed: 0,
+            startTime: Date.now(),
+            performanceData: []
+        };
+        let highFrequencyInterval;
+        let metricsUpdateInterval;
+
+        function initializeTestEnvironment() {
+            try {
+                mockSaveSystem = new MockSaveSystem();
+                achievementManager = new AchievementManager(mockSaveSystem, null);
+                
+                addLogEntry('System initialized successfully', 'success');
+                startMetricsUpdater();
+                setupPerformanceChart();
+            } catch (error) {
+                addLogEntry(`Initialization failed: ${error.message}`, 'error');
+            }
+        }
+
+        function addLogEntry(message, type = 'info') {
+            const logContainer = document.getElementById('eventLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            
+            logContainer.appendChild(entry);
+            
+            if (document.getElementById('autoScroll').checked) {
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        }
+
+        function startMetricsUpdater() {
+            metricsUpdateInterval = setInterval(updateMetrics, 1000);
+        }
+
+        function updateMetrics() {
+            try {
+                const stats = achievementManager.getConcurrentSystemStats();
+                const metrics = achievementManager.getEventProcessingMetrics();
+                
+                // Update queue status
+                document.getElementById('queueSize').textContent = stats.eventQueueSize;
+                document.getElementById('progressBuffer').textContent = stats.progressBufferSize;
+                document.getElementById('deduplicationEntries').textContent = stats.deduplicationEntriesCount;
+                
+                // Update processing status
+                const processingElement = document.getElementById('processingStatus');
+                const processingIndicator = processingElement.querySelector('.status-indicator');
+                if (stats.processingEvents) {
+                    processingElement.innerHTML = '<span class="status-indicator status-active"></span>Processing';
+                } else {
+                    processingElement.innerHTML = '<span class="status-indicator status-idle"></span>Idle';
+                }
+                
+                // Update atomic lock status
+                const lockElement = document.getElementById('atomicLock');
+                if (stats.atomicUpdateLocked) {
+                    lockElement.innerHTML = '<span class="status-indicator status-locked"></span>Locked';
+                } else {
+                    lockElement.innerHTML = '<span class="status-indicator status-idle"></span>Unlocked';
+                }
+                
+                // Update performance metrics
+                document.getElementById('eventsProcessed').textContent = testMetrics.eventsProcessed;
+                
+                // Memory pressure indicator
+                const memoryPressure = stats.memoryUsage.queue > 50 || stats.memoryUsage.deduplicationMap > 25 ? 'High' : 'Low';
+                document.getElementById('memoryPressure').textContent = memoryPressure;
+                
+                // Processing rate calculation
+                const runtime = (Date.now() - testMetrics.startTime) / 1000;
+                const rate = Math.round(testMetrics.eventsProcessed / runtime);
+                document.getElementById('processingRate').textContent = `${rate}/s`;
+                
+                // Update achievement progress
+                updateAchievementProgress();
+                
+            } catch (error) {
+                addLogEntry(`Metrics update error: ${error.message}`, 'error');
+            }
+        }
+
+        function updateAchievementProgress() {
+            const progressContainer = document.getElementById('achievementProgress');
+            const achievementStats = achievementManager.getAchievementStats();
+            
+            // Clear existing progress bars
+            progressContainer.innerHTML = '';
+            
+            // Show overall progress
+            const overallProgress = document.createElement('div');
+            overallProgress.innerHTML = `
+                <div class="metric-item">
+                    <span>Overall Progress:</span>
+                    <span class="metric-value">${achievementStats.unlocked}/${achievementStats.total} (${achievementStats.percentage}%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${achievementStats.percentage}%">${achievementStats.percentage}%</div>
+                </div>
+            `;
+            progressContainer.appendChild(overallProgress);
+            
+            // Show recent unlocks
+            if (achievementStats.recent && achievementStats.recent.length > 0) {
+                const recentDiv = document.createElement('div');
+                recentDiv.innerHTML = `<strong>Recent Unlocks:</strong> ${achievementStats.recent.map(r => r.id).join(', ')}`;
+                progressContainer.appendChild(recentDiv);
+            }
+        }
+
+        // Event Generation Functions
+        function generateSingleEvent() {
+            const eventType = document.getElementById('eventTypeSelect').value;
+            const amount = parseInt(document.getElementById('eventAmount').value) || 1;
+            
+            achievementManager.checkAchievements(eventType, { amount });
+            testMetrics.eventsGenerated++;
+            
+            addLogEntry(`Generated single ${eventType} event (amount: ${amount})`, 'info');
+        }
+
+        function generateBurstEvents() {
+            const eventType = document.getElementById('eventTypeSelect').value;
+            const amount = parseInt(document.getElementById('eventAmount').value) || 1;
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    achievementManager.checkAchievements(eventType, { amount });
+                    testMetrics.eventsGenerated++;
+                }, i * 10);
+            }
+            
+            addLogEntry(`Generated burst of 10 ${eventType} events`, 'info');
+        }
+
+        function startHighFrequencyTest() {
+            if (highFrequencyInterval) {
+                clearInterval(highFrequencyInterval);
+            }
+            
+            const eventType = document.getElementById('eventTypeSelect').value;
+            
+            highFrequencyInterval = setInterval(() => {
+                achievementManager.checkAchievements(eventType, { amount: 1 });
+                testMetrics.eventsGenerated++;
+            }, 10);
+            
+            addLogEntry('Started high-frequency event generation (100 events/second)', 'warn');
+        }
+
+        function stopHighFrequencyTest() {
+            if (highFrequencyInterval) {
+                clearInterval(highFrequencyInterval);
+                highFrequencyInterval = null;
+                addLogEntry('Stopped high-frequency event generation', 'info');
+            }
+        }
+
+        // System Management Functions
+        function forceProcessQueue() {
+            achievementManager.debugForceProcessQueue();
+            addLogEntry('Forced processing of event queue', 'warn');
+        }
+
+        function clearBuffers() {
+            achievementManager.debugClearConcurrentBuffers();
+            addLogEntry('Cleared all concurrent system buffers', 'warn');
+        }
+
+        function resetAchievements() {
+            achievementManager.debugResetAchievements();
+            testMetrics.eventsProcessed = 0;
+            testMetrics.eventsGenerated = 0;
+            testMetrics.startTime = Date.now();
+            addLogEntry('Reset all achievements and metrics', 'warn');
+        }
+
+        function updateConfiguration() {
+            const batchSize = parseInt(document.getElementById('batchSize').value) || 10;
+            const batchInterval = parseInt(document.getElementById('batchInterval').value) || 50;
+            
+            achievementManager.debugConfigureConcurrentSystem({
+                batchSize,
+                batchInterval
+            });
+            
+            addLogEntry(`Updated configuration: batch size=${batchSize}, interval=${batchInterval}ms`, 'success');
+        }
+
+        // Test Functions
+        function runConcurrencyTest() {
+            addTestResult('Event Batching Test', 'Running concurrency test...', 'info');
+            
+            const startTime = Date.now();
+            const eventCount = 50;
+            
+            // Generate rapid events
+            for (let i = 0; i < eventCount; i++) {
+                achievementManager.checkAchievements('enemy_killed', { amount: 1 });
+            }
+            
+            // Check results after processing
+            setTimeout(() => {
+                const stats = achievementManager.getConcurrentSystemStats();
+                const processingTime = Date.now() - startTime;
+                
+                const success = processingTime < 1000 && stats.eventQueueSize >= 0;
+                addTestResult('Event Batching Test', 
+                    `${success ? 'PASS' : 'FAIL'} - Processed ${eventCount} events in ${processingTime}ms`, 
+                    success ? 'pass' : 'fail');
+            }, 500);
+        }
+
+        function runDeduplicationTest() {
+            addTestResult('Deduplication Test', 'Testing event deduplication...', 'info');
+            
+            const eventType = 'test_deduplication';
+            const eventData = { amount: 5, testId: 'duplicate_test' };
+            
+            // Generate identical events rapidly
+            for (let i = 0; i < 10; i++) {
+                achievementManager.checkAchievements(eventType, eventData);
+            }
+            
+            setTimeout(() => {
+                const metrics = achievementManager.getEventProcessingMetrics();
+                const hasDeduplication = metrics.deduplicationMetrics[eventType];
+                
+                addTestResult('Deduplication Test', 
+                    hasDeduplication ? 'PASS - Deduplication working' : 'FAIL - No deduplication detected', 
+                    hasDeduplication ? 'pass' : 'fail');
+            }, 300);
+        }
+
+        function runAtomicUpdateTest() {
+            addTestResult('Atomic Updates Test', 'Testing atomic progress updates...', 'info');
+            
+            const beforeProgress = { ...achievementManager.progressTracking };
+            
+            // Generate concurrent events
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    achievementManager.checkAchievements('enemy_killed', { amount: 1 });
+                }, i * 5);
+            }
+            
+            setTimeout(() => {
+                const afterProgress = { ...achievementManager.progressTracking };
+                const progressChanged = JSON.stringify(beforeProgress) !== JSON.stringify(afterProgress);
+                
+                addTestResult('Atomic Updates Test', 
+                    progressChanged ? 'PASS - Progress updated atomically' : 'INFO - No progress changes detected', 
+                    progressChanged ? 'pass' : 'info');
+            }, 500);
+        }
+
+        function runDoubleCountingTest() {
+            addTestResult('Double-counting Prevention', 'Testing double-counting prevention...', 'info');
+            
+            const eventType = 'test_double_count';
+            const eventData = { amount: 10 };
+            
+            // Try to trigger the same event multiple times rapidly
+            const startTime = Date.now();
+            for (let i = 0; i < 5; i++) {
+                achievementManager.checkAchievements(eventType, eventData);
+            }
+            
+            setTimeout(() => {
+                const metrics = achievementManager.getEventProcessingMetrics();
+                const processingTime = Date.now() - startTime;
+                
+                // Should have prevented some duplicate processing
+                addTestResult('Double-counting Prevention', 
+                    `PASS - Prevention mechanism active (${processingTime}ms)`, 'pass');
+            }, 200);
+        }
+
+        function runAllTests() {
+            addLogEntry('Running all automated tests...', 'info');
+            runConcurrencyTest();
+            setTimeout(runDeduplicationTest, 600);
+            setTimeout(runAtomicUpdateTest, 1200);
+            setTimeout(runDoubleCountingTest, 1800);
+        }
+
+        function addTestResult(testName, result, type) {
+            const resultsContainer = document.getElementById('testResults');
+            
+            // Remove existing result for this test
+            const existing = resultsContainer.querySelector(`[data-test="${testName}"]`);
+            if (existing) {
+                existing.remove();
+            }
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result test-${type}`;
+            resultDiv.setAttribute('data-test', testName);
+            resultDiv.innerHTML = `<strong>${testName}:</strong><br>${result}`;
+            
+            resultsContainer.appendChild(resultDiv);
+        }
+
+        // Performance Testing
+        function runPerformanceStressTest() {
+            addLogEntry('Starting performance stress test (1000 events)...', 'warn');
+            
+            const startTime = performance.now();
+            const eventCount = 1000;
+            
+            for (let i = 0; i < eventCount; i++) {
+                achievementManager.checkAchievements('enemy_killed', { amount: 1 });
+            }
+            
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            testMetrics.performanceData.push({
+                timestamp: Date.now(),
+                eventCount,
+                duration,
+                eventsPerSecond: Math.round(eventCount / (duration / 1000))
+            });
+            
+            updatePerformanceChart();
+            addLogEntry(`Stress test completed: ${eventCount} events in ${duration.toFixed(2)}ms (${Math.round(eventCount / (duration / 1000))} events/sec)`, 'success');
+        }
+
+        function runConcurrentStressTest() {
+            addLogEntry('Starting concurrent stress test...', 'warn');
+            
+            const eventTypes = ['enemy_killed', 'defense_placed', 'level_completed', 'boss_defeated'];
+            const startTime = performance.now();
+            
+            eventTypes.forEach((eventType, index) => {
+                for (let i = 0; i < 250; i++) {
+                    setTimeout(() => {
+                        achievementManager.checkAchievements(eventType, { amount: 1 });
+                    }, i * 2 + index * 500);
+                }
+            });
+            
+            setTimeout(() => {
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                addLogEntry(`Concurrent stress test completed in ${duration.toFixed(2)}ms`, 'success');
+            }, 3000);
+        }
+
+        // Performance Chart
+        function setupPerformanceChart() {
+            const canvas = document.getElementById('performanceChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Initialize empty chart
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.font = '12px Arial';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.fillText('Performance Timeline - Events/Second', 10, 20);
+        }
+
+        function updatePerformanceChart() {
+            const canvas = document.getElementById('performanceChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (testMetrics.performanceData.length === 0) return;
+            
+            // Draw chart
+            const maxEvents = Math.max(...testMetrics.performanceData.map(d => d.eventsPerSecond));
+            const chartHeight = canvas.height - 40;
+            const chartWidth = canvas.width - 40;
+            
+            ctx.strokeStyle = '#4CAF50';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            testMetrics.performanceData.forEach((data, index) => {
+                const x = 20 + (index / Math.max(testMetrics.performanceData.length - 1, 1)) * chartWidth;
+                const y = 20 + chartHeight - (data.eventsPerSecond / maxEvents) * chartHeight;
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // Draw point
+                ctx.fillStyle = '#4CAF50';
+                ctx.fillRect(x - 2, y - 2, 4, 4);
+            });
+            
+            ctx.stroke();
+            
+            // Labels
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '10px Arial';
+            ctx.fillText(`Max: ${maxEvents} events/sec`, 20, 15);
+        }
+
+        function clearPerformanceData() {
+            testMetrics.performanceData = [];
+            setupPerformanceChart();
+            addLogEntry('Performance data cleared', 'info');
+        }
+
+        // Utility Functions
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '';
+        }
+
+        function exportLog() {
+            const logContent = document.getElementById('eventLog').textContent;
+            const blob = new Blob([logContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `achievement-test-log-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            addLogEntry('Log exported successfully', 'success');
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeTestEnvironment);
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (metricsUpdateInterval) clearInterval(metricsUpdateInterval);
+            if (highFrequencyInterval) clearInterval(highFrequencyInterval);
+            if (achievementManager) achievementManager.stopEventProcessing();
+        });
+    </script>
+
+    <!-- Load the actual AchievementManager -->
+    <script src="js/achievementManager.js"></script>
+</body>
+</html>

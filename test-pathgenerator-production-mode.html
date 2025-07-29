@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathGenerator Production Mode Test - Dharmapala Shield</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .production-mode {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        .production-mode:hover {
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        .danger-button {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+        
+        .status-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            max-width: 350px;
+            z-index: 1000;
+            border: 2px solid #4CAF50;
+        }
+        
+        .mode-indicator {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .development-mode {
+            background: rgba(76, 175, 80, 0.3);
+            border: 2px solid #4CAF50;
+        }
+        
+        .production-mode-indicator {
+            background: rgba(255, 152, 0, 0.3);
+            border: 2px solid #ff9800;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-title {
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .performance-chart {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .error-log {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+        
+        .info-box {
+            background: rgba(33, 150, 243, 0.2);
+            border: 2px solid rgba(33, 150, 243, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        h1, h2 {
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .circular-buffer-visual {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .buffer-slot {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #444;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .buffer-slot.filled {
+            background: rgba(255, 152, 0, 0.3);
+            border-color: #ff9800;
+        }
+        
+        .buffer-slot.current {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 PathGenerator Production Mode Test</h1>
+        
+        <div class="info-box">
+            <h3>🎯 Production Mode Features:</h3>
+            <ul>
+                <li><strong>Lightweight Error Handling:</strong> Reduced overhead and batching</li>
+                <li><strong>Circular Buffer:</strong> Fixed memory usage for error history</li>
+                <li><strong>Error Batching:</strong> Reduced logging frequency</li>
+                <li><strong>Validation Optimization:</strong> Minimal validation in production</li>
+                <li><strong>Performance Tuning:</strong> Reduced iterations and retries</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎛️ Mode Control</h2>
+            <button class="test-button production-mode" onclick="enableProductionMode()">
+                Enable Production Mode
+            </button>
+            <button class="test-button" onclick="enableDevelopmentMode()">
+                Enable Development Mode
+            </button>
+            <button class="test-button" onclick="toggleMode()">
+                Toggle Mode
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧪 Error Generation Tests</h2>
+            <button class="test-button" onclick="generateBatchedErrors()">
+                Generate Batched Errors (10x)
+            </button>
+            <button class="test-button" onclick="generateCriticalErrors()">
+                Generate Critical Errors
+            </button>
+            <button class="test-button" onclick="generateValidationErrors()">
+                Generate Validation Errors
+            </button>
+            <button class="test-button" onclick="stressTestErrorSystem()">
+                Stress Test Error System
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Performance Comparison</h2>
+            <button class="test-button" onclick="comparePerformanceModes()">
+                Compare Development vs Production
+            </button>
+            <button class="test-button" onclick="benchmarkPathGeneration()">
+                Benchmark Path Generation
+            </button>
+            <button class="test-button" onclick="testCircularBuffer()">
+                Test Circular Buffer Performance
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔍 Monitoring & Analysis</h2>
+            <button class="test-button" onclick="showProductionStatus()">
+                Show Production Status
+            </button>
+            <button class="test-button" onclick="showRecentErrors()">
+                Show Recent Errors
+            </button>
+            <button class="test-button" onclick="analyzeErrorPatterns()">
+                Analyze Error Patterns
+            </button>
+            <button class="test-button" onclick="exportProductionData()">
+                Export Production Data
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧹 Cleanup & Reset</h2>
+            <button class="test-button" onclick="flushErrorBatch()">
+                Flush Error Batch
+            </button>
+            <button class="test-button" onclick="resetErrorStats()">
+                Reset Error Statistics
+            </button>
+            <button class="test-button danger-button" onclick="destroyPathGenerator()">
+                Destroy PathGenerator
+            </button>
+        </div>
+    </div>
+    
+    <div id="status-display" class="status-display">
+        <div id="mode-indicator" class="mode-indicator development-mode">
+            DEVELOPMENT MODE
+        </div>
+        <div id="status-content">
+            Status: Ready
+        </div>
+    </div>
+    
+    <!-- Dependencies -->
+    <script>
+        // Mock CONFIG object
+        window.CONFIG = {
+            CANVAS_WIDTH: 800,
+            CANVAS_HEIGHT: 600,
+            GRID_SIZE: 20
+        };
+        
+        // Mock Utils
+        window.Utils = {
+            formatNumber: (num) => num.toLocaleString(),
+            capitalize: (str) => str.charAt(0).toUpperCase() + str.slice(1)
+        };
+    </script>
+    <script src="js/pathGenerator.js"></script>
+    
+    <script>
+        let pathGenerator = null;
+        let performanceData = {
+            development: [],
+            production: []
+        };
+        
+        // Initialize PathGenerator
+        function initializePathGenerator(productionMode = false) {
+            try {
+                if (pathGenerator) {
+                    pathGenerator.destroy();
+                }
+                
+                pathGenerator = new PathGenerator(800, 600, 20, {
+                    productionMode: productionMode
+                });
+                
+                updateModeIndicator();
+                updateStatus(`PathGenerator initialized in ${productionMode ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
+                
+                return true;
+            } catch (error) {
+                updateStatus(`Failed to initialize PathGenerator: ${error.message}`);
+                console.error('Initialization error:', error);
+                return false;
+            }
+        }
+        
+        function updateModeIndicator() {
+            const indicator = document.getElementById('mode-indicator');
+            const isProduction = pathGenerator && pathGenerator.productionMode;
+            
+            indicator.textContent = isProduction ? 'PRODUCTION MODE' : 'DEVELOPMENT MODE';
+            indicator.className = `mode-indicator ${isProduction ? 'production-mode-indicator' : 'development-mode'}`;
+        }
+        
+        function updateStatus(message) {
+            const statusContent = document.getElementById('status-content');
+            const timestamp = new Date().toLocaleTimeString();
+            statusContent.innerHTML = `<div><strong>[${timestamp}]</strong> ${message}</div>`;
+        }
+        
+        // Mode Control Functions
+        function enableProductionMode() {
+            if (!pathGenerator) {
+                initializePathGenerator(true);
+            } else {
+                pathGenerator.setProductionMode(true);
+                updateModeIndicator();
+                updateStatus('Switched to PRODUCTION mode');
+            }
+        }
+        
+        function enableDevelopmentMode() {
+            if (!pathGenerator) {
+                initializePathGenerator(false);
+            } else {
+                pathGenerator.setProductionMode(false);
+                updateModeIndicator();
+                updateStatus('Switched to DEVELOPMENT mode');
+            }
+        }
+        
+        function toggleMode() {
+            if (!pathGenerator) {
+                initializePathGenerator(false);
+                return;
+            }
+            
+            const newMode = !pathGenerator.productionMode;
+            pathGenerator.setProductionMode(newMode);
+            updateModeIndicator();
+            updateStatus(`Toggled to ${newMode ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
+        }
+        
+        // Error Generation Tests
+        function generateBatchedErrors() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            updateStatus('Generating batched errors...');
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    try {
+                        // Generate various types of errors
+                        const errorTypes = [
+                            () => pathGenerator.validatePoint(null, 'batch test'),
+                            () => pathGenerator.validatePoint({x: 'invalid'}, 'batch test'),
+                            () => pathGenerator.validateTheme('invalid_theme', 'batch test'),
+                            () => pathGenerator.generateBasePath('invalid_level', null, 'invalid_theme')
+                        ];
+                        
+                        const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+                        errorType();
+                        
+                    } catch (error) {
+                        // Expected errors for testing
+                    }
+                    
+                    if (i === 9) {
+                        setTimeout(() => {
+                            updateStatus('Batched errors generated - check console for batches');
+                        }, 1000);
+                    }
+                }, i * 200);
+            }
+        }
+        
+        function generateCriticalErrors() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            updateStatus('Generating critical errors...');
+            
+            try {
+                pathGenerator.logError(
+                    new Error('Critical system failure simulation'),
+                    'critical error test',
+                    'critical'
+                );
+                
+                pathGenerator.logError(
+                    new Error('Memory allocation failure'),
+                    'critical error test',
+                    'critical'
+                );
+                
+                updateStatus('Critical errors generated');
+            } catch (error) {
+                updateStatus(`Error generating critical errors: ${error.message}`);
+            }
+        }
+        
+        function generateValidationErrors() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            updateStatus('Generating validation errors...');
+            
+            const invalidInputs = [
+                null,
+                {x: 'invalid'},
+                {y: 'invalid'},
+                {x: -100, y: 50},
+                {x: 50, y: -100},
+                {x: 1000, y: 50},
+                {x: 50, y: 1000}
+            ];
+            
+            invalidInputs.forEach((input, index) => {
+                setTimeout(() => {
+                    try {
+                        pathGenerator.validatePoint(input, `validation test ${index}`);
+                    } catch (error) {
+                        // Expected validation errors
+                    }
+                }, index * 100);
+            });
+            
+            setTimeout(() => {
+                updateStatus('Validation errors generated');
+            }, invalidInputs.length * 100 + 500);
+        }
+        
+        function stressTestErrorSystem() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            updateStatus('Running stress test...');
+            const startTime = performance.now();
+            
+            let errorCount = 0;
+            const stressInterval = setInterval(() => {
+                try {
+                    // Generate random errors
+                    const errorTypes = [
+                        'validation',
+                        'generation',
+                        'reachability',
+                        'critical'
+                    ];
+                    
+                    const randomType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+                    const randomLevel = Math.random() < 0.1 ? 'critical' : 'error';
+                    
+                    pathGenerator.logError(
+                        new Error(`Stress test error ${errorCount}`),
+                        `stress test - ${randomType}`,
+                        randomLevel
+                    );
+                    
+                    errorCount++;
+                    
+                    if (errorCount >= 50) {
+                        clearInterval(stressInterval);
+                        const endTime = performance.now();
+                        updateStatus(`Stress test completed: ${errorCount} errors in ${(endTime - startTime).toFixed(2)}ms`);
+                    }
+                } catch (error) {
+                    clearInterval(stressInterval);
+                    updateStatus(`Stress test failed: ${error.message}`);
+                }
+            }, 50);
+        }
+        
+        // Performance Comparison
+        function comparePerformanceModes() {
+            updateStatus('Running performance comparison...');
+            
+            const runPerformanceTest = (mode, callback) => {
+                const testPathGenerator = new PathGenerator(800, 600, 20, {
+                    productionMode: mode === 'production'
+                });
+                
+                const startTime = performance.now();
+                let operations = 0;
+                
+                const testInterval = setInterval(() => {
+                    try {
+                        // Test operations
+                        testPathGenerator.validatePoint({x: Math.random() * 800, y: Math.random() * 600});
+                        testPathGenerator.logError(new Error('Test error'), 'performance test');
+                        
+                        operations++;
+                        
+                        if (operations >= 100) {
+                            clearInterval(testInterval);
+                            const endTime = performance.now();
+                            const duration = endTime - startTime;
+                            
+                            performanceData[mode].push({
+                                operations,
+                                duration,
+                                opsPerSecond: (operations / duration) * 1000
+                            });
+                            
+                            testPathGenerator.destroy();
+                            callback(duration, operations);
+                        }
+                    } catch (error) {
+                        // Expected for testing
+                    }
+                }, 1);
+            };
+            
+            runPerformanceTest('development', (devDuration, devOps) => {
+                runPerformanceTest('production', (prodDuration, prodOps) => {
+                    const improvement = ((devDuration - prodDuration) / devDuration * 100).toFixed(2);
+                    updateStatus(`Performance comparison complete:
+                        Development: ${devDuration.toFixed(2)}ms (${devOps} ops)
+                        Production: ${prodDuration.toFixed(2)}ms (${prodOps} ops)
+                        Improvement: ${improvement}%`);
+                });
+            });
+        }
+        
+        function benchmarkPathGeneration() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            updateStatus('Running path generation benchmark...');
+            
+            const startTime = performance.now();
+            let successCount = 0;
+            let errorCount = 0;
+            
+            const testCases = [
+                ['level1', null, 'cyber'],
+                ['level2', 12345, 'urban'],
+                ['level3', 54321, 'forest'],
+                ['invalid_level', null, 'cyber'],
+                ['level4', null, 'invalid_theme']
+            ];
+            
+            testCases.forEach((testCase, index) => {
+                setTimeout(() => {
+                    try {
+                        const path = pathGenerator.generateBasePath(testCase[0], testCase[1], testCase[2]);
+                        if (path) successCount++;
+                    } catch (error) {
+                        errorCount++;
+                    }
+                    
+                    if (index === testCases.length - 1) {
+                        const endTime = performance.now();
+                        const duration = endTime - startTime;
+                        updateStatus(`Benchmark complete: ${successCount} success, ${errorCount} errors in ${duration.toFixed(2)}ms`);
+                    }
+                }, index * 200);
+            });
+        }
+        
+        function testCircularBuffer() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            const wasProduction = pathGenerator.productionMode;
+            if (!wasProduction) {
+                pathGenerator.setProductionMode(true);
+            }
+            
+            updateStatus('Testing circular buffer...');
+            
+            // Generate more errors than buffer size
+            const bufferSize = pathGenerator.errorHandlingConfig.circularBufferSize;
+            const testErrors = bufferSize + 10;
+            
+            for (let i = 0; i < testErrors; i++) {
+                pathGenerator.logError(
+                    new Error(`Circular buffer test error ${i}`),
+                    'circular buffer test'
+                );
+            }
+            
+            setTimeout(() => {
+                const recentErrors = pathGenerator.getRecentErrors(10);
+                const status = pathGenerator.getProductionStatus();
+                
+                updateStatus(`Circular buffer test complete:
+                    Generated: ${testErrors} errors
+                    Buffer size: ${bufferSize}
+                    Recent errors: ${recentErrors.length}
+                    Buffer usage: ${status.errorStats.circularBufferUsage}`);
+                
+                if (!wasProduction) {
+                    pathGenerator.setProductionMode(false);
+                }
+            }, 1000);
+        }
+        
+        // Monitoring Functions
+        function showProductionStatus() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            const status = pathGenerator.getProductionStatus();
+            console.log('Production Status:', status);
+            
+            updateStatus(`Production Status:
+                Mode: ${status.productionMode ? 'PRODUCTION' : 'DEVELOPMENT'}
+                Total Errors: ${status.errorStats.totalErrors}
+                Critical Errors: ${status.errorStats.criticalErrors}
+                Lightweight Operations: ${status.performanceOptimizations.lightweightOperations}
+                Validation Skips: ${status.performanceOptimizations.validationSkips}
+                Buffer Usage: ${status.errorStats.circularBufferUsage}`);
+        }
+        
+        function showRecentErrors() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            const recentErrors = pathGenerator.getRecentErrors(5);
+            console.log('Recent Errors:', recentErrors);
+            
+            let errorSummary = 'Recent Errors:\n';
+            recentErrors.forEach((error, index) => {
+                const time = new Date(error.timestamp).toLocaleTimeString();
+                errorSummary += `${index + 1}. [${time}] ${error.level.toUpperCase()}: ${error.message}\n`;
+            });
+            
+            updateStatus(errorSummary || 'No recent errors');
+        }
+        
+        function analyzeErrorPatterns() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            const recentErrors = pathGenerator.getRecentErrors(20);
+            const patterns = {};
+            const levels = {};
+            
+            recentErrors.forEach(error => {
+                patterns[error.errorType] = (patterns[error.errorType] || 0) + 1;
+                levels[error.level] = (levels[error.level] || 0) + 1;
+            });
+            
+            console.log('Error Pattern Analysis:', { patterns, levels });
+            
+            let analysis = 'Error Pattern Analysis:\n';
+            analysis += 'Types: ' + Object.entries(patterns).map(([type, count]) => `${type}(${count})`).join(', ') + '\n';
+            analysis += 'Levels: ' + Object.entries(levels).map(([level, count]) => `${level}(${count})`).join(', ');
+            
+            updateStatus(analysis);
+        }
+        
+        function exportProductionData() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            const data = {
+                timestamp: new Date().toISOString(),
+                productionStatus: pathGenerator.getProductionStatus(),
+                recentErrors: pathGenerator.getRecentErrors(10),
+                performanceData: performanceData
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pathgenerator-production-data-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            updateStatus('Production data exported');
+        }
+        
+        // Cleanup Functions
+        function flushErrorBatch() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            if (pathGenerator.productionMode) {
+                pathGenerator.flushErrorBatch();
+                updateStatus('Error batch flushed');
+            } else {
+                updateStatus('Error batching only available in production mode');
+            }
+        }
+        
+        function resetErrorStats() {
+            if (!pathGenerator) {
+                updateStatus('Please initialize PathGenerator first');
+                return;
+            }
+            
+            pathGenerator.resetErrorStats();
+            updateStatus('Error statistics reset');
+        }
+        
+        function destroyPathGenerator() {
+            if (!pathGenerator) {
+                updateStatus('No PathGenerator to destroy');
+                return;
+            }
+            
+            pathGenerator.destroy();
+            pathGenerator = null;
+            updateStatus('PathGenerator destroyed');
+            
+            const indicator = document.getElementById('mode-indicator');
+            indicator.textContent = 'NO INSTANCE';
+            indicator.className = 'mode-indicator';
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('Page loaded - ready for testing');
+            console.log('PathGenerator Production Mode Test Ready');
+        });
+        
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (pathGenerator) {
+                pathGenerator.destroy();
+            }
+        });
+    </script>
+</body>
+</html>

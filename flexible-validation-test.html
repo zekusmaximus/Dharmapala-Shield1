@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexible Path Validation Test - Dharmapala Shield</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            color: #64b5f6;
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header p {
+            color: #90caf9;
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+        }
+        
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-section h3 {
+            color: #81c784;
+            margin-top: 0;
+            font-size: 1.3em;
+            border-bottom: 2px solid #81c784;
+            padding-bottom: 8px;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #e3f2fd;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #64b5f6;
+            box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.3);
+        }
+        
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #4fc3f7, #29b6f6);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(45deg, #29b6f6, #0288d1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(41, 182, 246, 0.4);
+        }
+        
+        .btn.secondary {
+            background: linear-gradient(45deg, #81c784, #66bb6a);
+        }
+        
+        .btn.secondary:hover {
+            background: linear-gradient(45deg, #66bb6a, #4caf50);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(45deg, #ffb74d, #ffa726);
+        }
+        
+        .btn.warning:hover {
+            background: linear-gradient(45deg, #ffa726, #ff9800);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(45deg, #e57373, #ef5350);
+        }
+        
+        .btn.danger:hover {
+            background: linear-gradient(45deg, #ef5350, #f44336);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .results-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .results-panel h3 {
+            color: #ffab40;
+            margin-top: 0;
+            border-bottom: 2px solid #ffab40;
+            padding-bottom: 8px;
+        }
+        
+        .log-area {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4fc3f7;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #b3e5fc;
+        }
+        
+        .validation-result {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid;
+        }
+        
+        .validation-result.valid {
+            border-left-color: #4caf50;
+        }
+        
+        .validation-result.warning {
+            border-left-color: #ff9800;
+        }
+        
+        .validation-result.error {
+            border-left-color: #f44336;
+        }
+        
+        .validation-result.critical {
+            border-left-color: #e91e63;
+            background: rgba(233, 30, 99, 0.1);
+        }
+        
+        .profile-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .profile-btn {
+            padding: 8px 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .profile-btn.active {
+            border-color: #4fc3f7;
+            background: rgba(79, 195, 247, 0.2);
+            color: #4fc3f7;
+        }
+        
+        .override-editor {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .override-editor textarea {
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #e3f2fd;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7, #29b6f6);
+            transition: width 0.3s ease;
+        }
+        
+        .canvas-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        #pathCanvas {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Flexible Path Validation System</h1>
+            <p>Advanced testing environment for configurable validation parameters and profiles</p>
+        </div>
+        
+        <div class="control-panel">
+            <!-- Validation Profile Selection -->
+            <div class="control-section">
+                <h3>🎯 Validation Profile</h3>
+                <p>Select validation profile for different gameplay styles:</p>
+                <div class="profile-selector" id="profileSelector">
+                    <!-- Profiles will be populated here -->
+                </div>
+                <div class="form-group">
+                    <label for="customProfile">Custom Profile Name:</label>
+                    <input type="text" id="customProfile" placeholder="Enter custom profile name">
+                </div>
+            </div>
+            
+            <!-- Level and Theme Configuration -->
+            <div class="control-section">
+                <h3>🎮 Test Configuration</h3>
+                <div class="form-group">
+                    <label for="levelId">Level ID:</label>
+                    <input type="number" id="levelId" value="5" min="1" max="25">
+                </div>
+                <div class="form-group">
+                    <label for="theme">Theme:</label>
+                    <select id="theme">
+                        <option value="cyber">Cyber</option>
+                        <option value="urban">Urban</option>
+                        <option value="forest">Forest</option>
+                        <option value="mountain">Mountain</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="allowOverrides" checked>
+                        Allow Level/Theme Overrides
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="generateRecommendations" checked>
+                        Generate Recommendations
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Path Generation Options -->
+            <div class="control-section">
+                <h3>🛤️ Path Generation</h3>
+                <div class="form-group">
+                    <label for="pathComplexity">Path Complexity:</label>
+                    <input type="range" id="pathComplexity" min="0.1" max="1.0" step="0.1" value="0.5">
+                    <span id="complexityValue">0.5</span>
+                </div>
+                <div class="form-group">
+                    <label for="pathLength">Path Length:</label>
+                    <input type="range" id="pathLength" min="200" max="1500" step="50" value="600">
+                    <span id="lengthValue">600</span>
+                </div>
+                <div class="form-group">
+                    <label for="testCount">Test Iterations:</label>
+                    <input type="number" id="testCount" value="5" min="1" max="50">
+                </div>
+            </div>
+            
+            <!-- Override Configuration -->
+            <div class="control-section">
+                <h3>⚙️ Validation Overrides</h3>
+                <div class="form-group">
+                    <label for="overrideLevel">Override Level:</label>
+                    <input type="number" id="overrideLevel" value="5" min="1" max="25">
+                </div>
+                <div class="override-editor">
+                    <label for="overrideConfig">Override Configuration (JSON):</label>
+                    <textarea id="overrideConfig" placeholder='{\n  "pathLength": {\n    "min": 300,\n    "max": 800\n  },\n  "turnAngle": {\n    "max": 2.0\n  }\n}'></textarea>
+                </div>
+                <button class="btn secondary" onclick="applyOverrides()">Apply Overrides</button>
+                <button class="btn warning" onclick="clearOverrides()">Clear Overrides</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Results Panel -->
+            <div class="results-panel">
+                <h3>📊 Validation Results</h3>
+                
+                <!-- Control Buttons -->
+                <div style="margin-bottom: 20px;">
+                    <button class="btn" onclick="runSingleValidation()">Single Validation Test</button>
+                    <button class="btn secondary" onclick="runBatchValidation()">Batch Validation Test</button>
+                    <button class="btn warning" onclick="runStressTest()">Stress Test</button>
+                    <button class="btn danger" onclick="clearResults()">Clear Results</button>
+                </div>
+                
+                <!-- Canvas for Path Visualization -->
+                <div class="canvas-container">
+                    <canvas id="pathCanvas" width="600" height="300"></canvas>
+                    <p>Path visualization (latest test)</p>
+                </div>
+                
+                <!-- Results Log -->
+                <div class="log-area" id="resultsLog">
+System initialized. Click "Single Validation Test" to begin.
+                </div>
+            </div>
+            
+            <!-- Statistics Panel -->
+            <div class="results-panel">
+                <h3>📈 Statistics & Metrics</h3>
+                
+                <!-- Current Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="validationsRun">0</div>
+                        <div class="metric-label">Validations Run</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="successRate">100%</div>
+                        <div class="metric-label">Success Rate</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="avgValidationTime">0ms</div>
+                        <div class="metric-label">Avg Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="warningRate">0%</div>
+                        <div class="metric-label">Warning Rate</div>
+                    </div>
+                </div>
+                
+                <!-- Profile Usage Stats -->
+                <div class="stats-panel">
+                    <h4>Profile Usage</h4>
+                    <div id="profileUsageStats">
+                        <!-- Profile usage will be displayed here -->
+                    </div>
+                </div>
+                
+                <!-- Validation History -->
+                <div class="stats-panel">
+                    <h4>Recent Validation History</h4>
+                    <div id="validationHistory" style="max-height: 200px; overflow-y: auto;">
+                        <!-- History will be displayed here -->
+                    </div>
+                </div>
+                
+                <!-- Export/Import Controls -->
+                <div style="margin-top: 20px;">
+                    <button class="btn secondary" onclick="exportConfiguration()">Export Config</button>
+                    <button class="btn warning" onclick="importConfiguration()">Import Config</button>
+                    <button class="btn" onclick="resetToDefaults()">Reset Defaults</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Dependencies -->
+    <script src="js/config.js"></script>
+    <script src="js/flexiblePathValidation.js"></script>
+    
+    <script>
+        // Global variables
+        let flexibleValidation = null;
+        let testPaths = [];
+        let validationHistory = [];
+        let currentProfile = 'balanced';
+        
+        // Initialize the system
+        function initializeSystem() {
+            try {
+                flexibleValidation = new FlexiblePathValidation();
+                log('✅ Flexible validation system initialized successfully');
+                
+                // Populate profile selector
+                populateProfileSelector();
+                
+                // Set up event listeners
+                setupEventListeners();
+                
+                // Update initial display
+                updateMetrics();
+                
+                log('🚀 System ready for testing');
+            } catch (error) {
+                log(`❌ Failed to initialize system: ${error.message}`);
+            }
+        }
+        
+        // Populate validation profile selector
+        function populateProfileSelector() {
+            const selector = document.getElementById('profileSelector');
+            selector.innerHTML = '';
+            
+            if (!flexibleValidation) return;
+            
+            const profiles = Object.keys(flexibleValidation.validationProfiles);
+            
+            profiles.forEach(profileName => {
+                const profile = flexibleValidation.validationProfiles[profileName];
+                const button = document.createElement('div');
+                button.className = `profile-btn ${profileName === currentProfile ? 'active' : ''}`;
+                button.textContent = profile.name;
+                button.title = profile.description;
+                button.onclick = () => selectProfile(profileName);
+                selector.appendChild(button);
+            });
+        }
+        
+        // Select validation profile
+        function selectProfile(profileName) {
+            currentProfile = profileName;
+            
+            // Update UI
+            document.querySelectorAll('.profile-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            
+            log(`🎯 Selected validation profile: ${profileName}`);
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Path complexity slider
+            const complexitySlider = document.getElementById('pathComplexity');
+            const complexityValue = document.getElementById('complexityValue');
+            complexitySlider.addEventListener('input', (e) => {
+                complexityValue.textContent = e.target.value;
+            });
+            
+            // Path length slider
+            const lengthSlider = document.getElementById('pathLength');
+            const lengthValue = document.getElementById('lengthValue');
+            lengthSlider.addEventListener('input', (e) => {
+                lengthValue.textContent = e.target.value;
+            });
+        }
+        
+        // Generate a test path with specified parameters
+        function generateTestPath(complexity = 0.5, length = 600) {
+            const points = [];
+            const segmentCount = Math.floor(length / 60);
+            
+            // Start point
+            points.push({ x: 50, y: 150 });
+            
+            let currentX = 50;
+            let currentY = 150;
+            let currentAngle = 0;
+            
+            for (let i = 1; i < segmentCount; i++) {
+                // Add some variation based on complexity
+                const angleVariation = (Math.random() - 0.5) * complexity * Math.PI;
+                currentAngle += angleVariation;
+                
+                const segmentLength = 40 + Math.random() * 40;
+                currentX += Math.cos(currentAngle) * segmentLength;
+                currentY += Math.sin(currentAngle) * segmentLength * 0.5;
+                
+                // Keep within bounds
+                currentX = Math.max(50, Math.min(550, currentX));
+                currentY = Math.max(50, Math.min(250, currentY));
+                
+                points.push({ x: currentX, y: currentY });
+            }
+            
+            // End point
+            points.push({ x: 550, y: 150 });
+            
+            return points;
+        }
+        
+        // Draw path on canvas
+        function drawPath(path, validation = null) {
+            const canvas = document.getElementById('pathCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!path || path.length < 2) return;
+            
+            // Draw background grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw path
+            ctx.strokeStyle = validation && validation.isValid ? '#4caf50' : '#f44336';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(path[0].x, path[0].y);
+            
+            for (let i = 1; i < path.length; i++) {
+                ctx.lineTo(path[i].x, path[i].y);
+            }
+            
+            ctx.stroke();
+            
+            // Draw points
+            ctx.fillStyle = validation && validation.isValid ? '#81c784' : '#e57373';
+            for (let i = 0; i < path.length; i++) {
+                ctx.beginPath();
+                ctx.arc(path[i].x, path[i].y, i === 0 || i === path.length - 1 ? 6 : 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw validation info
+            if (validation) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(10, 10, 200, 80);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '12px monospace';
+                ctx.fillText(`Valid: ${validation.isValid ? 'Yes' : 'No'}`, 20, 30);
+                ctx.fillText(`Severity: ${validation.severity}`, 20, 45);
+                ctx.fillText(`Warnings: ${validation.warnings.length}`, 20, 60);
+                ctx.fillText(`Errors: ${validation.errors.length}`, 20, 75);
+            }
+        }
+        
+        // Run single validation test
+        function runSingleValidation() {
+            if (!flexibleValidation) {
+                log('❌ Validation system not initialized');
+                return;
+            }
+            
+            const levelId = parseInt(document.getElementById('levelId').value);
+            const theme = document.getElementById('theme').value;
+            const complexity = parseFloat(document.getElementById('pathComplexity').value);
+            const length = parseInt(document.getElementById('pathLength').value);
+            const allowOverrides = document.getElementById('allowOverrides').checked;
+            const generateRecommendations = document.getElementById('generateRecommendations').checked;
+            
+            log(`🧪 Running single validation test...`);
+            log(`   Profile: ${currentProfile}, Level: ${levelId}, Theme: ${theme}`);
+            log(`   Complexity: ${complexity}, Length: ${length}`);
+            
+            // Generate test path
+            const testPath = generateTestPath(complexity, length);
+            
+            // Run validation
+            const validationOptions = {
+                profileName: currentProfile,
+                levelId: levelId,
+                theme: theme,
+                allowOverrides: allowOverrides,
+                generateRecommendations: generateRecommendations,
+                trackHistory: true
+            };
+            
+            const startTime = performance.now();
+            const result = flexibleValidation.validatePath(testPath, validationOptions);
+            const validationTime = performance.now() - startTime;
+            
+            // Log results
+            log(`📊 Validation completed in ${validationTime.toFixed(2)}ms`);
+            log(`   Result: ${result.isValid ? '✅ VALID' : '❌ INVALID'}`);
+            log(`   Severity: ${result.severity.toUpperCase()}`);
+            
+            if (result.warnings.length > 0) {
+                log(`   Warnings (${result.warnings.length}):`);
+                result.warnings.forEach(warning => log(`     • ${warning}`));
+            }
+            
+            if (result.errors.length > 0) {
+                log(`   Errors (${result.errors.length}):`);
+                result.errors.forEach(error => log(`     • ${error}`));
+            }
+            
+            if (result.criticalIssues && result.criticalIssues.length > 0) {
+                log(`   Critical Issues (${result.criticalIssues.length}):`);
+                result.criticalIssues.forEach(issue => log(`     • ${issue}`));
+            }
+            
+            if (result.recommendations && result.recommendations.length > 0) {
+                log(`   Recommendations (${result.recommendations.length}):`);
+                result.recommendations.forEach(rec => log(`     • [${rec.priority}] ${rec.message}`));
+            }
+            
+            if (result.metrics) {
+                log(`   Metrics:`);
+                log(`     • Overall Score: ${(result.metrics.overallScore * 100).toFixed(1)}%`);
+                log(`     • Path Length: ${result.metrics.pathLength?.toFixed(1) || 'N/A'}`);
+                log(`     • Complexity: ${result.metrics.complexity?.toFixed(2) || 'N/A'}`);
+                log(`     • Max Turn Angle: ${result.metrics.maxTurnAngle?.toFixed(2) || 'N/A'} rad`);
+            }
+            
+            // Draw path
+            drawPath(testPath, result);
+            
+            // Update metrics
+            updateMetrics();
+            updateValidationHistory();
+            
+            log('');
+        }
+        
+        // Run batch validation test
+        function runBatchValidation() {
+            if (!flexibleValidation) {
+                log('❌ Validation system not initialized');
+                return;
+            }
+            
+            const testCount = parseInt(document.getElementById('testCount').value);
+            const levelId = parseInt(document.getElementById('levelId').value);
+            const theme = document.getElementById('theme').value;
+            
+            log(`🔄 Running batch validation test (${testCount} iterations)...`);
+            
+            let validCount = 0;
+            let warningCount = 0;
+            let errorCount = 0;
+            let totalTime = 0;
+            
+            for (let i = 0; i < testCount; i++) {
+                // Generate random test parameters
+                const complexity = 0.2 + Math.random() * 0.6;
+                const length = 300 + Math.random() * 700;
+                
+                const testPath = generateTestPath(complexity, length);
+                
+                const startTime = performance.now();
+                const result = flexibleValidation.validatePath(testPath, {
+                    profileName: currentProfile,
+                    levelId: levelId,
+                    theme: theme,
+                    allowOverrides: true,
+                    generateRecommendations: false,
+                    trackHistory: false
+                });
+                totalTime += performance.now() - startTime;
+                
+                if (result.isValid) validCount++;
+                if (result.warnings.length > 0) warningCount++;
+                if (result.errors.length > 0 || result.criticalIssues.length > 0) errorCount++;
+            }
+            
+            log(`📈 Batch test completed:`);
+            log(`   Total Tests: ${testCount}`);
+            log(`   Valid Paths: ${validCount} (${(validCount/testCount*100).toFixed(1)}%)`);
+            log(`   Paths with Warnings: ${warningCount} (${(warningCount/testCount*100).toFixed(1)}%)`);
+            log(`   Paths with Errors: ${errorCount} (${(errorCount/testCount*100).toFixed(1)}%)`);
+            log(`   Average Validation Time: ${(totalTime/testCount).toFixed(2)}ms`);
+            log(`   Total Time: ${totalTime.toFixed(2)}ms`);
+            
+            updateMetrics();
+            log('');
+        }
+        
+        // Run stress test
+        function runStressTest() {
+            if (!flexibleValidation) {
+                log('❌ Validation system not initialized');
+                return;
+            }
+            
+            log(`⚡ Running stress test with all profiles...`);
+            
+            const profiles = Object.keys(flexibleValidation.validationProfiles);
+            const testResults = {};
+            
+            profiles.forEach(profile => {
+                log(`   Testing profile: ${profile}`);
+                
+                const startTime = performance.now();
+                let validCount = 0;
+                const testCount = 20;
+                
+                for (let i = 0; i < testCount; i++) {
+                    const testPath = generateTestPath(Math.random(), 300 + Math.random() * 800);
+                    const result = flexibleValidation.validatePath(testPath, {
+                        profileName: profile,
+                        levelId: Math.floor(Math.random() * 20) + 1,
+                        theme: ['cyber', 'urban', 'forest', 'mountain'][Math.floor(Math.random() * 4)],
+                        allowOverrides: true,
+                        generateRecommendations: false,
+                        trackHistory: false
+                    });
+                    
+                    if (result.isValid) validCount++;
+                }
+                
+                const elapsedTime = performance.now() - startTime;
+                testResults[profile] = {
+                    validCount,
+                    testCount,
+                    averageTime: elapsedTime / testCount
+                };
+                
+                log(`     ${validCount}/${testCount} valid (${(validCount/testCount*100).toFixed(1)}%) - ${(elapsedTime/testCount).toFixed(2)}ms avg`);
+            });
+            
+            log(`🏁 Stress test completed. Results summary:`);
+            Object.entries(testResults).forEach(([profile, results]) => {
+                log(`   ${profile}: ${results.validCount}/${results.testCount} valid, ${results.averageTime.toFixed(2)}ms avg`);
+            });
+            
+            updateMetrics();
+            log('');
+        }
+        
+        // Apply validation overrides
+        function applyOverrides() {
+            if (!flexibleValidation) {
+                log('❌ Validation system not initialized');
+                return;
+            }
+            
+            const levelId = parseInt(document.getElementById('overrideLevel').value);
+            const configText = document.getElementById('overrideConfig').value.trim();
+            
+            if (!configText) {
+                log('⚠️ No override configuration provided');
+                return;
+            }
+            
+            try {
+                const overrides = JSON.parse(configText);
+                flexibleValidation.setLevelOverride(levelId, overrides);
+                log(`✅ Applied validation overrides for level ${levelId}`);
+                log(`   Overrides: ${JSON.stringify(overrides, null, 2)}`);
+            } catch (error) {
+                log(`❌ Failed to parse override configuration: ${error.message}`);
+            }
+        }
+        
+        // Clear validation overrides
+        function clearOverrides() {
+            if (!flexibleValidation) {
+                log('❌ Validation system not initialized');
+                return;
+            }
+            
+            const levelId = parseInt(document.getElementById('overrideLevel').value);
+            flexibleValidation.removeLevelOverride(levelId);
+            log(`🗑️ Cleared validation overrides for level ${levelId}`);
+        }
+        
+        // Update metrics display
+        function updateMetrics() {
+            if (!flexibleValidation) return;
+            
+            const stats = flexibleValidation.getValidationStats();
+            
+            document.getElementById('validationsRun').textContent = stats.totalValidations;
+            document.getElementById('successRate').textContent = (stats.successRate * 100).toFixed(1) + '%';
+            document.getElementById('warningRate').textContent = (stats.warningRate * 100).toFixed(1) + '%';
+            
+            // Update profile usage stats
+            const profileUsageContainer = document.getElementById('profileUsageStats');
+            profileUsageContainer.innerHTML = '';
+            
+            Object.entries(stats.profileUsage).forEach(([profile, count]) => {
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.marginBottom = '5px';
+                
+                const percentage = stats.totalValidations > 0 ? (count / stats.totalValidations * 100).toFixed(1) : 0;
+                
+                div.innerHTML = `
+                    <span>${profile}:</span>
+                    <span>${count} (${percentage}%)</span>
+                `;
+                
+                profileUsageContainer.appendChild(div);
+            });
+        }
+        
+        // Update validation history display
+        function updateValidationHistory() {
+            if (!flexibleValidation) return;
+            
+            const history = flexibleValidation.getValidationHistory(10);
+            const historyContainer = document.getElementById('validationHistory');
+            historyContainer.innerHTML = '';
+            
+            history.reverse().forEach(entry => {
+                const div = document.createElement('div');
+                div.className = `validation-result ${entry.result.isValid ? 'valid' : entry.result.severity}`;
+                
+                const timestamp = new Date(entry.timestamp).toLocaleTimeString();
+                div.innerHTML = `
+                    <strong>[${timestamp}] Level ${entry.levelId} (${entry.theme})</strong><br>
+                    Profile: ${entry.profile}, Valid: ${entry.result.isValid ? 'Yes' : 'No'}<br>
+                    Warnings: ${entry.result.warningCount}, Errors: ${entry.result.errorCount}<br>
+                    Time: ${entry.result.validationTime.toFixed(2)}ms
+                `;
+                
+                historyContainer.appendChild(div);
+            });
+        }
+        
+        // Export configuration
+        function exportConfiguration() {
+            if (!flexibleValidation) {
+                log('❌ Validation system not initialized');
+                return;
+            }
+            
+            const config = flexibleValidation.exportConfiguration();
+            const dataStr = JSON.stringify(config, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'flexible-validation-config.json';
+            link.click();
+            
+            log('📤 Configuration exported successfully');
+        }
+        
+        // Import configuration
+        function importConfiguration() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const config = JSON.parse(e.target.result);
+                        flexibleValidation.importConfiguration(config);
+                        log('📥 Configuration imported successfully');
+                        populateProfileSelector();
+                        updateMetrics();
+                    } catch (error) {
+                        log(`❌ Failed to import configuration: ${error.message}`);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        // Reset to defaults
+        function resetToDefaults() {
+            if (!flexibleValidation) return;
+            
+            flexibleValidation = new FlexiblePathValidation();
+            populateProfileSelector();
+            updateMetrics();
+            log('🔄 Reset to default configuration');
+        }
+        
+        // Clear results
+        function clearResults() {
+            document.getElementById('resultsLog').textContent = 'Results cleared.\\n';
+            
+            // Clear canvas
+            const canvas = document.getElementById('pathCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // Logging function
+        function log(message) {
+            const logArea = document.getElementById('resultsLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.textContent += `[${timestamp}] ${message}\\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+            
+            console.log(`[FlexibleValidationTest] ${message}`);
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(initializeSystem, 500);
+            
+            // Set up auto-refresh for metrics
+            setInterval(() => {
+                if (flexibleValidation) {
+                    const stats = flexibleValidation.getValidationStats();
+                    document.getElementById('avgValidationTime').textContent = 
+                        stats.totalValidations > 0 ? '~' + (stats.validationTime || 0).toFixed(1) + 'ms' : '0ms';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

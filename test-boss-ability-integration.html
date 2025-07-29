@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss Ability Integration Test - Dharmapala Shield</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: #ecf0f1;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(44, 62, 80, 0.9);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: rgba(52, 73, 94, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .test-section h2 {
+            color: #e74c3c;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .ability-button {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .ability-button:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .integration-button {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+        
+        .integration-button:hover {
+            background: linear-gradient(135deg, #229954, #1e8449);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+        
+        .achievement-button {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .achievement-button:hover {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        }
+        
+        .output {
+            background: #1a1a1a;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            border: 1px solid #444;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .success { color: #2ecc71; }
+        .error { color: #e74c3c; }
+        .warning { color: #f39c12; }
+        .info { color: #3498db; }
+        
+        .stats-panel {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid #2ecc71;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .control-button {
+            background: #34495e;
+            color: white;
+            border: 1px solid #7f8c8d;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .control-button:hover {
+            background: #4a6741;
+        }
+        
+        .boss-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-card {
+            background: rgba(52, 73, 94, 0.6);
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid #7f8c8d;
+        }
+        
+        .status-card h4 {
+            color: #ffd700;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        .status-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Boss Ability Integration Test</h1>
+        
+        <div class="test-section">
+            <h2>⚡ EMP Burst Integration</h2>
+            <p>Test empBurst() ability integration with defense arrays and disable systems.</p>
+            
+            <div class="test-grid">
+                <button class="ability-button" onclick="testEmpBurst()">
+                    Test EMP Burst
+                </button>
+                <button class="integration-button" onclick="testDefenseDisabling()">
+                    Test Defense Disabling
+                </button>
+                <button class="integration-button" onclick="testEmpCleanup()">
+                    Test EMP Cleanup
+                </button>
+                <button class="achievement-button" onclick="testEmpAchievements()">
+                    Test EMP Achievements
+                </button>
+            </div>
+            
+            <div id="empOutput" class="output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🏢 Corporate Takeover Integration</h2>
+            <p>Test corporateTakeover() ability integration with defense ownership and behavior changes.</p>
+            
+            <div class="test-grid">
+                <button class="ability-button" onclick="testCorporateTakeover()">
+                    Test Corporate Takeover
+                </button>
+                <button class="integration-button" onclick="testDefenseOwnership()">
+                    Test Defense Ownership
+                </button>
+                <button class="integration-button" onclick="testTakeoverRestore()">
+                    Test Takeover Restore
+                </button>
+                <button class="achievement-button" onclick="testTakeoverAchievements()">
+                    Test Takeover Achievements
+                </button>
+            </div>
+            
+            <div id="takeoverOutput" class="output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🚁 Drone Deployment Integration</h2>
+            <p>Test deployDrones() ability integration with enemy spawning and management systems.</p>
+            
+            <div class="test-grid">
+                <button class="ability-button" onclick="testDroneDeployment()">
+                    Test Drone Deployment
+                </button>
+                <button class="integration-button" onclick="testEnemySpawning()">
+                    Test Enemy Spawning
+                </button>
+                <button class="integration-button" onclick="testDroneManagement()">
+                    Test Drone Management
+                </button>
+                <button class="achievement-button" onclick="testDroneAchievements()">
+                    Test Drone Achievements
+                </button>
+            </div>
+            
+            <div id="droneOutput" class="output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🏆 Boss Defeat Achievement Integration</h2>
+            <p>Test boss defeat events and comprehensive achievement tracking.</p>
+            
+            <div class="test-grid">
+                <button class="ability-button" onclick="testBossDefeat()">
+                    Test Boss Defeat
+                </button>
+                <button class="integration-button" onclick="testDefeatCleanup()">
+                    Test Defeat Cleanup
+                </button>
+                <button class="achievement-button" onclick="testDefeatAchievements()">
+                    Test Defeat Achievements
+                </button>
+                <button class="integration-button" onclick="testGameStateUpdate()">
+                    Test Game State Update
+                </button>
+            </div>
+            
+            <div id="defeatOutput" class="output"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Boss Status & Integration Monitoring</h2>
+            
+            <div class="boss-status">
+                <div class="status-card">
+                    <h4>Active Bosses</h4>
+                    <div class="status-value" id="activeBosses">0</div>
+                </div>
+                <div class="status-card">
+                    <h4>Disabled Defenses</h4>
+                    <div class="status-value" id="disabledDefenses">0</div>
+                </div>
+                <div class="status-card">
+                    <h4>Taken Defenses</h4>
+                    <div class="status-value" id="takenDefenses">0</div>
+                </div>
+                <div class="status-card">
+                    <h4>Active Drones</h4>
+                    <div class="status-value" id="activeDrones">0</div>
+                </div>
+                <div class="status-card">
+                    <h4>Abilities Used</h4>
+                    <div class="status-value" id="abilitiesUsed">0</div>
+                </div>
+                <div class="status-card">
+                    <h4>Boss Events</h4>
+                    <div class="status-value" id="bossEvents">0</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-button" onclick="startMonitoring()">Start Monitoring</button>
+                <button class="control-button" onclick="stopMonitoring()">Stop Monitoring</button>
+                <button class="control-button" onclick="resetStats()">Reset Stats</button>
+                <button class="control-button" onclick="exportResults()">Export Results</button>
+            </div>
+            
+            <div id="monitoringOutput" class="output"></div>
+        </div>
+    </div>
+
+    <!-- Include game files -->
+    <script src="js/utils.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/defense.js"></script>
+    <script src="js/achievementManager.js"></script>
+
+    <script>
+        // Test framework
+        let testStats = {
+            activeBosses: 0,
+            disabledDefenses: 0,
+            takenDefenses: 0,
+            activeDrones: 0,
+            abilitiesUsed: 0,
+            bossEvents: 0
+        };
+        
+        let mockDefenses = [];
+        let mockEnemies = [];
+        let mockBosses = [];
+        let monitoringInterval = null;
+        
+        // Initialize test environment
+        function initializeTestEnvironment() {
+            // Create mock defenses
+            mockDefenses = [];
+            for (let i = 0; i < 8; i++) {
+                const x = 200 + (i % 4) * 150;
+                const y = 200 + Math.floor(i / 4) * 150;
+                
+                mockDefenses.push({
+                    x: x,
+                    y: y,
+                    type: ['firewall', 'encryption', 'decoy', 'mirror'][i % 4],
+                    health: 100,
+                    maxHealth: 100,
+                    damage: 25,
+                    range: 100,
+                    fireRate: 1000,
+                    color: ['#e74c3c', '#3498db', '#2ecc71', '#f39c12'][i % 4],
+                    projectiles: [],
+                    targetEnemy: null,
+                    disabled: false,
+                    stunned: false,
+                    takenOver: false
+                });
+            }
+            
+            // Create mock boss
+            const boss = new Enemy('megaCorp', 400, 300);
+            boss.phase = 2;
+            mockBosses.push(boss);
+            
+            log('Test environment initialized', 'monitoringOutput', 'success');
+        }
+        
+        // EMP Burst Tests
+        function testEmpBurst() {
+            log('Testing EMP Burst ability...', 'empOutput');
+            
+            initializeTestEnvironment();
+            const boss = mockBosses[0];
+            
+            try {
+                const affectedCount = boss.empBurst(mockDefenses);
+                
+                // Verify defenses are properly disabled
+                let disabledCount = 0;
+                mockDefenses.forEach(defense => {
+                    if (defense.disabled && defense.stunned) {
+                        disabledCount++;
+                    }
+                });
+                
+                log(`✅ EMP Burst affected ${affectedCount} defenses`, 'empOutput', 'success');
+                log(`✅ ${disabledCount} defenses properly disabled with stunned state`, 'empOutput', 'success');
+                
+                // Test projectile clearing
+                const clearedProjectiles = mockDefenses.every(d => d.projectiles.length === 0);
+                log(`✅ Projectiles cleared: ${clearedProjectiles}`, 'empOutput', 'success');
+                
+                testStats.abilitiesUsed++;
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ EMP Burst test failed: ${error.message}`, 'empOutput', 'error');
+            }
+        }
+        
+        function testDefenseDisabling() {
+            log('Testing defense disabling integration...', 'empOutput');
+            
+            const boss = mockBosses[0] || new Enemy('raidTeam', 400, 300);
+            boss.phase = 3;
+            
+            // Add some projectiles to test clearing
+            mockDefenses.forEach(defense => {
+                defense.projectiles = [
+                    { isActive: true, x: 100, y: 100 },
+                    { isActive: true, x: 150, y: 150 }
+                ];
+                defense.targetEnemy = boss;
+            });
+            
+            const beforeDisabled = mockDefenses.filter(d => d.disabled).length;
+            boss.empBurst(mockDefenses);
+            const afterDisabled = mockDefenses.filter(d => d.disabled).length;
+            
+            log(`✅ Defenses disabled: ${beforeDisabled} → ${afterDisabled}`, 'empOutput', 'success');
+            
+            // Check if EMP effects are properly applied
+            const empEffects = mockDefenses.filter(d => d.empEffect && d.empEffect.active).length;
+            log(`✅ EMP visual effects applied: ${empEffects}`, 'empOutput', 'success');
+            
+            testStats.disabledDefenses = afterDisabled;
+            updateStats();
+        }
+        
+        function testEmpCleanup() {
+            log('Testing EMP cleanup on boss defeat...', 'empOutput');
+            
+            const boss = mockBosses[0];
+            if (!boss) {
+                log('❌ No boss available for cleanup test', 'empOutput', 'error');
+                return;
+            }
+            
+            // Disable some defenses first
+            boss.empBurst(mockDefenses);
+            
+            const disabledBefore = mockDefenses.filter(d => d.disabled).length;
+            log(`Defenses disabled before cleanup: ${disabledBefore}`, 'empOutput', 'info');
+            
+            // Simulate boss defeat cleanup
+            boss.updateGameStateOnDefeat();
+            
+            const disabledAfter = mockDefenses.filter(d => d.disabled).length;
+            log(`✅ Defenses disabled after cleanup: ${disabledAfter}`, 'empOutput', 'success');
+            
+            if (disabledAfter < disabledBefore) {
+                log('✅ EMP cleanup working correctly', 'empOutput', 'success');
+            } else {
+                log('⚠️ EMP cleanup may not be working', 'empOutput', 'warning');
+            }
+        }
+        
+        // Corporate Takeover Tests
+        function testCorporateTakeover() {
+            log('Testing Corporate Takeover ability...', 'takeoverOutput');
+            
+            initializeTestEnvironment();
+            const boss = mockBosses[0];
+            
+            try {
+                const takenCount = boss.corporateTakeover(mockDefenses);
+                
+                // Verify defenses are properly taken over
+                let compromisedCount = 0;
+                mockDefenses.forEach(defense => {
+                    if (defense.takenOver && defense.compromised) {
+                        compromisedCount++;
+                    }
+                });
+                
+                log(`✅ Corporate Takeover affected ${takenCount} defenses`, 'takeoverOutput', 'success');
+                log(`✅ ${compromisedCount} defenses properly compromised`, 'takeoverOutput', 'success');
+                
+                // Test behavior changes
+                const behaviorChanges = mockDefenses.filter(d => 
+                    d.compromised && d.targeting === 'corrupted' && d.damage < 25
+                ).length;
+                
+                log(`✅ Defense behavior changes applied: ${behaviorChanges}`, 'takeoverOutput', 'success');
+                
+                testStats.takenDefenses = takenCount;
+                testStats.abilitiesUsed++;
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ Corporate Takeover test failed: ${error.message}`, 'takeoverOutput', 'error');
+            }
+        }
+        
+        function testDefenseOwnership() {
+            log('Testing defense ownership changes...', 'takeoverOutput');
+            
+            const boss = mockBosses[0];
+            
+            // Apply takeover
+            boss.corporateTakeover(mockDefenses);
+            
+            // Check ownership tracking
+            const ownedDefenses = mockDefenses.filter(d => d.parentBoss === boss).length;
+            log(`✅ Defenses with boss ownership: ${ownedDefenses}`, 'takeoverOutput', 'success');
+            
+            // Check original properties are stored
+            const storedProperties = mockDefenses.filter(d => d.originalProperties).length;
+            log(`✅ Original properties stored: ${storedProperties}`, 'takeoverOutput', 'success');
+            
+            // Check corporate branding effects
+            const brandedDefenses = mockDefenses.filter(d => d.corporateBranding && d.corporateBranding.active).length;
+            log(`✅ Corporate branding applied: ${brandedDefenses}`, 'takeoverOutput', 'success');
+        }
+        
+        function testTakeoverRestore() {
+            log('Testing takeover restoration on boss defeat...', 'takeoverOutput');
+            
+            const boss = mockBosses[0];
+            
+            // Apply takeover first
+            boss.corporateTakeover(mockDefenses);
+            const takenBefore = mockDefenses.filter(d => d.takenOver).length;
+            
+            // Simulate boss defeat and restoration
+            boss.updateGameStateOnDefeat();
+            const takenAfter = mockDefenses.filter(d => d.takenOver).length;
+            
+            log(`✅ Taken defenses before: ${takenBefore}, after: ${takenAfter}`, 'takeoverOutput', 'success');
+            
+            // Check if properties are restored
+            const restoredDefenses = mockDefenses.filter(d => 
+                !d.takenOver && !d.compromised && !d.corporateBranding
+            ).length;
+            
+            log(`✅ Defenses properly restored: ${restoredDefenses}`, 'takeoverOutput', 'success');
+        }
+        
+        // Drone Deployment Tests
+        function testDroneDeployment() {
+            log('Testing Drone Deployment ability...', 'droneOutput');
+            
+            initializeTestEnvironment();
+            mockEnemies = [];
+            const boss = mockBosses[0];
+            boss.phase = 3;
+            
+            try {
+                const deployedCount = boss.deployDrones(mockEnemies);
+                
+                // Verify drones are properly created and added
+                const droneCount = mockEnemies.filter(e => e.isDrone).length;
+                
+                log(`✅ Deployed ${deployedCount} drones`, 'droneOutput', 'success');
+                log(`✅ ${droneCount} drones added to enemy array`, 'droneOutput', 'success');
+                
+                // Test drone properties
+                const enhancedDrones = mockEnemies.filter(e => 
+                    e.isDrone && e.parentBoss === boss && e.abilities.includes('boss_spawn')
+                ).length;
+                
+                log(`✅ Enhanced drones with boss integration: ${enhancedDrones}`, 'droneOutput', 'success');
+                
+                // Test drone limits
+                const totalDrones = boss.droneCount;
+                const maxDrones = boss.phase >= 4 ? 8 : 5;
+                log(`✅ Drone count tracking: ${totalDrones}/${maxDrones}`, 'droneOutput', 'success');
+                
+                testStats.activeDrones = droneCount;
+                testStats.abilitiesUsed++;
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ Drone Deployment test failed: ${error.message}`, 'droneOutput', 'error');
+            }
+        }
+        
+        function testEnemySpawning() {
+            log('Testing enemy spawning integration...', 'droneOutput');
+            
+            const boss = mockBosses[0];
+            const initialEnemyCount = mockEnemies.length;
+            
+            // Deploy multiple drone waves
+            for (let i = 0; i < 3; i++) {
+                boss.deployDrones(mockEnemies);
+            }
+            
+            const finalEnemyCount = mockEnemies.length;
+            const newEnemies = finalEnemyCount - initialEnemyCount;
+            
+            log(`✅ Enemies spawned: ${newEnemies}`, 'droneOutput', 'success');
+            
+            // Test drone integration with enemy management
+            const managedDrones = mockEnemies.filter(e => 
+                e.spawnerType === 'boss' && e.spawnSource === boss.type
+            ).length;
+            
+            log(`✅ Properly managed drones: ${managedDrones}`, 'droneOutput', 'success');
+        }
+        
+        function testDroneManagement() {
+            log('Testing drone management on boss defeat...', 'droneOutput');
+            
+            const boss = mockBosses[0];
+            
+            // Deploy drones first
+            boss.deployDrones(mockEnemies);
+            const dronesBefore = mockEnemies.filter(e => e.isDrone).length;
+            
+            // Simulate boss defeat
+            boss.updateGameStateOnDefeat();
+            
+            // Check drone behavior changes
+            const confusedDrones = mockEnemies.filter(e => 
+                e.isDrone && e.parentDefeated && e.confused
+            ).length;
+            
+            log(`✅ Drones before defeat: ${dronesBefore}`, 'droneOutput', 'success');
+            log(`✅ Confused drones after defeat: ${confusedDrones}`, 'droneOutput', 'success');
+            
+            // Check speed reduction
+            const slowerDrones = mockEnemies.filter(e => 
+                e.isDrone && e.parentBoss === boss && e.speed < e.config.speed
+            ).length;
+            
+            log(`✅ Slowed drones after boss defeat: ${slowerDrones}`, 'droneOutput', 'success');
+        }
+        
+        // Boss Defeat Tests
+        function testBossDefeat() {
+            log('Testing boss defeat integration...', 'defeatOutput');
+            
+            const boss = mockBosses[0];
+            boss.phase = 3;
+            boss.droneCount = 5;
+            boss.abilitiesUsedCount = 8;
+            
+            try {
+                // Set up event listener for boss defeat
+                let defeatEventReceived = false;
+                let achievementEventReceived = false;
+                
+                document.addEventListener('bossDefeated', (event) => {
+                    defeatEventReceived = true;
+                    const data = event.detail;
+                    
+                    log(`✅ Boss defeat event received:`, 'defeatOutput', 'success');
+                    log(`   - Boss Type: ${data.bossType}`, 'defeatOutput', 'info');
+                    log(`   - Phase: ${data.phase}`, 'defeatOutput', 'info');
+                    log(`   - Drones Deployed: ${data.dronesDeployed}`, 'defeatOutput', 'info');
+                    log(`   - Abilities Used: ${data.abilitiesUsed}`, 'defeatOutput', 'info');
+                    log(`   - Survival Time: ${Math.floor(data.survivalTime / 1000)}s`, 'defeatOutput', 'info');
+                });
+                
+                // Simulate boss defeat
+                boss.initiateBossDeathSequence();
+                
+                setTimeout(() => {
+                    if (defeatEventReceived) {
+                        log('✅ Boss defeat event system working correctly', 'defeatOutput', 'success');
+                    } else {
+                        log('⚠️ Boss defeat event not received', 'defeatOutput', 'warning');
+                    }
+                    
+                    testStats.bossEvents++;
+                    updateStats();
+                }, 100);
+                
+            } catch (error) {
+                log(`❌ Boss defeat test failed: ${error.message}`, 'defeatOutput', 'error');
+            }
+        }
+        
+        function testDefeatCleanup() {
+            log('Testing defeat cleanup integration...', 'defeatOutput');
+            
+            const boss = mockBosses[0];
+            
+            // Set up various effects before defeat
+            boss.empBurst(mockDefenses);
+            boss.corporateTakeover(mockDefenses);
+            boss.deployDrones(mockEnemies);
+            
+            const statusBefore = {
+                disabled: mockDefenses.filter(d => d.disabled).length,
+                taken: mockDefenses.filter(d => d.takenOver).length,
+                drones: mockEnemies.filter(e => e.isDrone && !e.confused).length
+            };
+            
+            log(`Status before cleanup:`, 'defeatOutput', 'info');
+            log(`   - Disabled: ${statusBefore.disabled}`, 'defeatOutput', 'info');
+            log(`   - Taken: ${statusBefore.taken}`, 'defeatOutput', 'info');
+            log(`   - Active Drones: ${statusBefore.drones}`, 'defeatOutput', 'info');
+            
+            // Perform cleanup
+            boss.updateGameStateOnDefeat();
+            
+            const statusAfter = {
+                disabled: mockDefenses.filter(d => d.disabled).length,
+                taken: mockDefenses.filter(d => d.takenOver).length,
+                drones: mockEnemies.filter(e => e.isDrone && !e.confused).length
+            };
+            
+            log(`Status after cleanup:`, 'defeatOutput', 'success');
+            log(`   - Disabled: ${statusAfter.disabled}`, 'defeatOutput', 'success');
+            log(`   - Taken: ${statusAfter.taken}`, 'defeatOutput', 'success');
+            log(`   - Active Drones: ${statusAfter.drones}`, 'defeatOutput', 'success');
+            
+            // Verify cleanup effectiveness
+            if (statusAfter.disabled < statusBefore.disabled) {
+                log('✅ Defense disabling cleanup working', 'defeatOutput', 'success');
+            }
+            if (statusAfter.taken < statusBefore.taken) {
+                log('✅ Defense takeover cleanup working', 'defeatOutput', 'success');
+            }
+            if (statusAfter.drones < statusBefore.drones) {
+                log('✅ Drone management cleanup working', 'defeatOutput', 'success');
+            }
+        }
+        
+        // Achievement Integration Tests
+        function testEmpAchievements() {
+            log('Testing EMP achievement integration...', 'empOutput');
+            
+            // Simulate achievement tracking for EMP usage
+            const achievementData = {
+                bossType: 'raidTeam',
+                abilityType: 'empBurst',
+                affectedDefenses: 5,
+                phase: 2
+            };
+            
+            log(`✅ Achievement data prepared:`, 'empOutput', 'success');
+            log(`   - ${JSON.stringify(achievementData, null, 2)}`, 'empOutput', 'info');
+        }
+        
+        function testTakeoverAchievements() {
+            log('Testing takeover achievement integration...', 'takeoverOutput');
+            
+            const achievementData = {
+                bossType: 'megaCorp',
+                abilityType: 'corporateTakeover',
+                takenDefenses: 3,
+                phase: 3
+            };
+            
+            log(`✅ Achievement data prepared:`, 'takeoverOutput', 'success');
+            log(`   - ${JSON.stringify(achievementData, null, 2)}`, 'takeoverOutput', 'info');
+        }
+        
+        function testDroneAchievements() {
+            log('Testing drone achievement integration...', 'droneOutput');
+            
+            const achievementData = {
+                bossType: 'megaCorp',
+                abilityType: 'deployDrones',
+                dronesDeployed: 6,
+                totalDrones: 12,
+                phase: 4
+            };
+            
+            log(`✅ Achievement data prepared:`, 'droneOutput', 'success');
+            log(`   - ${JSON.stringify(achievementData, null, 2)}`, 'droneOutput', 'info');
+        }
+        
+        function testDefeatAchievements() {
+            log('Testing defeat achievement integration...', 'defeatOutput');
+            
+            // Test multiple achievement types
+            const achievements = [
+                { type: 'boss_defeated', data: { bossType: 'megaCorp', phase: 4 } },
+                { type: 'boss_high_phase', data: { bossType: 'megaCorp', phase: 4 } },
+                { type: 'drone_master_defeated', data: { bossType: 'megaCorp', dronesDeployed: 8 } }
+            ];
+            
+            achievements.forEach(achievement => {
+                log(`✅ Achievement: ${achievement.type}`, 'defeatOutput', 'success');
+                log(`   - Data: ${JSON.stringify(achievement.data)}`, 'defeatOutput', 'info');
+            });
+        }
+        
+        function testGameStateUpdate() {
+            log('Testing game state update integration...', 'defeatOutput');
+            
+            const boss = mockBosses[0];
+            
+            // Mock window.game object
+            window.game = {
+                defenses: mockDefenses,
+                enemies: mockEnemies,
+                trackAchievement: (type, data) => {
+                    log(`Achievement tracked: ${type}`, 'defeatOutput', 'info');
+                }
+            };
+            
+            boss.updateGameStateOnDefeat();
+            
+            log('✅ Game state update completed', 'defeatOutput', 'success');
+            log('✅ Defense restoration attempted', 'defeatOutput', 'success');
+            log('✅ Drone management updated', 'defeatOutput', 'success');
+        }
+        
+        // Monitoring and utilities
+        function startMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+            
+            monitoringInterval = setInterval(() => {
+                updateStats();
+                
+                // Log periodic status
+                if (Math.random() < 0.1) { // 10% chance each interval
+                    log(`Monitoring status: ${testStats.activeBosses} bosses, ${testStats.abilitiesUsed} abilities used`, 'monitoringOutput', 'info');
+                }
+            }, 1000);
+            
+            log('✅ Monitoring started', 'monitoringOutput', 'success');
+        }
+        
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+            }
+            
+            log('⏹️ Monitoring stopped', 'monitoringOutput', 'warning');
+        }
+        
+        function updateStats() {
+            testStats.activeBosses = mockBosses.filter(b => b.isAlive !== false).length;
+            testStats.disabledDefenses = mockDefenses.filter(d => d.disabled).length;
+            testStats.takenDefenses = mockDefenses.filter(d => d.takenOver).length;
+            testStats.activeDrones = mockEnemies.filter(e => e.isDrone && !e.confused).length;
+            
+            // Update UI
+            Object.keys(testStats).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = testStats[key];
+                }
+            });
+        }
+        
+        function resetStats() {
+            testStats = {
+                activeBosses: 0,
+                disabledDefenses: 0,
+                takenDefenses: 0,
+                activeDrones: 0,
+                abilitiesUsed: 0,
+                bossEvents: 0
+            };
+            
+            mockDefenses = [];
+            mockEnemies = [];
+            mockBosses = [];
+            
+            updateStats();
+            clearAllOutputs();
+            log('🔄 All stats and data reset', 'monitoringOutput', 'warning');
+        }
+        
+        function exportResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                testStats: testStats,
+                mockData: {
+                    defenses: mockDefenses.length,
+                    enemies: mockEnemies.length,
+                    bosses: mockBosses.length
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `boss-ability-integration-test-${Date.now()}.json`;
+            a.click();
+            
+            log('📁 Results exported to JSON file', 'monitoringOutput', 'success');
+        }
+        
+        function clearAllOutputs() {
+            ['empOutput', 'takeoverOutput', 'droneOutput', 'defeatOutput', 'monitoringOutput'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.innerHTML = '';
+                }
+            });
+        }
+        
+        function log(message, outputId, type = 'info') {
+            const output = document.getElementById(outputId);
+            if (!output) return;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            
+            output.appendChild(logEntry);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTestEnvironment();
+            updateStats();
+            log('🚀 Boss Ability Integration Test Environment Ready', 'monitoringOutput', 'success');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathGenerator Basic Test</title>
+</head>
+<body>
+    <h1>PathGenerator Basic Test</h1>
+    <div>
+        <button onclick="testBasicFunctionality()">Test Basic Functionality</button>
+        <button onclick="testErrorHandling()">Test Error Handling</button>
+        <button onclick="testInputValidation()">Test Input Validation</button>
+    </div>
+    
+    <div>
+        <h3>Test Results:</h3>
+        <pre id="results"></pre>
+    </div>
+    
+    <canvas id="testCanvas" width="400" height="300" style="border: 1px solid black;"></canvas>
+
+    <script src="js/pathGenerator.js"></script>
+    <script>
+        let results = document.getElementById('results');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            results.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+        
+        function testBasicFunctionality() {
+            log('=== Testing Basic Functionality ===');
+            
+            try {
+                const pathGenerator = new PathGenerator(800, 600, 20);
+                log('✅ PathGenerator instance created successfully');
+                
+                // Test if essential methods exist
+                const essentialMethods = [
+                    'generateBasePath',
+                    'validatePoint', 
+                    'validatePointReachability',
+                    'generateFallbackPath',
+                    'logError',
+                    'getErrorStats'
+                ];
+                
+                for (const method of essentialMethods) {
+                    if (typeof pathGenerator[method] === 'function') {
+                        log(`✅ Method ${method} exists`);
+                    } else {
+                        log(`❌ Method ${method} missing or not a function`);
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Failed to create PathGenerator: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        function testErrorHandling() {
+            log('=== Testing Error Handling ===');
+            
+            try {
+                // Test invalid constructor parameters
+                try {
+                    const invalid = new PathGenerator(-100, 50, 20);
+                    log('❌ Should have caught invalid canvas dimensions');
+                } catch (error) {
+                    log(`✅ Correctly caught invalid canvas: ${error.message}`);
+                }
+                
+                // Test valid constructor
+                const pathGenerator = new PathGenerator(800, 600, 20);
+                
+                // Test error statistics
+                if (typeof pathGenerator.getErrorStats === 'function') {
+                    const stats = pathGenerator.getErrorStats();
+                    log(`✅ Error stats retrieved: ${JSON.stringify(stats, null, 2)}`);
+                } else {
+                    log('❌ getErrorStats method not available');
+                }
+                
+                // Test point validation
+                if (typeof pathGenerator.validatePoint === 'function') {
+                    try {
+                        pathGenerator.validatePoint({ x: 100, y: 100 });
+                        log('✅ Valid point accepted');
+                    } catch (error) {
+                        log(`❌ Valid point rejected: ${error.message}`);
+                    }
+                    
+                    try {
+                        pathGenerator.validatePoint({ x: -100, y: 100 });
+                        log('❌ Invalid point should have been rejected');
+                    } catch (error) {
+                        log(`✅ Invalid point correctly rejected: ${error.message}`);
+                    }
+                } else {
+                    log('❌ validatePoint method not available');
+                }
+                
+            } catch (error) {
+                log(`❌ Error handling test failed: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        function testInputValidation() {
+            log('=== Testing Input Validation ===');
+            
+            try {
+                const pathGenerator = new PathGenerator(800, 600, 20);
+                
+                // Test reachability validation
+                if (typeof pathGenerator.validatePointReachability === 'function') {
+                    const start = { x: 100, y: 300 };
+                    const end = { x: 700, y: 300 };
+                    
+                    const result = pathGenerator.validatePointReachability(start, end);
+                    log(`✅ Reachability test: ${JSON.stringify(result)}`);
+                } else {
+                    log('❌ validatePointReachability method not available');
+                }
+                
+                // Test basic path generation if available
+                if (typeof pathGenerator.generateBasePath === 'function') {
+                    try {
+                        const path = pathGenerator.generateBasePath(1, null, 'cyber', 'hybrid');
+                        log(`✅ Basic path generation: ${path ? path.length : 0} points`);
+                        
+                        if (path && path.length > 0) {
+                            drawPath(path);
+                        }
+                        
+                    } catch (error) {
+                        log(`⚠️ Path generation failed (expected if method is incomplete): ${error.message}`);
+                    }
+                } else {
+                    log('❌ generateBasePath method not available');
+                }
+                
+            } catch (error) {
+                log(`❌ Input validation test failed: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        function drawPath(path) {
+            const canvas = document.getElementById('testCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!path || path.length < 2) return;
+            
+            // Scale path to fit canvas
+            const scaleX = canvas.width / 800;
+            const scaleY = canvas.height / 600;
+            
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let i = 0; i < path.length; i++) {
+                const point = path[i];
+                const x = point.x * scaleX;
+                const y = point.y * scaleY;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+        }
+        
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            testBasicFunctionality();
+        });
+    </script>
+</body>
+</html>
