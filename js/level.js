@@ -108,9 +108,17 @@ class LevelManager {
             const levelData = this.getLevelData();
             const pathStyle = levelData.pathStyle || 'curved';
             
-            this.currentPath = this.pathGenerator.generatePath(pathStyle);
-            this.spawnPoints = this.pathGenerator.getSpawnPoints();
-            this.exitPoints = this.pathGenerator.getExitPoints();
+            this.currentPath = this.pathGenerator.generateBasePath(this.currentLevel, null, pathStyle, 'hybrid');
+            
+            // Extract spawn and exit points from the generated path
+            if (this.currentPath && this.currentPath.length > 0) {
+                this.spawnPoints = [this.currentPath[0]];
+                this.exitPoints = [this.currentPath[this.currentPath.length - 1]];
+            } else {
+                // Handle empty or invalid path
+                this.spawnPoints = [];
+                this.exitPoints = [];
+            }
         } catch (error) {
             console.warn('Path generation failed, using fallback:', error);
             this.createFallbackPath();

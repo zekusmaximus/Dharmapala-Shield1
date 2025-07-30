@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="css/ui-screens.css">
     <link rel="stylesheet" href="css/mobile.css">
     <link rel="stylesheet" href="css/loading.css">
-    <link rel="stylesheet" href="css/optimizations.css">
     <link rel="stylesheet" href="css/achievementAccessibility.css">
     <link rel="stylesheet" href="css/bossWarningSynchronization.css">
     <link rel="stylesheet" href="css/enhancedAchievementGallery.css">
@@ -53,30 +52,41 @@
                 <div class="resource">
                     <span class="resource-icon">💎</span>
                     <span class="resource-label">Dharma:</span>
-                    <span id="dharmaPoints" class="resource-value">100</span>
+                    <span id="dharma-display" class="resource-value">100</span>
                 </div>
                 <div class="resource">
                     <span class="resource-icon">📡</span>
                     <span class="resource-label">Bandwidth:</span>
-                    <span id="bandwidth" class="resource-value">50</span>
+                    <span id="bandwidth-display" class="resource-value">50</span>
                 </div>
                 <div class="resource">
                     <span class="resource-icon">👤</span>
                     <span class="resource-label">Anonymity:</span>
-                    <span id="anonymity" class="resource-value">75</span>
+                    <span id="anonymity-display" class="resource-value">75</span>
                 </div>
             </div>
             
             <div class="wave-info">
-                <span id="waveCounter" class="wave-counter">Wave 1/10</span>
-                <button id="nextWaveBtn" class="wave-btn">Start Wave 1</button>
+                <span id="wave-display" class="wave-counter">Wave 1/10</span>
+                <button id="start-wave-btn" class="wave-btn">Start Wave 1</button>
             </div>
             
             <div class="game-controls">
-                <button id="pauseBtn" class="control-btn">⏸️</button>
-                <button id="speedBtn" class="control-btn">▶️</button>
+                <button id="pause-game-btn" class="control-btn">⏸️</button>
+                <button id="speed-up-btn" class="control-btn">▶️</button>
+                <button id="speed-normal-btn" class="control-btn">1x</button>
                 <button id="menuBtn" class="control-btn">📱</button>
             </div>
+            <!-- Additional HUD Elements -->
+            <div class="additional-info">
+                <div id="level-display" class="resource-value">Level 1</div>
+                <div id="score-display" class="resource-value">Score: 0</div>
+                <div id="lives-display" class="resource-value">Lives: 3</div>
+            </div>
+            
+            <!-- Progress Bars -->
+            <div id="wave-progress-bar" class="progress-bar hidden"><div class="progress-fill"></div></div>
+            <div id="boss-health-bar" class="progress-bar hidden"><div class="progress-fill"></div></div>
         </div>
 
         <!-- Canvas Container -->
@@ -126,8 +136,17 @@
             </div>
         </div>
 
+        <!-- Additional UI Panels -->
+        <div id="defense-info-panel" class="panel hidden"></div>
+        <div id="defense-selection-panel" class="panel hidden"></div>
+        <div id="upgrade-tree-panel" class="panel hidden"></div>
+        <div id="notification-area" class="notification-container"></div>
+        <div id="achievement-popup" class="achievement-popup hidden"></div>
+        <div id="game-menu" class="menu-overlay hidden"></div>
+        <div id="settings-panel" class="settings-overlay hidden"></div>
+
         <!-- Boss Warning Overlay (hidden by default) -->
-        <div id="bossWarningOverlay" class="boss-warning-overlay hidden">
+        <div id="boss-warning-modal" class="boss-warning-overlay hidden">
             <div class="boss-warning-content">
                 <div class="boss-warning-title">⚠️ BOSS ABILITY WARNING ⚠️</div>
                 <div class="boss-warning-text" id="bossWarningText">Incoming boss ability!</div>

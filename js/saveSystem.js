@@ -187,6 +187,35 @@ class SaveSystem {
         return validated;
     }
 
+    // Key-value storage methods for AchievementManager compatibility
+    get(key, defaultValue = null) {
+        try {
+            const prefixedKey = `game_data_${key}`;
+            const storedData = localStorage.getItem(prefixedKey);
+            
+            if (storedData === null) {
+                return defaultValue;
+            }
+            
+            return JSON.parse(storedData);
+        } catch (error) {
+            console.warn(`Failed to get key '${key}' from storage:`, error);
+            return defaultValue;
+        }
+    }
+
+    set(key, value) {
+        try {
+            const prefixedKey = `game_data_${key}`;
+            const serializedValue = JSON.stringify(value);
+            localStorage.setItem(prefixedKey, serializedValue);
+            return true;
+        } catch (error) {
+            console.error(`Failed to set key '${key}' in storage:`, error);
+            return false;
+        }
+    }
+
     deleteSave(slot) {
         try {
             if (slot < 0 || slot >= this.saveSlots) {
