@@ -29,36 +29,59 @@
 /* Game Screen */
 #game-screen {
     display: none !important;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 240px 1fr 260px;
+    grid-template-areas:
+        "header header header"
+        "left-panel canvas right-panel";
     padding: 0;
-    overflow-y: auto;
+    overflow: hidden;
+    height: 100vh;
 }
 
 #game-screen.active {
-    display: flex !important;
+    display: grid !important;
 }
 
 /* Game screen specific layout */
 #game-screen .hud {
+    grid-area: header;
     width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 2px solid var(--primary-neon-blue);
+}
+
+/* Left Panel - Dharma Stats */
+.left-panel {
+    grid-area: left-panel;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
+    border-right: 2px solid var(--primary-neon-blue);
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+    box-shadow: inset -5px 0 15px rgba(0, 212, 255, 0.1);
 }
 
 #game-screen .canvas-container {
+    grid-area: canvas;
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+    height: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.8));
+    position: relative;
 }
 
 #game-screen .defense-panel {
-    width: 100%;
-    max-width: 1200px;
-    margin: 20px auto 0;
+    grid-area: right-panel;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
+    border-left: 2px solid var(--primary-neon-blue);
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+    box-shadow: inset 5px 0 15px rgba(0, 212, 255, 0.1);
 }
 
 /* All other screens hidden by default */
@@ -758,6 +781,45 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    /* Game Screen Mobile Layout */
+    #game-screen {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr auto;
+        grid-template-areas:
+            "header"
+            "left-panel"
+            "canvas"
+            "right-panel";
+        overflow-y: auto;
+    }
+    
+    .left-panel {
+        border-right: none;
+        border-bottom: 2px solid var(--primary-neon-blue);
+        padding: 15px;
+        max-height: 200px;
+        overflow-y: auto;
+        box-shadow: inset 0 -5px 15px rgba(0, 212, 255, 0.1);
+    }
+    
+    #game-screen .canvas-container {
+        min-height: 300px;
+        padding: 10px;
+    }
+    
+    #game-screen .defense-panel {
+        border-left: none;
+        border-top: 2px solid var(--primary-neon-blue);
+        padding: 15px;
+        max-height: 250px;
+        overflow-y: auto;
+        box-shadow: inset 0 5px 15px rgba(0, 212, 255, 0.1);
+    }
+    
+    #game-screen .hud {
+        padding: 8px 15px;
+    }
+
     .achievement-grid {
         grid-template-columns: 1fr;
         gap: 15px;

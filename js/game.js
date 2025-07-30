@@ -98,8 +98,15 @@ class Game {
 
     setupManagerCallbacks() {
         // Screen manager callbacks
-        this.screenManager.on('startNewGame', () => this.startNewGame());
-        this.screenManager.on('continueGame', () => this.continueGame());
+        console.log('[Game] Setting up screen manager callbacks');
+        this.screenManager.on('startNewGame', () => {
+            console.log('[Game] startNewGame callback triggered');
+            this.startNewGame();
+        });
+        this.screenManager.on('continueGame', () => {
+            console.log('[Game] continueGame callback triggered');
+            this.continueGame();
+        });
         this.screenManager.on('pauseGame', () => this.pauseGame());
         this.screenManager.on('resumeGame', () => this.resumeGame());
         this.screenManager.on('returnToMenu', () => this.returnToMenu());
@@ -119,16 +126,20 @@ class Game {
                 onWaveComplete: (data) => this.onWaveComplete(data),
                 onLevelComplete: (data) => this.onLevelComplete(data),
                 onEnemySpawn: (data) => this.onEnemySpawn(data),
-                onEnemyKilled: (data) => this.onEnemyKilled(data)
+                onEnemyKilled: (data) => this.onEnemyKilled(data),
+                onEnemySpawnRequest: (enemyData, spawnPoint, path) => this.spawnEnemy(enemyData, spawnPoint, path)
             });
         }
     }
 
     setupGameSystems() {
-        // Setup camera
+        // Setup camera with dynamic canvas dimensions
         if (window.camera) {
             window.camera.setCanvas(this.canvas);
-            window.camera.setBounds(0, 0, 800, 600);
+            const canvasWidth = this.canvas.displayWidth || this.canvas.width;
+            const canvasHeight = this.canvas.displayHeight || this.canvas.height;
+            window.camera.setBounds(0, 0, canvasWidth, canvasHeight);
+            console.log(`[Game] Camera bounds set to: ${canvasWidth}x${canvasHeight}`);
         }
         
         // Initialize level
@@ -295,7 +306,11 @@ class Game {
         // Update level/wave system
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
-            // Level manager handles its own updates
+            try {
+                levelManager.update(deltaTime);
+            } catch (error) {
+                console.error('[Game] Error updating LevelManager:', error);
+            }
         }
         
         // Check game over conditions
@@ -518,6 +533,11 @@ class Game {
         this.gameState.wave = data.wave;
         this.updateUI();
         
+        // Trigger enemy spawning based on wave data
+        if (data.waveData && data.waveData.enemies) {
+            console.log(`[Game] Starting enemy spawning for wave ${data.wave}`);
+        }
+        
         if (window.audioManager) {
             window.audioManager.playSound('wave_start');
         }
@@ -550,6 +570,84 @@ class Game {
         
         if (window.audioManager) {
             window.audioManager.playSound('level_complete');
+        }
+    }
+
+    spawnEnemy(enemyData, spawnPoint, path) {
+        try {
+            // Create enemy instance using Enemy factory
+            if (typeof Enemy === 'undefined') {
+                console.error('[Game] Enemy class not available for spawning');
+                return false;
+            }
+            
+            // Validate spawn parameters
+            if (!enemyData || !spawnPoint || !path) {
+                console.error('[Game] Invalid spawn parameters:', { enemyData, spawnPoint, path });
+                return false;
+            }
+            
+            // Create enemy with configuration
+            const enemy = new Enemy({
+                type: enemyData.type,
+                x: spawnPoint.x,
+                y: spawnPoint.y,
+                health: enemyData.health,
+                speed: enemyData.speed,
+                reward: enemyData.reward,
+                path: path,
+                spawnDelay: enemyData.spawnDelay || 0
+            });
+            
+            // Add enemy to game
+            this.enemies.push(enemy);
+            
+            console.log(`[Game] Spawned ${enemyData.type} enemy at ${spawnPoint.x}, ${spawnPoint.y}`);
+            
+            // Notify level manager of successful spawn
+            const levelManager = this.systemManager.getLevelManager();
+            if (levelManager && typeof levelManager.onEnemySpawned === 'function') {
+                levelManager.onEnemySpawned();
+            }
+            
+            return true;
+            
+        } catch (error) {
+            console.error('[Game] Error spawning enemy:', error);
+            return false;
+        }
+    }
+
+    handleCanvasResize(dimensions) {
+        try {
+            console.log('[Game] Handling canvas resize:', dimensions);
+            
+            // Update camera bounds
+            if (window.camera) {
+                window.camera.setBounds(0, 0, dimensions.width, dimensions.height);
+                console.log(`[Game] Updated camera bounds to: ${dimensions.width}x${dimensions.height}`);
+            }
+            
+            // Update any systems that need to know about canvas size changes
+            if (this.uiManager && typeof this.uiManager.handleCanvasResize === 'function') {
+                this.uiManager.handleCanvasResize(dimensions);
+            }
+            
+            // Notify defense manager of size changes
+            if (this.defenseManager && typeof this.defenseManager.handleCanvasResize === 'function') {
+                this.defenseManager.handleCanvasResize(dimensions);
+            }
+            
+            // Update any other systems that depend on canvas dimensions
+            const levelManager = this.systemManager.getLevelManager();
+            if (levelManager && typeof levelManager.handleCanvasResize === 'function') {
+                levelManager.handleCanvasResize(dimensions);
+            }
+            
+            console.log('[Game] Canvas resize handling complete');
+            
+        } catch (error) {
+            console.error('[Game] Error handling canvas resize:', error);
         }
     }
 

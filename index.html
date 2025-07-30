@@ -65,24 +65,6 @@
                 </div>
             </div>
             
-            <div class="resource-bar">
-                <div class="resource">
-                    <span class="resource-icon">💎</span>
-                    <span class="resource-label">Dharma:</span>
-                    <span id="dharma-display" class="resource-value">100</span>
-                </div>
-                <div class="resource">
-                    <span class="resource-icon">📡</span>
-                    <span class="resource-label">Bandwidth:</span>
-                    <span id="bandwidth-display" class="resource-value">50</span>
-                </div>
-                <div class="resource">
-                    <span class="resource-icon">👤</span>
-                    <span class="resource-label">Anonymity:</span>
-                    <span id="anonymity-display" class="resource-value">75</span>
-                </div>
-            </div>
-            
             <div class="wave-info">
                 <span id="wave-display" class="wave-counter">Wave 1/10</span>
                 <button id="start-wave-btn" class="wave-btn">Start Wave 1</button>
@@ -104,6 +86,126 @@
             <!-- Progress Bars -->
             <div id="wave-progress-bar" class="progress-bar hidden"><div class="progress-fill"></div></div>
             <div id="boss-health-bar" class="progress-bar hidden"><div class="progress-fill"></div></div>
+        </div>
+
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Resource Displays -->
+            <div class="resource-section">
+                <h3 class="panel-title">🛡️ Digital Sanctuary</h3>
+                
+                <div class="resource-bar">
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">💎</span>
+                            <span class="resource-label">Dharma</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="dharma-display" class="resource-value">100</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill dharma-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+2.5/sec</div>
+                    </div>
+                    
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">📡</span>
+                            <span class="resource-label">Bandwidth</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="bandwidth-display" class="resource-value">50</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill bandwidth-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+1.8/sec</div>
+                    </div>
+                    
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">👤</span>
+                            <span class="resource-label">Anonymity</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="anonymity-display" class="resource-value">75</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill anonymity-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+1.2/sec</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Player Stats -->
+            <div class="player-stats-section">
+                <h4 class="section-title">Monk Status</h4>
+                <div class="stat-item">
+                    <span class="stat-icon">🧘</span>
+                    <span class="stat-label">Level:</span>
+                    <span id="player-level" class="stat-value">1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">⭐</span>
+                    <span class="stat-label">Experience:</span>
+                    <span id="player-exp" class="stat-value">0/100</span>
+                </div>
+                <div class="exp-progress">
+                    <div class="progress-fill exp-progress-fill"></div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="quick-stats-section">
+                <h4 class="section-title">Session Stats</h4>
+                <div class="stat-item">
+                    <span class="stat-icon">⚔️</span>
+                    <span class="stat-label">Enemies Defeated:</span>
+                    <span id="enemies-defeated" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🌊</span>
+                    <span class="stat-label">Waves Completed:</span>
+                    <span id="waves-completed" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🏆</span>
+                    <span class="stat-label">Total Score:</span>
+                    <span id="total-score" class="stat-value">0</span>
+                </div>
+            </div>
+            
+            <!-- Dharma Philosophy -->
+            <div class="dharma-wisdom-section">
+                <h4 class="section-title">Digital Dharma</h4>
+                <div class="wisdom-quote">
+                    <p class="quote-text">"In the digital realm, as in life, compassionate protection guards against suffering."</p>
+                    <cite class="quote-source">- Path of the Cyber Monk</cite>
+                </div>
+                <div class="meditation-status">
+                    <span class="meditation-icon">🕯️</span>
+                    <span class="meditation-text">Network Mindfulness: Active</span>
+                </div>
+            </div>
+            
+            <!-- Cyberpunk Lore -->
+            <div class="cyberpunk-lore-section">
+                <h4 class="section-title">System Status</h4>
+                <div class="lore-item">
+                    <span class="lore-icon">🔮</span>
+                    <span class="lore-text">Quantum encryption stable</span>
+                </div>
+                <div class="lore-item">
+                    <span class="lore-icon">🌐</span>
+                    <span class="lore-text">Neural pathways secured</span>
+                </div>
+                <div class="lore-item">
+                    <span class="lore-icon">⚡</span>
+                    <span class="lore-text">Digital essence flowing</span>
+                </div>
+            </div>
         </div>
 
         <!-- Canvas Container -->

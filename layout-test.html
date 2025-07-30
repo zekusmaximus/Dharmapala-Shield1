@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dharmapala Shield - Layout Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/ui-screens.css">
+    <link rel="stylesheet" href="css/game-header.css">
+</head>
+<body>
+    <!-- Directly show game screen for layout testing -->
+    <div id="game-screen" class="screen active" style="display: flex;">
+        <!-- Top HUD -->
+        <div class="hud">
+            <!-- Game Title Section -->
+            <div class="game-header">
+                <h1 class="game-title-header">🛡️ Dharmapala Shield</h1>
+                <p class="game-subtitle-header">Buddhist Cyberpunk Tower Defense</p>
+                <div class="main-menu-controls">
+                    <button id="main-menu-btn" class="menu-btn">Main Menu</button>
+                    <button id="tutorial-btn" class="menu-btn">Tutorial</button>
+                </div>
+            </div>
+            
+            <div class="wave-info">
+                <span id="wave-display" class="wave-counter">Wave 1/10</span>
+                <button id="start-wave-btn" class="wave-btn">Start Wave 1</button>
+            </div>
+            
+            <div class="game-controls">
+                <button id="pause-game-btn" class="control-btn">⏸️</button>
+                <button id="speed-up-btn" class="control-btn">▶️</button>
+                <button id="speed-normal-btn" class="control-btn">1x</button>
+            </div>
+            
+            <!-- Additional HUD Elements -->
+            <div class="additional-info">
+                <div id="level-display" class="resource-value">Level 1</div>
+                <div id="score-display" class="resource-value">Score: 0</div>
+                <div id="lives-display" class="resource-value">Lives: 3</div>
+            </div>
+        </div>
+
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Resource Displays -->
+            <div class="resource-section">
+                <h3 class="panel-title">🛡️ Digital Sanctuary</h3>
+                
+                <div class="resource-bar">
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">💎</span>
+                            <span class="resource-label">Dharma</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="dharma-display" class="resource-value">100</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill dharma-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+2.5/sec</div>
+                    </div>
+                    
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">📡</span>
+                            <span class="resource-label">Bandwidth</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="bandwidth-display" class="resource-value">50</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill bandwidth-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+1.8/sec</div>
+                    </div>
+                    
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">👤</span>
+                            <span class="resource-label">Anonymity</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="anonymity-display" class="resource-value">75</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill anonymity-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+1.2/sec</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Player Stats -->
+            <div class="player-stats-section">
+                <h4 class="section-title">Monk Status</h4>
+                <div class="stat-item">
+                    <span class="stat-icon">🧘</span>
+                    <span class="stat-label">Level:</span>
+                    <span id="player-level" class="stat-value">1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">⭐</span>
+                    <span class="stat-label">Experience:</span>
+                    <span id="player-exp" class="stat-value">0/100</span>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="quick-stats-section">
+                <h4 class="section-title">Session Stats</h4>
+                <div class="stat-item">
+                    <span class="stat-icon">⚔️</span>
+                    <span class="stat-label">Enemies Defeated:</span>
+                    <span id="enemies-defeated" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🌊</span>
+                    <span class="stat-label">Waves Completed:</span>
+                    <span id="waves-completed" class="stat-value">0</span>
+                </div>
+            </div>
+            
+            <!-- Dharma Philosophy -->
+            <div class="dharma-wisdom-section">
+                <h4 class="section-title">Digital Dharma</h4>
+                <div class="wisdom-quote">
+                    <p class="quote-text">"In the digital realm, as in life, compassionate protection guards against suffering."</p>
+                    <cite class="quote-source">- Path of the Cyber Monk</cite>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="canvas-container">
+            <canvas id="gameCanvas" width="800" height="600" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #00d4ff;"></canvas>
+        </div>
+
+        <!-- Defense Panel -->
+        <div class="defense-panel">
+            <h3>Defenses</h3>
+            <div class="defense-grid">
+                <div class="defense-item" data-type="firewall">
+                    <div class="defense-icon">🏯</div>
+                    <div class="defense-name">Firewall</div>
+                    <div class="defense-cost">25 💎</div>
+                </div>
+                <div class="defense-item" data-type="encryption">
+                    <div class="defense-icon">🏛️</div>
+                    <div class="defense-name">Encryption</div>
+                    <div class="defense-cost">40 💎</div>
+                </div>
+                <div class="defense-item" data-type="decoy">
+                    <div class="defense-icon">🕌</div>
+                    <div class="defense-name">Decoy</div>
+                    <div class="defense-cost">30 💎</div>
+                </div>
+                <div class="defense-item" data-type="mirror">
+                    <div class="defense-icon">🏢</div>
+                    <div class="defense-name">Mirror</div>
+                    <div class="defense-cost">35 💎</div>
+                </div>
+                <div class="defense-item" data-type="anonymity">
+                    <div class="defense-icon">👻</div>
+                    <div class="defense-name">Anonymity</div>
+                    <div class="defense-cost">45 💎</div>
+                </div>
+                <div class="defense-item" data-type="distributor">
+                    <div class="defense-icon">⚖️</div>
+                    <div class="defense-name">Distributor</div>
+                    <div class="defense-cost">50 💎</div>
+                </div>
+            </div>
+            
+            <div class="defense-actions">
+                <button id="sellAllBtn" class="action-btn secondary">Sell All</button>
+                <button id="upgradeAllBtn" class="action-btn primary">Upgrade All</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

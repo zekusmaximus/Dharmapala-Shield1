@@ -150,7 +150,13 @@ class ScreenManager {
     addClickListener(elementId, handler) {
         const element = document.getElementById(elementId);
         if (element) {
-            element.addEventListener('click', handler);
+            console.log(`[ScreenManager] Adding click listener for: ${elementId}`);
+            element.addEventListener('click', (e) => {
+                console.log(`[ScreenManager] Button clicked: ${elementId}`);
+                handler(e);
+            });
+        } else {
+            console.warn(`[ScreenManager] Element not found for click listener: ${elementId}`);
         }
     }
 
@@ -355,6 +361,7 @@ class ScreenManager {
 
     // Game flow methods
     startNewGame() {
+        console.log('[ScreenManager] startNewGame() called');
         this.triggerCallback('startNewGame');
         this.showScreen('game');
         console.log('[ScreenManager] Starting new game, switching to game screen');
