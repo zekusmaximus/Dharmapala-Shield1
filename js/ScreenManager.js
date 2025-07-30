@@ -37,6 +37,26 @@ class ScreenManager {
                 element: 'save-load-screen',
                 init: () => this.initSaveLoadScreen()
             },
+            'tutorial': {
+                element: 'tutorialScreen',
+                init: () => this.initTutorialScreen()
+            },
+            'credits': {
+                element: 'creditsScreen',
+                init: () => this.initCreditsScreen()
+            },
+            'level-select': {
+                element: 'levelSelectScreen',
+                init: () => this.initLevelSelectScreen()
+            },
+            'victory': {
+                element: 'victoryScreen',
+                init: () => this.initVictoryScreen()
+            },
+            'defeat': {
+                element: 'defeatScreen',
+                init: () => this.initDefeatScreen()
+            },
             'upgrade-tree': {
                 element: 'upgrade-tree-modal',
                 init: () => this.initUpgradeTreeScreen(),
@@ -68,15 +88,26 @@ class ScreenManager {
         // Main menu navigation
         this.addClickListener('start-game-btn', () => this.startNewGame());
         this.addClickListener('continue-game-btn', () => this.continueGame());
+        this.addClickListener('levelSelectBtn', () => this.showScreen('level-select'));
+        this.addClickListener('save-load-btn', () => this.showScreen('save-load'));
+        this.addClickListener('tutorialBtn', () => this.showScreen('tutorial'));
         this.addClickListener('achievements-btn', () => this.showScreen('achievements'));
         this.addClickListener('settings-btn', () => this.showScreen('settings'));
-        this.addClickListener('save-load-btn', () => this.showScreen('save-load'));
+        this.addClickListener('creditsBtn', () => this.showScreen('credits'));
 
-        // Back buttons
-        this.addClickListener('back-to-menu-btn', () => this.showScreen('main-menu'));
-        this.addClickListener('back-from-achievements', () => this.showScreen('main-menu'));
-        this.addClickListener('back-from-settings', () => this.showScreen('main-menu'));
+        // Game screen navigation buttons
+        this.addClickListener('main-menu-btn', () => this.showScreen('main-menu'));
+        this.addClickListener('tutorial-btn', () => this.showScreen('tutorial'));
+        this.addClickListener('credits-btn', () => this.showScreen('credits'));
+
+        // Back buttons - now go back to game screen instead of menu
+        this.addClickListener('back-to-menu-btn', () => this.showScreen('game'));
+        this.addClickListener('back-from-achievements', () => this.showScreen('game'));
+        this.addClickListener('back-from-settings', () => this.showScreen('game'));
         this.addClickListener('back-from-save-load', () => this.showScreen('main-menu'));
+        this.addClickListener('backFromTutorialBtn', () => this.showScreen('game'));
+        this.addClickListener('backFromCreditsBtn', () => this.showScreen('game'));
+        this.addClickListener('backFromLevelSelectBtn', () => this.showScreen('main-menu'));
 
         // Game screen controls
         this.addClickListener('pause-game-btn', () => this.pauseGame());
@@ -127,6 +158,7 @@ class ScreenManager {
             const currentScreenObj = this.screens.get(this.currentScreen);
             if (currentScreenObj.element) {
                 currentScreenObj.element.style.display = 'none';
+                currentScreenObj.element.classList.remove('active');
             }
         }
 
@@ -137,7 +169,9 @@ class ScreenManager {
         }
 
         // Show new screen
-        screen.element.style.display = options.display || 'flex';
+        const displayValue = options.display || (screenName === 'game' ? 'flex' : 'flex');
+        screen.element.style.display = displayValue;
+        screen.element.classList.add('active');
         
         // Update state
         this.previousScreen = this.currentScreen;
@@ -270,6 +304,32 @@ class ScreenManager {
         console.log('[ScreenManager] Save/Load screen initialized');
     }
 
+    initTutorialScreen() {
+        // Setup tutorial content
+        console.log('[ScreenManager] Tutorial screen initialized');
+    }
+
+    initCreditsScreen() {
+        // Setup credits content
+        console.log('[ScreenManager] Credits screen initialized');
+    }
+
+    initLevelSelectScreen() {
+        // Setup level selection
+        this.loadLevelInfo();
+        console.log('[ScreenManager] Level select screen initialized');
+    }
+
+    initVictoryScreen() {
+        // Setup victory screen
+        console.log('[ScreenManager] Victory screen initialized');
+    }
+
+    initDefeatScreen() {
+        // Setup defeat screen
+        console.log('[ScreenManager] Defeat screen initialized');
+    }
+
     initUpgradeTreeScreen() {
         console.log('[ScreenManager] Upgrade tree modal initialized');
     }
@@ -388,6 +448,11 @@ class ScreenManager {
             const saveInfo = window.saveSystem.getAllSaveInfo();
             this.triggerCallback('loadSaveSlots', { saveInfo });
         }
+    }
+
+    loadLevelInfo() {
+        // Load level selection data
+        this.triggerCallback('loadLevelInfo');
     }
 
     // Callback system

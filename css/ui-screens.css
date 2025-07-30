@@ -1,5 +1,49 @@
 /* Dharmapala Shield - Enhanced UI Screens CSS for Phase 2 */
 
+/* Base Screen Management */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    z-index: 10;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Loading Screen (visible by default) */
+#loading-screen {
+    display: flex;
+    z-index: 1000;
+}
+
+/* Game Screen */
+#game-screen {
+    display: none;
+    flex-direction: column;
+}
+
+/* All other screens hidden by default */
+#main-menu-screen,
+#achievement-gallery-screen,
+#settings-screen,
+#tutorialScreen,
+#creditsScreen,
+#levelSelectScreen,
+#save-load-screen,
+#victoryScreen,
+#defeatScreen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
 /* Achievement Gallery Styles */
 .achievement-container {
     padding: 20px;

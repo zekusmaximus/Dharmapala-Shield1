@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/ui-screens.css">
     <link rel="stylesheet" href="css/mobile.css">
     <link rel="stylesheet" href="css/loading.css">
+    <link rel="stylesheet" href="css/game-header.css">
     <link rel="stylesheet" href="css/achievementAccessibility.css">
     <link rel="stylesheet" href="css/bossWarningSynchronization.css">
     <link rel="stylesheet" href="css/enhancedAchievementGallery.css">
@@ -49,6 +50,19 @@
     <div id="game-screen" class="screen">
         <!-- Top HUD -->
         <div class="hud">
+            <!-- Game Title Section -->
+            <div class="game-header">
+                <h1 class="game-title-header">🛡️ Dharmapala Shield</h1>
+                <p class="game-subtitle-header">Buddhist Cyberpunk Tower Defense</p>
+                <div class="main-menu-controls">
+                    <button id="main-menu-btn" class="menu-btn">Main Menu</button>
+                    <button id="tutorial-btn" class="menu-btn">Tutorial</button>
+                    <button id="achievements-btn" class="menu-btn">Achievements</button>
+                    <button id="settings-btn" class="menu-btn">Settings</button>
+                    <button id="credits-btn" class="menu-btn">Credits</button>
+                </div>
+            </div>
+            
             <div class="resource-bar">
                 <div class="resource">
                     <span class="resource-icon">💎</span>
@@ -195,7 +209,7 @@
                 <!-- Achievement items will be populated dynamically -->
             </div>
             
-            <button id="back-from-achievements" class="back-btn">← Back to Menu</button>
+            <button id="back-from-achievements" class="back-btn">← Back to Game</button>
         </div>
     </div>
 
@@ -236,7 +250,7 @@
             <div class="tutorial-content">
                 <!-- Tutorial content will be populated -->
             </div>
-            <button id="backFromTutorialBtn" class="back-btn">← Back to Menu</button>
+            <button id="backFromTutorialBtn" class="back-btn">← Back to Game</button>
         </div>
     </div>
 
@@ -312,7 +326,7 @@
                 </div>
             </div>
             
-            <button id="back-from-settings" class="back-btn">← Back to Menu</button>
+            <button id="back-from-settings" class="back-btn">← Back to Game</button>
         </div>
     </div>
 
@@ -336,7 +350,7 @@
                     <p>And the cyberpunk genre's vision of digital resistance</p>
                 </div>
             </div>
-            <button id="backFromCreditsBtn" class="back-btn">← Back to Menu</button>
+            <button id="backFromCreditsBtn" class="back-btn">← Back to Game</button>
         </div>
     </div>
 
@@ -363,7 +377,7 @@
             </div>
             <div class="save-load-actions">
                 <button id="clearAllSavesBtn" class="btn danger">Clear All Saves</button>
-                <button id="back-from-save-load" class="btn secondary">← Back</button>
+                <button id="back-from-save-load" class="btn secondary">← Back to Menu</button>
             </div>
         </div>
     </div>

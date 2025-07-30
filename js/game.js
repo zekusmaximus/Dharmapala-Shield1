@@ -55,7 +55,9 @@ class Game {
             }
             
             // Initialize managers
-            this.screenManager = new ScreenManager();
+            if (!this.screenManager) {
+                this.screenManager = new ScreenManager();
+            }
             this.defenseManager = new DefenseManager();
             this.uiManager = window.uiManager || new UIManager();
             

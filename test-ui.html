@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UI Navigation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .pass { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .fail { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>UI Navigation Test Results</h1>
+    <div id="test-results"></div>
+    
+    <script>
+        function runTests() {
+            const results = [];
+            
+            // Test 1: Check if main index.html exists
+            fetch('/index.html')
+                .then(response => {
+                    if (response.ok) {
+                        addResult('✅ Main index.html is accessible', 'pass');
+                    } else {
+                        addResult('❌ Main index.html is not accessible', 'fail');
+                    }
+                })
+                .catch(err => addResult('❌ Error accessing index.html: ' + err, 'fail'));
+            
+            // Test 2: Check if required CSS files exist
+            const cssFiles = [
+                '/css/styles.css',
+                '/css/ui-screens.css', 
+                '/css/game-header.css'
+            ];
+            
+            cssFiles.forEach(file => {
+                fetch(file)
+                    .then(response => {
+                        if (response.ok) {
+                            addResult(`✅ CSS file exists: ${file}`, 'pass');
+                        } else {
+                            addResult(`❌ CSS file missing: ${file}`, 'fail');
+                        }
+                    })
+                    .catch(err => addResult(`❌ Error accessing ${file}: ${err}`, 'fail'));
+            });
+            
+            // Test 3: Check if required JS files exist
+            const jsFiles = [
+                '/js/main.js',
+                '/js/ScreenManager.js',
+                '/js/game.js'
+            ];
+            
+            jsFiles.forEach(file => {
+                fetch(file)
+                    .then(response => {
+                        if (response.ok) {
+                            addResult(`✅ JS file exists: ${file}`, 'pass');
+                        } else {
+                            addResult(`❌ JS file missing: ${file}`, 'fail');
+                        }
+                    })
+                    .catch(err => addResult(`❌ Error accessing ${file}: ${err}`, 'fail'));
+            });
+            
+            addResult('📋 Test Summary: UI structure updated for game-first navigation', 'info');
+            addResult('🎯 Expected Changes: Game screen as homepage, proper menu navigation', 'info');
+        }
+        
+        function addResult(message, type) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.textContent = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        window.onload = runTests;
+    </script>
+</body>
+</html>

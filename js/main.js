@@ -2,12 +2,20 @@ class GameBootstrap {
     constructor() {
         this.loadingScreen = null;
         this.game = null;
+        this.screenManager = null;
         this.initialized = false;
     }
 
     async init() {
         try {
             this.showLoadingScreen();
+            
+            // Initialize screen manager early
+            if (typeof ScreenManager !== 'undefined') {
+                this.screenManager = new ScreenManager();
+                console.log('[GameBootstrap] ScreenManager initialized early');
+            }
+            
             await this.preloadCriticalAssets();
             await this.initializeGame();
             this.hideLoadingScreen();
@@ -108,6 +116,13 @@ class GameBootstrap {
             console.log('[GameBootstrap] Canvas found and configured');
             
             this.game = new Game(canvas);
+            
+            // Pass the early ScreenManager to the game if available
+            if (this.screenManager) {
+                this.game.screenManager = this.screenManager;
+                console.log('[GameBootstrap] Reusing early ScreenManager in game');
+            }
+            
             await this.game.initialize();
             this.initialized = true;
             console.log('[GameBootstrap] Game initialization complete');
@@ -119,20 +134,28 @@ class GameBootstrap {
     }
 
     showMainMenu() {
-        const mainMenuScreen = document.getElementById('main-menu-screen');
-        const gameScreen = document.getElementById('game-screen');
+        // Use the early ScreenManager or the game's ScreenManager to show game screen as home
+        const screenManager = this.screenManager || (this.game && this.game.screenManager);
         
-        if (mainMenuScreen) {
-            mainMenuScreen.style.display = 'block';
-            mainMenuScreen.classList.add('active');
-            console.log('[GameBootstrap] Main menu shown');
+        if (screenManager) {
+            // Show game screen as the main/home screen
+            screenManager.showScreen('game');
+            console.log('[GameBootstrap] Game screen shown as home page via ScreenManager');
         } else {
-            console.warn('[GameBootstrap] Main menu element not found');
-        }
-        
-        if (gameScreen) {
-            gameScreen.style.display = 'none';
-            gameScreen.classList.remove('active');
+            // Fallback method if ScreenManager not ready
+            const mainMenuScreen = document.getElementById('main-menu-screen');
+            const gameScreen = document.getElementById('game-screen');
+            
+            if (gameScreen) {
+                gameScreen.style.display = 'flex';
+                gameScreen.classList.add('active');
+                console.log('[GameBootstrap] Game screen shown as home page (fallback)');
+            }
+            
+            if (mainMenuScreen) {
+                mainMenuScreen.style.display = 'none';
+                mainMenuScreen.classList.remove('active');
+            }
         }
         
         // Hide loading screen
