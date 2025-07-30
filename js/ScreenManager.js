@@ -8,6 +8,20 @@ class ScreenManager {
         
         this.setupScreens();
         this.setupEventListeners();
+        this.hideAllScreens(); // Hide all screens initially
+    }
+
+    hideAllScreens() {
+        // Hide all non-loading screens initially
+        const allScreens = document.querySelectorAll('.screen');
+        allScreens.forEach(screen => {
+            if (screen.id !== 'loading-screen') {
+                screen.style.display = 'none';
+                screen.classList.remove('active');
+                console.log(`[ScreenManager] Hiding screen: ${screen.id}`);
+            }
+        });
+        console.log('[ScreenManager] All screens hidden initially');
     }
 
     setupScreens() {
@@ -153,14 +167,14 @@ class ScreenManager {
             return this.showModal(screenName, options);
         }
 
-        // Hide current screen
-        if (this.currentScreen && this.screens.has(this.currentScreen)) {
-            const currentScreenObj = this.screens.get(this.currentScreen);
-            if (currentScreenObj.element) {
-                currentScreenObj.element.style.display = 'none';
-                currentScreenObj.element.classList.remove('active');
+        // Hide ALL screens first
+        this.screens.forEach((screenObj, name) => {
+            if (!screenObj.isModal && screenObj.element) {
+                screenObj.element.style.display = 'none';
+                screenObj.element.classList.remove('active');
+                console.log(`[ScreenManager] Hiding screen: ${name}`);
             }
-        }
+        });
 
         // Initialize screen if needed
         if (!screen.initialized) {
@@ -169,9 +183,10 @@ class ScreenManager {
         }
 
         // Show new screen
-        const displayValue = options.display || (screenName === 'game' ? 'flex' : 'flex');
+        const displayValue = screenName === 'game' ? 'flex' : 'flex';
         screen.element.style.display = displayValue;
         screen.element.classList.add('active');
+        console.log(`[ScreenManager] Showing screen: ${screenName}`);
         
         // Update state
         this.previousScreen = this.currentScreen;

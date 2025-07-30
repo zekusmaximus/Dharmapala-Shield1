@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Screen Debug Inspector</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #222; color: #fff; }
+        .debug-panel { background: #333; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .screen-status { padding: 5px; margin: 2px 0; border-radius: 3px; }
+        .visible { background: #0a4d0a; }
+        .hidden { background: #4d0a0a; }
+        button { margin: 5px; padding: 8px 15px; background: #555; color: #fff; border: none; cursor: pointer; }
+        button:hover { background: #777; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Screen Debug Inspector</h1>
+    <div id="status-panel" class="debug-panel">
+        <h3>Screen Status:</h3>
+        <div id="screen-status"></div>
+    </div>
+    
+    <div class="debug-panel">
+        <h3>Test Controls:</h3>
+        <button onclick="checkScreens()">Refresh Status</button>
+        <button onclick="forceHideAll()">Force Hide All</button>
+        <button onclick="showGameScreen()">Show Game Screen</button>
+        <button onclick="openMainApp()">Open Main App</button>
+    </div>
+    
+    <div id="console-log" class="debug-panel">
+        <h3>Console Log:</h3>
+        <div id="log-output" style="max-height: 200px; overflow-y: auto; background: #111; padding: 10px; font-family: monospace; font-size: 12px;"></div>
+    </div>
+    
+    <script>
+        let logOutput = document.getElementById('log-output');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logOutput.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(message);
+        }
+        
+        function checkScreens() {
+            const statusDiv = document.getElementById('screen-status');
+            statusDiv.innerHTML = '';
+            
+            // Open the main window to inspect
+            const mainWindow = window.open('/index.html', 'mainApp');
+            
+            setTimeout(() => {
+                if (mainWindow && mainWindow.document) {
+                    const screens = mainWindow.document.querySelectorAll('.screen');
+                    log(`Found ${screens.length} screens in main app`);
+                    
+                    screens.forEach(screen => {
+                        const isVisible = window.getComputedStyle(screen).display !== 'none';
+                        const hasActiveClass = screen.classList.contains('active');
+                        const statusClass = isVisible ? 'visible' : 'hidden';
+                        
+                        const statusElement = document.createElement('div');
+                        statusElement.className = `screen-status ${statusClass}`;
+                        statusElement.innerHTML = `
+                            ${screen.id}: 
+                            Display: ${window.getComputedStyle(screen).display} | 
+                            Active Class: ${hasActiveClass} | 
+                            Visible: ${isVisible}
+                        `;
+                        statusDiv.appendChild(statusElement);
+                        
+                        log(`Screen ${screen.id}: display=${window.getComputedStyle(screen).display}, active=${hasActiveClass}`);
+                    });
+                } else {
+                    log('Could not access main app window');
+                }
+            }, 1000);
+        }
+        
+        function forceHideAll() {
+            const mainWindow = window.open('/index.html', 'mainApp');
+            setTimeout(() => {
+                if (mainWindow && mainWindow.document) {
+                    const screens = mainWindow.document.querySelectorAll('.screen');
+                    screens.forEach(screen => {
+                        if (screen.id !== 'loading-screen') {
+                            screen.style.display = 'none';
+                            screen.classList.remove('active');
+                            log(`Force hidden: ${screen.id}`);
+                        }
+                    });
+                }
+            }, 500);
+        }
+        
+        function showGameScreen() {
+            const mainWindow = window.open('/index.html', 'mainApp');
+            setTimeout(() => {
+                if (mainWindow && mainWindow.document) {
+                    const gameScreen = mainWindow.document.getElementById('game-screen');
+                    if (gameScreen) {
+                        gameScreen.style.display = 'flex';
+                        gameScreen.classList.add('active');
+                        log('Game screen shown');
+                    }
+                }
+            }, 500);
+        }
+        
+        function openMainApp() {
+            window.open('/index.html', 'mainApp', 'width=1200,height=800');
+        }
+        
+        window.onload = () => {
+            log('Debug inspector loaded');
+            checkScreens();
+        };
+    </script>
+</body>
+</html>

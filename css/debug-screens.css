@@ -1,0 +1,31 @@
+/* Debug CSS for Screen Management */
+
+/* Force hide all screens except when active */
+#main-menu-screen:not(.active),
+#achievement-gallery-screen:not(.active),
+#settings-screen:not(.active),
+#tutorialScreen:not(.active),
+#creditsScreen:not(.active),
+#levelSelectScreen:not(.active),
+#save-load-screen:not(.active),
+#victoryScreen:not(.active),
+#defeatScreen:not(.active) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    z-index: -9999 !important;
+}
+
+/* Debug border for active screens */
+.screen.active {
+    border: 3px solid lime !important;
+}
+
+#game-screen.active {
+    border: 3px solid red !important;
+}
+
+/* Add background to screens to see them clearly */
+.screen {
+    background: rgba(26, 26, 46, 0.95) !important;
+}

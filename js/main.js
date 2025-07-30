@@ -143,7 +143,7 @@ class GameBootstrap {
             console.log('[GameBootstrap] Game screen shown as home page via ScreenManager');
         } else {
             // Fallback method if ScreenManager not ready
-            const mainMenuScreen = document.getElementById('main-menu-screen');
+            this.hideAllScreensExcept('game-screen');
             const gameScreen = document.getElementById('game-screen');
             
             if (gameScreen) {
@@ -151,15 +151,20 @@ class GameBootstrap {
                 gameScreen.classList.add('active');
                 console.log('[GameBootstrap] Game screen shown as home page (fallback)');
             }
-            
-            if (mainMenuScreen) {
-                mainMenuScreen.style.display = 'none';
-                mainMenuScreen.classList.remove('active');
-            }
         }
         
         // Hide loading screen
         this.hideLoadingScreen();
+    }
+
+    hideAllScreensExcept(keepScreenId) {
+        const allScreens = document.querySelectorAll('.screen');
+        allScreens.forEach(screen => {
+            if (screen.id !== keepScreenId) {
+                screen.style.display = 'none';
+                screen.classList.remove('active');
+            }
+        });
     }
 
     handleGameInitError(error) {
