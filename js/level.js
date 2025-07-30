@@ -108,7 +108,10 @@ class LevelManager {
             const levelData = this.getLevelData();
             const pathStyle = levelData.pathStyle || 'curved';
             
-            this.currentPath = this.pathGenerator.generateBasePath(this.currentLevel, null, pathStyle, 'hybrid');
+            // Map pathStyle values to valid PathGenerator themes
+            const mappedTheme = this.mapPathStyleToTheme(pathStyle);
+            
+            this.currentPath = this.pathGenerator.generateBasePath(this.currentLevel, null, mappedTheme, 'hybrid');
             
             // Extract spawn and exit points from the generated path
             if (this.currentPath && this.currentPath.length > 0) {
@@ -123,6 +126,27 @@ class LevelManager {
             console.warn('Path generation failed, using fallback:', error);
             this.createFallbackPath();
         }
+    }
+
+    mapPathStyleToTheme(pathStyle) {
+        // Map pathStyle values to valid PathGenerator themes
+        const themeMapping = {
+            'curved': 'cyber',    // matches cyberpunk aesthetic
+            'zigzag': 'urban',    // angular patterns fit urban theme
+            'spiral': 'forest'    // organic curves match forest theme
+        };
+        
+        // Return mapped theme or fallback to 'cyber' for unknown styles
+        const mappedTheme = themeMapping[pathStyle] || 'cyber';
+        
+        // Validate that the theme is one of the supported PathGenerator themes
+        const validThemes = ['cyber', 'urban', 'forest', 'mountain'];
+        if (!validThemes.includes(mappedTheme)) {
+            console.warn(`Invalid theme "${mappedTheme}" mapped from pathStyle "${pathStyle}", using fallback 'cyber'`);
+            return 'cyber';
+        }
+        
+        return mappedTheme;
     }
 
     createFallbackPath() {

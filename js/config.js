@@ -445,7 +445,8 @@ const CONFIG = {
                     'reflection_boost', 'omni_reflection', 'perfect_reflection', 'truth_revelation',
                     'stealth_field', 'misdirection', 'invisibility_cloak', 'shadow_network',
                     'boost_aura', 'resource_generation', 'dharma_blessing', 'network_amplification',
-                    'fortress_mode', 'wisdom_aura', 'enlightenment_burst'
+                    'fortress_mode', 'wisdom_aura', 'enlightenment_burst',
+                    'advanced_cloak', 'perfect_anonymity', 'network_boost', 'mass_boost', 'dharma_fountain'
                 ];
                 
                 upgrade.abilities.forEach(ability => {
