@@ -134,22 +134,22 @@ class GameBootstrap {
     }
 
     showMainMenu() {
-        // Use the early ScreenManager or the game's ScreenManager to show game screen as home
+        // Use the early ScreenManager or the game's ScreenManager to show main menu first
         const screenManager = this.screenManager || (this.game && this.game.screenManager);
         
         if (screenManager) {
-            // Show game screen as the main/home screen
-            screenManager.showScreen('game');
-            console.log('[GameBootstrap] Game screen shown as home page via ScreenManager');
+            // Show main menu screen as the starting point
+            screenManager.showScreen('main-menu');
+            console.log('[GameBootstrap] Main menu screen shown as starting point');
         } else {
             // Fallback method if ScreenManager not ready
-            this.hideAllScreensExcept('game-screen');
-            const gameScreen = document.getElementById('game-screen');
+            this.hideAllScreensExcept('main-menu-screen');
+            const mainMenuScreen = document.getElementById('main-menu-screen');
             
-            if (gameScreen) {
-                gameScreen.style.display = 'flex';
-                gameScreen.classList.add('active');
-                console.log('[GameBootstrap] Game screen shown as home page (fallback)');
+            if (mainMenuScreen) {
+                mainMenuScreen.style.display = 'flex';
+                mainMenuScreen.classList.add('active');
+                console.log('[GameBootstrap] Main menu screen shown (fallback)');
             }
         }
         

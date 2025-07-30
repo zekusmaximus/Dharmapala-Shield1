@@ -114,13 +114,13 @@ class ScreenManager {
         this.addClickListener('tutorial-btn', () => this.showScreen('tutorial'));
         this.addClickListener('credits-btn', () => this.showScreen('credits'));
 
-        // Back buttons - now go back to game screen instead of menu
-        this.addClickListener('back-to-menu-btn', () => this.showScreen('game'));
-        this.addClickListener('back-from-achievements', () => this.showScreen('game'));
-        this.addClickListener('back-from-settings', () => this.showScreen('game'));
+        // Back buttons - game screen utilities go back to game, others go to main menu
+        this.addClickListener('back-to-menu-btn', () => this.showScreen('main-menu'));
+        this.addClickListener('back-from-achievements', () => this.showScreen('main-menu'));
+        this.addClickListener('back-from-settings', () => this.showScreen('main-menu'));
         this.addClickListener('back-from-save-load', () => this.showScreen('main-menu'));
-        this.addClickListener('backFromTutorialBtn', () => this.showScreen('game'));
-        this.addClickListener('backFromCreditsBtn', () => this.showScreen('game'));
+        this.addClickListener('backFromTutorialBtn', () => this.showScreen('main-menu'));
+        this.addClickListener('backFromCreditsBtn', () => this.showScreen('main-menu'));
         this.addClickListener('backFromLevelSelectBtn', () => this.showScreen('main-menu'));
 
         // Game screen controls
@@ -357,11 +357,13 @@ class ScreenManager {
     startNewGame() {
         this.triggerCallback('startNewGame');
         this.showScreen('game');
+        console.log('[ScreenManager] Starting new game, switching to game screen');
     }
 
     continueGame() {
         this.triggerCallback('continueGame');
         this.showScreen('game');
+        console.log('[ScreenManager] Continuing game, switching to game screen');
     }
 
     pauseGame() {

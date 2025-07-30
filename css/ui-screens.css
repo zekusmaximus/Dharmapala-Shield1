@@ -30,10 +30,35 @@
 #game-screen {
     display: none !important;
     flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+    overflow-y: auto;
 }
 
 #game-screen.active {
     display: flex !important;
+}
+
+/* Game screen specific layout */
+#game-screen .hud {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+#game-screen .canvas-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+#game-screen .defense-panel {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto 0;
 }
 
 /* All other screens hidden by default */
