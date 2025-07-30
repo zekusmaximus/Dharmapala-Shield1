@@ -449,10 +449,15 @@ const CONFIG = {
                     'advanced_cloak', 'perfect_anonymity', 'network_boost', 'mass_boost', 'dharma_fountain'
                 ];
                 
+                // Known abilities that are correctly defined but may appear as false positives
+                const knownValidAbilities = [
+                    'advanced_cloak', 'perfect_anonymity', 'network_boost', 'mass_boost', 'dharma_fountain'
+                ];
+                
                 upgrade.abilities.forEach(ability => {
                     if (typeof ability !== 'string') {
                         errors.push(`Invalid ability type in ${defenseType} level ${level}: ${typeof ability}`);
-                    } else if (!validAbilities.includes(ability)) {
+                    } else if (!validAbilities.includes(ability) && !knownValidAbilities.includes(ability)) {
                         warnings.push(`Unknown ability '${ability}' for ${defenseType} level ${level}`);
                     }
                 });

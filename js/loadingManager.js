@@ -45,12 +45,16 @@ class LoadingManager {
             return;
         }
 
-        this.progressBar = this.loadingScreen.querySelector('.progress-fill');
-        this.progressText = this.loadingScreen.querySelector('.progress-text');
+        this.progressBar = this.loadingScreen.querySelector('.loading-progress');
+        this.progressText = this.loadingScreen.querySelector('.loading-text');
         this.loadingMessage = this.loadingScreen.querySelector('.loading-message');
         
-        if (!this.progressBar || !this.progressText || !this.loadingMessage) {
+        if (!this.progressBar || !this.progressText) {
             console.warn('Loading screen elements incomplete');
+        }
+        
+        if (!this.loadingMessage) {
+            console.warn('Loading message element not found - using progress text for messages');
         }
     }
 
@@ -118,6 +122,9 @@ class LoadingManager {
             
             if (this.loadingMessage) {
                 this.loadingMessage.textContent = this.messages[this.currentMessageIndex];
+            } else if (this.progressText) {
+                // Fallback to progress text when loading message element is missing
+                this.progressText.textContent = this.messages[this.currentMessageIndex];
             }
         }
     }
@@ -270,6 +277,8 @@ class LoadingManager {
         
         if (this.loadingMessage) {
             this.loadingMessage.textContent = "Loading complete!";
+        } else if (this.progressText) {
+            this.progressText.textContent = "Loading complete!";
         }
         
         await this.delay(500);
@@ -282,6 +291,8 @@ class LoadingManager {
         
         if (this.loadingMessage) {
             this.loadingMessage.textContent = "Loading failed. Please refresh the page.";
+        } else if (this.progressText) {
+            this.progressText.textContent = "Loading failed. Please refresh the page.";
         }
         
         if (this.progressBar) {
