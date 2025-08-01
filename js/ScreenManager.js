@@ -117,7 +117,9 @@ class ScreenManager {
         // Game screen navigation buttons
         this.addClickListener('main-menu-btn', () => this.showScreen('main-menu'));
         this.addClickListener('tutorial-btn', () => this.showScreen('tutorial'));
-        this.addClickListener('credits-btn', () => this.showScreen('credits'));
+        this.addClickListener('achievements-btn-header', () => this.showScreen('achievements'));
+        this.addClickListener('settings-btn-header', () => this.showScreen('settings'));
+        this.addClickListener('credits-btn-header', () => this.showScreen('credits'));
 
         // Back buttons - game screen utilities go back to game, others go to main menu
         this.addClickListener('back-to-menu-btn', () => this.showScreen('main-menu'));
@@ -166,6 +168,8 @@ class ScreenManager {
     }
 
     showScreen(screenName, options = {}) {
+        console.log(`[ScreenManager] Attempting to show screen: ${screenName}`);
+        
         if (!this.screens.has(screenName)) {
             console.warn(`[ScreenManager] Unknown screen: ${screenName}`);
             return false;
@@ -178,40 +182,95 @@ class ScreenManager {
             return this.showModal(screenName, options);
         }
 
-        // Hide ALL screens first
-        this.screens.forEach((screenObj, name) => {
-            if (!screenObj.isModal && screenObj.element) {
-                screenObj.element.style.display = 'none';
-                screenObj.element.classList.remove('active');
-                console.log(`[ScreenManager] Hiding screen: ${name}`);
+        try {
+            // Hide ALL screens first with error handling
+            this.screens.forEach((screenObj, name) => {
+                if (!screenObj.isModal && screenObj.element) {
+                    try {
+                        screenObj.element.style.display = 'none';
+                        screenObj.element.classList.remove('active');
+                        console.log(`[ScreenManager] Hiding screen: ${name}`);
+                    } catch (error) {
+                        console.warn(`[ScreenManager] Error hiding screen ${name}:`, error);
+                    }
+                }
+            });
+
+            // Also hide loading screen explicitly
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+                loadingScreen.classList.remove('active');
+                console.log('[ScreenManager] Loading screen hidden');
             }
-        });
 
-        // Initialize screen if needed
-        if (!screen.initialized) {
-            screen.init();
-            screen.initialized = true;
+            // Initialize screen if needed
+            if (!screen.initialized) {
+                try {
+                    screen.init();
+                    screen.initialized = true;
+                } catch (error) {
+                    console.warn(`[ScreenManager] Error initializing screen ${screenName}:`, error);
+                    // Continue anyway - screen might still be functional
+                }
+            }
+
+            // Show new screen with proper display value
+            const displayValue = screenName === 'game' ? 'flex' : 'flex';
+            screen.element.style.display = displayValue;
+            screen.element.classList.add('active');
+            console.log(`[ScreenManager] Showing screen: ${screenName}`);
+            
+            // Dynamic overflow management
+            this.manageBodyOverflow(screenName);
+            
+            // Update state
+            this.previousScreen = this.currentScreen;
+            this.currentScreen = screenName;
+
+            // Trigger callbacks
+            this.triggerCallback('screenChanged', { 
+                from: this.previousScreen, 
+                to: screenName 
+            });
+
+            return true;
+            
+        } catch (error) {
+            console.error(`[ScreenManager] Error showing screen ${screenName}:`, error);
+            return false;
         }
+    }
 
-        // Show new screen
-        const displayValue = screenName === 'game' ? 'flex' : 'flex';
-        screen.element.style.display = displayValue;
-        screen.element.classList.add('active');
-        console.log(`[ScreenManager] Showing screen: ${screenName}`);
+    manageBodyOverflow(screenName) {
+        try {
+            // Set overflow based on screen type
+            if (screenName === 'game') {
+                // Hide body overflow for game screen to prevent scrolling during gameplay
+                document.body.style.overflow = 'hidden';
+                console.log('[ScreenManager] Body overflow set to hidden for game screen');
+            } else {
+                // Allow scrolling for menu screens (settings, achievements, etc. might need scrolling)
+                document.body.style.overflow = 'auto';
+                console.log(`[ScreenManager] Body overflow set to auto for screen: ${screenName}`);
+            }
+        } catch (error) {
+            console.warn('[ScreenManager] Error managing body overflow:', error);
+            // Fallback to safe default
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    showMainMenuDirect() {
+        console.log('[ScreenManager] Using shared main menu display');
         
-        // Update state
-        this.previousScreen = this.currentScreen;
-        this.currentScreen = screenName;
-
-        // Trigger callbacks
-        this.triggerCallback('screenChanged', {
-            from: this.previousScreen,
-            to: screenName,
-            options
-        });
-
-        console.log(`[ScreenManager] Switched to screen: ${screenName}`);
-        return true;
+        const success = Utils.dom.showMainMenuDirect();
+        if (success) {
+            this.currentScreen = 'main-menu';
+            // Apply overflow management for main menu
+            this.manageBodyOverflow('main-menu');
+        }
+        return success;
     }
 
     showModal(modalName, options = {}) {
@@ -267,6 +326,12 @@ class ScreenManager {
         const index = this.modalStack.indexOf(modalName);
         if (index > -1) {
             this.modalStack.splice(index, 1);
+        }
+
+        // Restore overflow state based on current underlying screen
+        // (only if no more modals are open)
+        if (this.modalStack.length === 0) {
+            this.manageBodyOverflow(this.currentScreen);
         }
 
         // Trigger callbacks

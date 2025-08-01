@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Dharmapala Shield - Buddhist Cyberpunk Tower Defense</title>
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/styles.css">
@@ -59,9 +62,9 @@
                 <div class="main-menu-controls">
                     <button id="main-menu-btn" class="menu-btn">Main Menu</button>
                     <button id="tutorial-btn" class="menu-btn">Tutorial</button>
-                    <button id="achievements-btn" class="menu-btn">Achievements</button>
-                    <button id="settings-btn" class="menu-btn">Settings</button>
-                    <button id="credits-btn" class="menu-btn">Credits</button>
+                    <button id="achievements-btn-header" class="menu-btn">Achievements</button>
+                    <button id="settings-btn-header" class="menu-btn">Settings</button>
+                    <button id="credits-btn-header" class="menu-btn">Credits</button>
                 </div>
             </div>
             
@@ -410,8 +413,8 @@
                     <input type="checkbox" id="particleEffects" checked>
                 </div>
                 <div class="setting-item">
-                    <label for="reducedMotion">Reduced Motion</label>
-                    <input type="checkbox" id="reducedMotion">
+                    <label for="reducedMotionGraphics">Reduced Motion</label>
+                    <input type="checkbox" id="reducedMotionGraphics">
                 </div>
             </div>
             
@@ -575,6 +578,35 @@
     <script src="js/enemy.js"></script>
     <script src="js/Boss.js"></script>
     <script src="js/game.js"></script>
+    <script src="js/emergency-fallback.js"></script>
+    
+    <!-- New modular components for GameBootstrap -->
+    <script src="js/LoadingScreenManager.js"></script>
+    <script src="js/ProgressIndicatorManager.js"></script>
+    <script src="js/AssetLoader.js"></script>
+    <script src="js/ErrorNotificationManager.js"></script>
+    <script src="js/EmergencyHandler.js"></script>
+    
     <script src="js/main.js"></script>
+    
+    <!-- Emergency Fallback Script -->
+    <script>
+        // Emergency fallback that runs if main initialization fails
+        setTimeout(function() {
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainMenuScreen = document.getElementById('main-menu-screen');
+            
+            if (loadingScreen && loadingScreen.style.display !== 'none') {
+                console.log('[Emergency] Loading screen still visible, forcing main menu');
+                loadingScreen.style.display = 'none';
+                loadingScreen.classList.remove('active');
+                
+                if (mainMenuScreen) {
+                    mainMenuScreen.style.display = 'flex';
+                    mainMenuScreen.classList.add('active');
+                }
+            }
+        }, 2500); // 2.5 second HTML fallback (after emergency system at 2s)
+    </script>
 </body>
 </html>

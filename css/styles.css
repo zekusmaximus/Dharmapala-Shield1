@@ -35,19 +35,45 @@
 }
 
 body {
-    font-family: var(--font-primary);
-    background: linear-gradient(135deg, var(--deep-space-blue), var(--darker-space));
-    color: var(--primary-neon-blue);
-    overflow: hidden;
+    font-family: var(--font-primary, 'Orbitron', monospace);
+    background: linear-gradient(135deg, var(--deep-space-blue, #1a1a2e), var(--darker-space, #16213e));
+    color: var(--primary-neon-blue, #00d4ff);
+    overflow: auto;
     height: 100vh;
+    width: 100vw;
     user-select: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .container {
     width: 100%;
     height: 100vh;
     position: relative;
-    overflow: hidden;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+/* Screen classes for proper display and transitions */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    flex-direction: column;
+    z-index: 100;
+    box-sizing: border-box;
+}
+
+.screen.active {
+    display: flex;
+}
+
+.screen:not(.active) {
+    display: none !important;
 }
 
 h1 {

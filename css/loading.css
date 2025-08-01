@@ -1,27 +1,79 @@
 /* Loading Screen Styles - Buddhist Cyberpunk Theme */
 
-.loading-screen {
+#loading-screen {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
     background: linear-gradient(135deg, 
-        var(--deep-space-blue) 0%, 
-        var(--darker-blue) 50%, 
-        var(--deep-space-blue) 100%);
+        var(--deep-space-blue, #1a1a2e) 0%, 
+        var(--darker-space, #16213e) 50%, 
+        var(--deep-space-blue, #1a1a2e) 100%);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    font-family: 'Orbitron', monospace;
-    color: var(--primary-neon-blue);
+    font-family: var(--font-primary, 'Orbitron', monospace);
+    color: var(--primary-neon-blue, #00d4ff);
     overflow: hidden;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out, transform 0.5s ease-out;
+    transform: translateY(0);
 }
 
-.loading-screen.fade-out {
-    animation: fadeOut 1s ease-out forwards;
+/* Fade-out transition state */
+#loading-screen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-20px);
+}
+
+/* Fade-in transition state */
+#loading-screen.fade-in {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Hidden state - use when completely removing from view */
+#loading-screen.hidden {
+    display: none !important;
+}
+
+/* Active state override for specificity */
+#loading-screen.active {
+    display: flex !important;
+    opacity: 1;
+    visibility: visible;
+}
+
+#loading-screen:not(.active):not(.fade-out) {
+    display: none !important;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 600px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.loading-logo {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: logoSpin 2s linear infinite;
+}
+
+@keyframes logoSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Animated Background */
@@ -39,28 +91,52 @@
     animation: backgroundPulse 8s ease-in-out infinite;
 }
 
-/* Loading Logo/Title */
-.loading-title {
-    font-size: 4rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3em;
-    margin-bottom: 2rem;
+/* Loading text and progress elements */
+.loading-text {
+    font-size: 1.2rem;
+    color: var(--primary-neon-blue, #00d4ff);
+    margin-top: 1rem;
     text-align: center;
-    background: linear-gradient(45deg, 
-        var(--primary-neon-blue),
-        var(--secondary-neon-purple),
-        var(--accent-gold),
-        var(--primary-neon-blue));
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: gradientShift 3s ease-in-out infinite;
-    text-shadow: 
-        0 0 20px rgba(0, 212, 255, 0.5),
-        0 0 40px rgba(0, 212, 255, 0.3),
-        0 0 60px rgba(0, 212, 255, 0.2);
+    animation: textPulse 2s ease-in-out infinite;
+}
+
+.loading-message {
+    font-size: 1rem;
+    color: var(--soft-gray, #cccccc);
+    margin-top: 0.5rem;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.loading-bar {
+    width: 300px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 1rem 0;
+    border: 1px solid var(--primary-neon-blue, #00d4ff);
+}
+
+.loading-progress {
+    height: 100%;
+    background: linear-gradient(90deg,
+        var(--primary-neon-blue, #00d4ff) 0%,
+        var(--secondary-neon-purple, #9d4edd) 50%,
+        var(--accent-gold, #ffd60a) 100%);
+    width: 0%;
+    transition: width 0.3s ease-out;
+    animation: progressShimmer 2s linear infinite;
+}
+
+@keyframes textPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes progressShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 .loading-subtitle {

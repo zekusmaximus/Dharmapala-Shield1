@@ -117,6 +117,39 @@ const Utils = {
         off(element, event, handler) {
             if (typeof element === 'string') element = this.$(element);
             if (element) element.removeEventListener(event, handler);
+        },
+
+        // Screen Management Utilities
+        showMainMenuDirect() {
+            console.log('[Utils.dom] Direct main menu display');
+            
+            try {
+                // Hide all screens
+                const allScreens = document.querySelectorAll('.screen');
+                allScreens.forEach(screen => {
+                    screen.style.display = 'none';
+                    screen.classList.remove('active');
+                });
+                
+                // Show main menu directly
+                const mainMenuScreen = document.getElementById('main-menu-screen');
+                if (mainMenuScreen) {
+                    mainMenuScreen.style.display = 'flex';
+                    mainMenuScreen.classList.add('active');
+                    
+                    // Apply overflow management for menu screen
+                    document.body.style.overflow = 'auto';
+                    
+                    console.log('[Utils.dom] Main menu shown directly with overflow management');
+                    return true;
+                } else {
+                    console.error('[Utils.dom] Main menu screen element not found!');
+                    return false;
+                }
+            } catch (error) {
+                console.error('[Utils.dom] Error in direct main menu display:', error);
+                return false;
+            }
         }
     },
 

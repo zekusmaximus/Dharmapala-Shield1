@@ -4,8 +4,12 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, var(--deep-space-blue), var(--darker-space));
+    width: 100vw;
+    background: linear-gradient(135deg, var(--deep-space-blue, #1a1a2e), var(--darker-space, #16213e));
     padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+    overflow-y: auto;
 }
 
 .menu-container {
@@ -14,13 +18,20 @@
     width: 100%;
     padding: 40px;
     background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(22, 33, 62, 0.8));
-    border: 2px solid var(--primary-neon-blue);
-    border-radius: var(--border-radius-large);
+    border: 2px solid var(--primary-neon-blue, #00d4ff);
+    border-radius: var(--border-radius-large, 12px);
     box-shadow: 
         0 0 30px rgba(0, 212, 255, 0.3),
         inset 0 0 20px rgba(0, 212, 255, 0.1);
     backdrop-filter: blur(10px);
     position: relative;
+    overflow-y: auto;
+    box-sizing: border-box;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .menu-container::before {
@@ -43,33 +54,39 @@
 }
 
 .menu-container .game-title {
-    font-size: 3rem;
+    font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 700;
-    color: var(--accent-gold);
+    color: var(--accent-gold, #ffd60a);
     text-shadow: 
-        0 0 20px var(--accent-gold),
-        0 0 40px var(--accent-gold),
-        0 0 60px var(--accent-gold);
+        0 0 20px var(--accent-gold, #ffd60a),
+        0 0 40px var(--accent-gold, #ffd60a),
+        0 0 60px var(--accent-gold, #ffd60a);
     letter-spacing: 3px;
     margin-bottom: 15px;
     text-transform: uppercase;
     animation: titlePulse 4s ease-in-out infinite;
+    text-align: center;
+    width: 100%;
+    line-height: 1.2;
 }
 
 @keyframes titlePulse {
-    0%, 100% { text-shadow: 0 0 20px var(--accent-gold), 0 0 40px var(--accent-gold); }
-    50% { text-shadow: 0 0 30px var(--accent-gold), 0 0 60px var(--accent-gold), 0 0 80px var(--accent-gold); }
+    0%, 100% { text-shadow: 0 0 20px var(--accent-gold, #ffd60a), 0 0 40px var(--accent-gold, #ffd60a); }
+    50% { text-shadow: 0 0 30px var(--accent-gold, #ffd60a), 0 0 60px var(--accent-gold, #ffd60a), 0 0 80px var(--accent-gold, #ffd60a); }
 }
 
 .menu-container .game-subtitle {
-    font-size: 1.3rem;
+    font-size: clamp(1rem, 3vw, 1.3rem);
     font-weight: 400;
-    color: var(--primary-neon-blue);
-    text-shadow: 0 0 15px var(--primary-neon-blue);
+    color: var(--primary-neon-blue, #00d4ff);
+    text-shadow: 0 0 15px var(--primary-neon-blue, #00d4ff);
     letter-spacing: 2px;
     margin-bottom: 40px;
-    font-family: var(--font-secondary);
+    font-family: var(--font-secondary, sans-serif);
     text-transform: uppercase;
+    text-align: center;
+    width: 100%;
+    line-height: 1.3;
 }
 
 .menu-buttons {
@@ -173,56 +190,84 @@
     border-color: #666;
 }
 
-/* Responsive Design */
+/* Enhanced Mobile Responsive Styles */
 @media (max-width: 768px) {
-    .menu-container {
-        padding: 30px 20px;
-        margin: 20px;
+    /* Main menu screen container */
+    #main-menu-screen {
+        padding: 10px;
+        min-height: 100vh;
+        max-height: 100vh;
+        width: 100vw;
     }
     
+    /* Menu container layout */
+    .menu-container {
+        padding: 20px;
+        margin: 20px;
+        max-width: 95vw;
+        max-height: 90vh;
+        width: calc(100vw - 20px);
+    }
+    
+    /* Title styling */
     .menu-container .game-title {
-        font-size: 2.2rem;
+        font-size: 1.8rem !important;
+        letter-spacing: 1px;
         margin-bottom: 10px;
     }
     
+    /* Subtitle styling */
     .menu-container .game-subtitle {
-        font-size: 1.1rem;
-        margin-bottom: 30px;
-    }
-    
-    .menu-btn {
-        font-size: 1rem;
-        padding: 12px 30px;
-        min-width: 250px;
-    }
-    
-    .menu-btn.primary {
-        font-size: 1.1rem;
-        padding: 15px 35px;
-    }
-}
-
-@media (max-width: 480px) {
-    .menu-container {
-        padding: 25px 15px;
-        margin: 15px;
-    }
-    
-    .menu-container .game-title {
-        font-size: 1.8rem;
-    }
-    
-    .menu-container .game-subtitle {
-        font-size: 1rem;
+        font-size: 1rem !important;
         margin-bottom: 25px;
+        letter-spacing: 1px;
     }
     
+    /* Button styling */
     .menu-btn {
         font-size: 0.9rem;
         padding: 10px 25px;
         min-width: 200px;
+        width: 100%;
+        max-width: 300px;
     }
     
+    /* Primary button styling */
+    .menu-btn.primary {
+        font-size: 1rem;
+        padding: 12px 30px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    /* Menu container layout for very small screens */
+    .menu-container {
+        padding: 15px;
+        margin: 15px;
+        max-width: 98vw;
+        width: calc(100vw - 10px);
+    }
+    
+    /* Title styling for very small screens */
+    .menu-container .game-title {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Subtitle styling for very small screens */
+    .menu-container .game-subtitle {
+        font-size: 0.9rem !important;
+        margin-bottom: 25px;
+    }
+    
+    /* Button styling for very small screens */
+    .menu-btn {
+        font-size: 0.8rem;
+        padding: 8px 20px;
+        min-width: 180px;
+    }
+    
+    /* Primary button styling for very small screens */
     .menu-btn.primary {
         font-size: 1rem;
         padding: 12px 30px;
