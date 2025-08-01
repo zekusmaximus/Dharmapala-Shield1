@@ -12,6 +12,7 @@ class ProgressIndicatorManager {
 
     /**
      * Shows the background progress indicator
+     * @deprecated Use showIndicator() for API compatibility
      */
     showBackgroundProgressIndicator() {
         const indicator = document.createElement('div');
@@ -102,6 +103,7 @@ class ProgressIndicatorManager {
      * Updates the background progress indicator
      * @param {string} message - Progress message to display
      * @param {number} step - Current step number (-1 for error state)
+     * @deprecated Use updateProgress() for API compatibility
      */
     updateBackgroundProgress(message, step) {
         const indicator = document.getElementById('background-progress-indicator');
@@ -140,6 +142,7 @@ class ProgressIndicatorManager {
 
     /**
      * Hides the background progress indicator
+     * @deprecated Use hideIndicator() for API compatibility
      */
     hideBackgroundProgressIndicator() {
         const indicator = document.getElementById('background-progress-indicator');
@@ -181,5 +184,33 @@ class ProgressIndicatorManager {
             console.warn('[ProgressIndicatorManager] Could not determine transition duration:', error);
         }
         return null;
+    }
+
+    // API Compatibility Wrapper Methods
+    
+    /**
+     * Shows the progress indicator (wrapper for API compatibility)
+     * @deprecated Use showBackgroundProgressIndicator() directly
+     */
+    showIndicator() {
+        return this.showBackgroundProgressIndicator();
+    }
+
+    /**
+     * Updates the progress indicator (wrapper for API compatibility)
+     * @param {string} message - Progress message to display
+     * @param {number} step - Current step number (-1 for error state)
+     * @deprecated Use updateBackgroundProgress() directly
+     */
+    updateProgress(message, step) {
+        return this.updateBackgroundProgress(message, step);
+    }
+
+    /**
+     * Hides the progress indicator (wrapper for API compatibility)
+     * @deprecated Use hideBackgroundProgressIndicator() directly
+     */
+    hideIndicator() {
+        return this.hideBackgroundProgressIndicator();
     }
 }

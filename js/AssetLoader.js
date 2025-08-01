@@ -9,6 +9,7 @@ class AssetLoader {
     /**
      * Preloads critical assets needed for game initialization
      * @returns {Promise} Promise that resolves when all assets are loaded
+     * @deprecated Use loadCriticalAssets() for API compatibility
      */
     async preloadCriticalAssets() {
         const essentialAssets = [
@@ -62,6 +63,7 @@ class AssetLoader {
      * Loads a CSS stylesheet
      * @param {string} href - URL of the stylesheet
      * @returns {Promise} Promise that resolves when stylesheet is loaded
+     * @deprecated Use loadCSS() for API compatibility
      */
     loadStylesheet(href) {
         return new Promise((resolve, reject) => {
@@ -170,5 +172,26 @@ class AssetLoader {
             console.error('[AssetLoader] Some images failed to load:', error);
             throw error;
         }
+    }
+
+    // API Compatibility Wrapper Methods
+    
+    /**
+     * Loads critical assets (wrapper for API compatibility)
+     * @returns {Promise} Promise that resolves when all critical assets are loaded
+     * @deprecated Use preloadCriticalAssets() directly
+     */
+    loadCriticalAssets() {
+        return this.preloadCriticalAssets();
+    }
+
+    /**
+     * Loads a CSS stylesheet (wrapper for API compatibility)
+     * @param {string} href - URL of the stylesheet
+     * @returns {Promise} Promise that resolves when stylesheet is loaded
+     * @deprecated Use loadStylesheet() directly
+     */
+    loadCSS(href) {
+        return this.loadStylesheet(href);
     }
 }
