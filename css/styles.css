@@ -860,3 +860,78 @@ p {
         height: 12px;
     }
 }
+
+/* Pause Menu Overlay */
+.pause-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+    backdrop-filter: blur(10px);
+}
+
+.pause-overlay.hidden {
+    display: none;
+}
+
+.pause-content {
+    background: linear-gradient(135deg, var(--deep-space-blue), var(--darker-space));
+    border: 3px solid var(--primary-neon-blue);
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--glow-large) var(--primary-neon-blue);
+    padding: 40px;
+    text-align: center;
+    min-width: 300px;
+}
+
+.pause-content h3 {
+    color: var(--accent-gold);
+    font-size: 2rem;
+    margin-bottom: 30px;
+    text-shadow: var(--glow-small) var(--accent-gold);
+}
+
+.pause-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pause-buttons .btn {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    border-radius: var(--border-radius-medium);
+    border: 2px solid;
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    font-family: var(--font-primary);
+}
+
+.pause-buttons .btn.primary {
+    border-color: var(--primary-neon-blue);
+    color: var(--primary-neon-blue);
+}
+
+.pause-buttons .btn.primary:hover {
+    background: var(--primary-neon-blue);
+    color: var(--darker-space);
+    box-shadow: var(--glow-medium) var(--primary-neon-blue);
+}
+
+.pause-buttons .btn.secondary {
+    border-color: var(--soft-gray);
+    color: var(--soft-gray);
+}
+
+.pause-buttons .btn.secondary:hover {
+    background: var(--soft-gray);
+    color: var(--darker-space);
+    box-shadow: var(--glow-small) var(--soft-gray);
+}

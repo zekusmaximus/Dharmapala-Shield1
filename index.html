@@ -270,6 +270,19 @@
                 <div class="boss-warning-title">⚠️ BOSS ABILITY WARNING ⚠️</div>
                 <div class="boss-warning-text" id="bossWarningText">Incoming boss ability!</div>
                 <div class="boss-warning-timer" id="bossWarningTimer">3</div>
+                <button id="close-boss-warning" class="close-btn">×</button>
+            </div>
+        </div>
+
+        <!-- Pause Menu Overlay -->
+        <div id="pause-menu-overlay" class="pause-overlay hidden">
+            <div class="pause-content">
+                <h3>Game Paused</h3>
+                <div class="pause-buttons">
+                    <button id="resume-game-btn" class="btn primary">Resume Game</button>
+                    <button id="back-to-menu-btn" class="btn secondary">Back to Menu</button>
+                    <button id="return-to-menu-btn" class="btn secondary">Return to Main Menu</button>
+                </div>
             </div>
         </div>
 
@@ -322,7 +335,7 @@
         <div class="modal-content upgrade-tree">
             <div class="modal-header">
                 <h3 id="upgradeTreeTitle">Upgrade Tree</h3>
-                <button class="close-btn" id="closeUpgradeTreeBtn">×</button>
+                <button class="close-btn" id="close-upgrade-tree">×</button>
             </div>
             <div class="modal-body">
                 <div class="upgrade-path-container" id="upgradePathContainer">

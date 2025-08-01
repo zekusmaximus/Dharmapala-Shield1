@@ -80,6 +80,11 @@ class ScreenManager {
                 element: 'boss-warning-modal',
                 init: () => this.initBossWarningScreen(),
                 isModal: true
+            },
+            'pause-menu': {
+                element: 'pause-menu-overlay',
+                init: () => this.initPauseMenuScreen(),
+                isModal: true
             }
         };
 
@@ -230,6 +235,7 @@ class ScreenManager {
 
         // Show modal
         modal.element.style.display = options.display || 'flex';
+        modal.element.classList.remove('hidden');
         modal.element.style.zIndex = 1000 + this.modalStack.length;
 
         // Add to modal stack
@@ -255,6 +261,7 @@ class ScreenManager {
 
         // Hide modal
         modal.element.style.display = 'none';
+        modal.element.classList.add('hidden');
 
         // Remove from modal stack
         const index = this.modalStack.indexOf(modalName);
@@ -357,6 +364,10 @@ class ScreenManager {
 
     initBossWarningScreen() {
         console.log('[ScreenManager] Boss warning modal initialized');
+    }
+
+    initPauseMenuScreen() {
+        console.log('[ScreenManager] Pause menu modal initialized');
     }
 
     // Game flow methods
