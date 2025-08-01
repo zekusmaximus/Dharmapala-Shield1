@@ -77,6 +77,9 @@ class UIManager {
         
         // Keyboard shortcuts
         this.setupKeyboardShortcuts();
+        
+        // Defense selection
+        this.setupDefenseSelection();
     }
 
     addClickHandler(elementId, handler) {
@@ -193,6 +196,31 @@ class UIManager {
                     break;
             }
         });
+    }
+    
+    setupDefenseSelection() {
+        // Add click handlers for defense items
+        const defenseItems = document.querySelectorAll('.defense-item[data-type]');
+        defenseItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const defenseType = item.getAttribute('data-type');
+                console.log(`[UIManager] Defense type selected: ${defenseType}`);
+                
+                // Remove active class from all defense items
+                defenseItems.forEach(di => di.classList.remove('active'));
+                
+                // Add active class to clicked item
+                item.classList.add('active');
+                
+                // Dispatch selection event
+                const event = new CustomEvent('selectDefenseType', { 
+                    detail: { type: defenseType } 
+                });
+                document.dispatchEvent(event);
+            });
+        });
+        
+        console.log(`[UIManager] Set up defense selection for ${defenseItems.length} defense types`);
     }
 
     selectDefenseHotkey(index) {

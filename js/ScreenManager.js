@@ -398,8 +398,274 @@ class ScreenManager {
     }
 
     initTutorialScreen() {
-        // Setup tutorial content
-        console.log('[ScreenManager] Tutorial screen initialized');
+        // Setup tutorial content and navigation
+        this.currentTutorialStep = 1;
+        this.totalTutorialSteps = 8;
+        
+        // Get tutorial elements
+        this.tutorialStepsContainer = document.querySelector('.tutorial-steps');
+        this.tutorialProgress = document.getElementById('tutorialProgress');
+        this.prevBtn = document.getElementById('prevTutorialBtn');
+        this.nextBtn = document.getElementById('nextTutorialBtn');
+        
+        // Generate tutorial content
+        this.generateTutorialSteps();
+        
+        // Setup navigation event listeners
+        if (this.prevBtn) {
+            this.prevBtn.addEventListener('click', () => this.previousTutorialStep());
+        }
+        if (this.nextBtn) {
+            this.nextBtn.addEventListener('click', () => this.nextTutorialStep());
+        }
+        
+        // Initialize first step
+        this.updateTutorialDisplay();
+        
+        console.log('[ScreenManager] Tutorial screen initialized with', this.totalTutorialSteps, 'steps');
+    }
+
+    generateTutorialSteps() {
+        const steps = [
+            {
+                title: "🙏 Welcome to the Digital Monastery",
+                content: `
+                    <p>Greetings, aspiring cyber-monk! You have entered the sacred digital realm where ancient Buddhist wisdom meets cutting-edge technology. Your mission is to protect the network servers from waves of digital corruption using mindful defense strategies.</p>
+                    <div class="tutorial-highlight">
+                        <p><strong>Philosophy:</strong> In Dharmapala Shield, we practice compassionate protection - defenses redirect and purify threats rather than destroying them.</p>
+                    </div>
+                `
+            },
+            {
+                title: "💎 Understanding Resources",
+                content: `
+                    <p>As a digital monk, you manage three sacred resources that power your defenses:</p>
+                    <div class="tutorial-resources-grid">
+                        <div class="resource-item">
+                            <span class="resource-icon">💎</span>
+                            <div class="resource-name">Dharma</div>
+                            <div class="resource-description">Primary currency for placing and upgrading defenses. Earned by purifying digital threats.</div>
+                        </div>
+                        <div class="resource-item">
+                            <span class="resource-icon">📡</span>
+                            <div class="resource-name">Bandwidth</div>
+                            <div class="resource-description">Required for advanced defenses and special abilities. Manages network capacity.</div>
+                        </div>
+                        <div class="resource-item">
+                            <span class="resource-icon">👤</span>
+                            <div class="resource-name">Anonymity</div>
+                            <div class="resource-description">Rare resource needed for elite cyber-monk defenses. Protects your network identity.</div>
+                        </div>
+                    </div>
+                    <div class="tutorial-highlight">
+                        <p><strong>Tip:</strong> Resources regenerate over time. Balance spending with patience for optimal monastery management.</p>
+                    </div>
+                `
+            },
+            {
+                title: "🏯 Defense Types - Your Digital Arsenal",
+                content: `
+                    <p>Each defense type embodies different aspects of Buddhist wisdom:</p>
+                    <div class="defense-grid">
+                        <div class="defense-preview">
+                            <span class="defense-icon">🏯</span>
+                            <div class="defense-name">Firewall</div>
+                            <div class="defense-cost">25 💎</div>
+                        </div>
+                        <div class="defense-preview">
+                            <span class="defense-icon">🏛️</span>
+                            <div class="defense-name">Encryption</div>
+                            <div class="defense-cost">40 💎</div>
+                        </div>
+                        <div class="defense-preview">
+                            <span class="defense-icon">🕌</span>
+                            <div class="defense-name">Decoy</div>
+                            <div class="defense-cost">30 💎</div>
+                        </div>
+                        <div class="defense-preview">
+                            <span class="defense-icon">🏢</span>
+                            <div class="defense-name">Mirror</div>
+                            <div class="defense-cost">35 💎</div>
+                        </div>
+                        <div class="defense-preview">
+                            <span class="defense-icon">👻</span>
+                            <div class="defense-name">Anonymity</div>
+                            <div class="defense-cost">45 💎</div>
+                        </div>
+                        <div class="defense-preview">
+                            <span class="defense-icon">⚖️</span>
+                            <div class="defense-name">Distributor</div>
+                            <div class="defense-cost">50 💎</div>
+                        </div>
+                    </div>
+                    <div class="tutorial-highlight">
+                        <p><strong>Strategy:</strong> Combine different defense types for maximum effectiveness. Each serves a unique purpose in your digital defense mandala.</p>
+                    </div>
+                `
+            },
+            {
+                title: "👾 Digital Threats - Know Your Adversaries",
+                content: `
+                    <p>The digital realm faces various forms of corruption, each requiring different approaches:</p>
+                    <ul style="font-size: 1.1rem; line-height: 1.8;">
+                        <li><strong>Script Kiddies</strong> - Fast, erratic attackers with unpredictable movement patterns</li>
+                        <li><strong>Federal Agents</strong> - Heavily armored, persistent, and find alternate routes when blocked</li>
+                        <li><strong>Corporate Saboteurs</strong> - Can become invisible and move faster temporarily</li>
+                        <li><strong>AI Surveillance</strong> - Marks defenses for increased damage with scanning capabilities</li>
+                        <li><strong>Quantum Hackers</strong> - Advanced enemies that can phase through defenses</li>
+                        <li><strong>Corrupted Monks</strong> - Heal nearby enemies and spread digital corruption</li>
+                    </ul>
+                    <div class="tutorial-highlight">
+                        <p><strong>Wisdom:</strong> Understanding your opponent is the first step to compassionate resolution. Each enemy type requires different defensive strategies.</p>
+                    </div>
+                `
+            },
+            {
+                title: "🎮 Controls - Mastering the Interface",
+                content: `
+                    <p>Learn the sacred gestures to command your digital monastery:</p>
+                    <div class="control-keys">
+                        <div class="key-binding">
+                            <span class="key">Left Click</span>
+                            <span class="key-action">Place defense / Select UI</span>
+                        </div>
+                        <div class="key-binding">
+                            <span class="key">Right Click</span>
+                            <span class="key-action">Cancel placement</span>
+                        </div>
+                        <div class="key-binding">
+                            <span class="key">Space</span>
+                            <span class="key-action">Pause/Resume game</span>
+                        </div>
+                        <div class="key-binding">
+                            <span class="key">ESC</span>
+                            <span class="key-action">Open main menu</span>
+                        </div>
+                        <div class="key-binding">
+                            <span class="key">Mouse Wheel</span>
+                            <span class="key-action">Zoom in/out</span>
+                        </div>
+                    </div>
+                    <p><strong>Mobile Controls:</strong> Tap to place, hold for info, pinch to zoom, swipe to pan.</p>
+                    <div class="tutorial-highlight">
+                        <p><strong>Meditation:</strong> Smooth, deliberate actions lead to better strategic outcomes than frantic clicking.</p>
+                    </div>
+                `
+            },
+            {
+                title: "⚡ Boss Encounters - Ultimate Challenges",
+                content: `
+                    <p>Powerful entities threaten the digital realm with devastating abilities:</p>
+                    <ul style="font-size: 1.1rem; line-height: 1.8;">
+                        <li><strong>Raid Team</strong> - Multi-phase boss that spawns minions and uses EMP bursts to disable defenses</li>
+                        <li><strong>MegaCorp Titan</strong> - Massive entity with shield regeneration and drone swarm deployment</li>
+                        <li><strong>Corrupted Monk</strong> - Fallen digital monk with corruption fields and meditation storms</li>
+                    </ul>
+                    <p>Boss encounters feature multiple phases with increasing difficulty and new abilities as their health decreases.</p>
+                    <div class="tutorial-highlight">
+                        <p><strong>Warning System:</strong> Bosses telegraph their powerful abilities with visual warnings. Use this time to prepare your defenses!</p>
+                    </div>
+                `
+            },
+            {
+                title: "🏆 Achievements - Path of Progress",
+                content: `
+                    <p>Your journey as a cyber-monk is measured through achievements across five categories:</p>
+                    <ul style="font-size: 1.1rem; line-height: 1.8;">
+                        <li><strong>First Steps</strong> - Beginning your digital meditation journey</li>
+                        <li><strong>Combat Mastery</strong> - Perfecting defensive techniques</li>
+                        <li><strong>Strategic Genius</strong> - Advanced tactical achievements</li>
+                        <li><strong>Progression</strong> - Advancing through levels and waves</li>
+                        <li><strong>Hidden Secrets</strong> - Discovering hidden aspects of the digital realm</li>
+                    </ul>
+                    <p>Achievements provide long-term goals and unlock special recognition for your accomplishments.</p>
+                    <div class="tutorial-highlight">
+                        <p><strong>Mindfulness:</strong> Focus on the present moment rather than chasing achievements. They will come naturally through dedicated practice.</p>
+                    </div>
+                `
+            },
+            {
+                title: "🌟 Begin Your Journey",
+                content: `
+                    <p>You are now ready to begin your path as a digital guardian. Remember these core principles:</p>
+                    <ul style="font-size: 1.1rem; line-height: 1.8;">
+                        <li><strong>Compassionate Protection</strong> - Defend without aggression</li>
+                        <li><strong>Mindful Strategy</strong> - Think before you place each defense</li>
+                        <li><strong>Resource Wisdom</strong> - Balance spending with patience</li>
+                        <li><strong>Adaptive Learning</strong> - Each enemy teaches you something new</li>
+                        <li><strong>Present Awareness</strong> - Stay focused on the current wave</li>
+                    </ul>
+                    <div class="tutorial-highlight">
+                        <p><strong>Final Wisdom:</strong> "In the digital realm, as in life, compassionate protection guards against suffering. May your defenses be strong and your meditation deep." 🧘‍♂️✨</p>
+                    </div>
+                    <p style="text-align: center; margin-top: 30px;">
+                        <strong>Click "Start Campaign" from the main menu to begin your first level!</strong>
+                    </p>
+                `
+            }
+        ];
+
+        // Clear existing content and populate with steps
+        if (this.tutorialStepsContainer) {
+            this.tutorialStepsContainer.innerHTML = '';
+            
+            steps.forEach((step, index) => {
+                const stepElement = document.createElement('div');
+                stepElement.className = 'tutorial-step';
+                stepElement.setAttribute('data-step', index + 1);
+                if (index === 0) stepElement.classList.add('active');
+                
+                stepElement.innerHTML = `
+                    <div class="step-content">
+                        <h3>${step.title}</h3>
+                        ${step.content}
+                    </div>
+                `;
+                
+                this.tutorialStepsContainer.appendChild(stepElement);
+            });
+        }
+    }
+
+    nextTutorialStep() {
+        if (this.currentTutorialStep < this.totalTutorialSteps) {
+            this.currentTutorialStep++;
+            this.updateTutorialDisplay();
+        }
+    }
+
+    previousTutorialStep() {
+        if (this.currentTutorialStep > 1) {
+            this.currentTutorialStep--;
+            this.updateTutorialDisplay();
+        }
+    }
+
+    updateTutorialDisplay() {
+        // Update progress text
+        if (this.tutorialProgress) {
+            this.tutorialProgress.textContent = `${this.currentTutorialStep} / ${this.totalTutorialSteps}`;
+        }
+        
+        // Update navigation buttons
+        if (this.prevBtn) {
+            this.prevBtn.disabled = this.currentTutorialStep === 1;
+        }
+        if (this.nextBtn) {
+            this.nextBtn.disabled = this.currentTutorialStep === this.totalTutorialSteps;
+        }
+        
+        // Show current step, hide others
+        const steps = document.querySelectorAll('.tutorial-step');
+        steps.forEach((step, index) => {
+            if (index + 1 === this.currentTutorialStep) {
+                step.classList.add('active');
+            } else {
+                step.classList.remove('active');
+            }
+        });
+        
+        console.log(`[ScreenManager] Tutorial step ${this.currentTutorialStep} displayed`);
     }
 
     initCreditsScreen() {

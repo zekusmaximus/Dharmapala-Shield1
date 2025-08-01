@@ -76,13 +76,37 @@ class DefenseManager {
     }
 
     setupEventListeners() {
-        // Defense selection buttons
-        for (const defenseType in this.defenseTypes) {
-            const button = document.getElementById(`${defenseType}-defense-btn`);
-            if (button) {
-                button.addEventListener('click', () => this.selectDefenseType(defenseType));
+        console.log('[DefenseManager] Setting up event listeners for defense items');
+        
+        // Defense selection items using data-type attributes
+        const defenseItems = document.querySelectorAll('.defense-item');
+        console.log(`[DefenseManager] Found ${defenseItems.length} defense items`);
+        
+        defenseItems.forEach((item, index) => {
+            const defenseType = item.dataset.type;
+            console.log(`[DefenseManager] Setting up listener for defense item ${index}: ${defenseType}`);
+            
+            if (defenseType) {
+                item.addEventListener('click', (e) => {
+                    console.log(`[DefenseManager] Defense item clicked: ${defenseType}`);
+                    this.selectDefenseType(defenseType);
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                
+                // Add visual feedback
+                item.addEventListener('mouseenter', () => {
+                    item.style.transform = 'scale(1.05)';
+                    item.style.cursor = 'pointer';
+                });
+                
+                item.addEventListener('mouseleave', () => {
+                    item.style.transform = 'scale(1)';
+                });
+            } else {
+                console.warn(`[DefenseManager] Defense item ${index} missing data-type attribute`);
             }
-        }
+        });
 
         // Defense action buttons
         this.setupActionButtons();

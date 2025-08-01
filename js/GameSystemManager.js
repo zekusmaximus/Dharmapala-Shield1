@@ -69,13 +69,29 @@ class GameSystemManager {
 
     async initializePathGenerator() {
         try {
+            console.log('[GameSystemManager] Checking PathGenerator availability...');
+            console.log('[GameSystemManager] PathGenerator type:', typeof PathGenerator);
+            console.log('[GameSystemManager] PathGenerator defined:', typeof PathGenerator !== 'undefined');
+            
             if (typeof PathGenerator === 'undefined') {
-                console.warn('[GameSystemManager] PathGenerator not available, using fallback');
-                this.systems.set('pathGenerator', null);
-                return;
+                console.warn('[GameSystemManager] PathGenerator class not found - checking window.PathGenerator...');
+                if (typeof window.PathGenerator !== 'undefined') {
+                    console.log('[GameSystemManager] Found PathGenerator on window object');
+                    window.PathGenerator = window.PathGenerator;
+                } else {
+                    console.warn('[GameSystemManager] PathGenerator not available anywhere, using fallback');
+                    this.systems.set('pathGenerator', null);
+                    return;
+                }
             }
             
             const config = this.systems.get('config');
+            console.log('[GameSystemManager] Creating PathGenerator with config:', {
+                width: config?.CANVAS_WIDTH || 800,
+                height: config?.CANVAS_HEIGHT || 600,
+                gridSize: config?.GRID_SIZE || 32
+            });
+            
             const pathGenerator = new PathGenerator(
                 config?.CANVAS_WIDTH || 800,
                 config?.CANVAS_HEIGHT || 600,
@@ -84,10 +100,11 @@ class GameSystemManager {
             
             this.systems.set('pathGenerator', pathGenerator);
             this.initialized.pathGenerator = true;
-            console.log('[GameSystemManager] PathGenerator initialized');
+            console.log('[GameSystemManager] PathGenerator initialized successfully');
             
         } catch (error) {
-            console.warn('[GameSystemManager] PathGenerator initialization failed:', error);
+            console.error('[GameSystemManager] PathGenerator initialization failed:', error);
+            console.log('[GameSystemManager] Error details:', error.stack);
             this.systems.set('pathGenerator', null);
         }
     }

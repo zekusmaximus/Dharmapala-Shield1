@@ -3,6 +3,8 @@ class Game {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         
+        // High-DPI handling will be done in resizeCanvas method
+        
         // Core systems - simplified initialization
         this.systemManager = null;
         this.screenManager = null;
@@ -133,11 +135,14 @@ class Game {
     }
 
     setupGameSystems() {
+        // Ensure canvas has proper dimensions
+        this.resizeCanvas();
+        
         // Setup camera with dynamic canvas dimensions
         if (window.camera) {
             window.camera.setCanvas(this.canvas);
-            const canvasWidth = this.canvas.displayWidth || this.canvas.width;
-            const canvasHeight = this.canvas.displayHeight || this.canvas.height;
+            const canvasWidth = this.canvas.width;
+            const canvasHeight = this.canvas.height;
             window.camera.setBounds(0, 0, canvasWidth, canvasHeight);
             console.log(`[Game] Camera bounds set to: ${canvasWidth}x${canvasHeight}`);
         }
@@ -150,6 +155,48 @@ class Game {
         
         // Setup UI
         this.updateUI();
+    }
+
+    resizeCanvas() {
+        // Get the canvas container dimensions
+        const container = this.canvas.parentElement;
+        if (container) {
+            const rect = container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            
+            // If container has no size yet, wait and try again
+            if (rect.width === 0 || rect.height === 0) {
+                console.log('[Game] Container has no size yet, using fallback and will retry');
+                this.canvas.width = 800;
+                this.canvas.height = 600;
+                this.canvas.style.width = '100%';
+                this.canvas.style.height = '100%';
+                
+                // Try again after a short delay
+                setTimeout(() => this.resizeCanvas(), 100);
+                return;
+            }
+            
+            // Set display size (css pixels)
+            this.canvas.style.width = rect.width + 'px';
+            this.canvas.style.height = rect.height + 'px';
+            
+            // Set actual size in memory (scaled by device pixel ratio)
+            this.canvas.width = rect.width * dpr;
+            this.canvas.height = rect.height * dpr;
+            
+            // Scale the context to ensure correct drawing operations
+            this.ctx.scale(dpr, dpr);
+            
+            console.log(`[Game] Canvas resized to ${this.canvas.width}x${this.canvas.height} (${rect.width}x${rect.height} CSS)`);
+        } else {
+            // Fallback dimensions
+            this.canvas.width = 800;
+            this.canvas.height = 600;
+            this.canvas.style.width = '100%';
+            this.canvas.style.height = '100%';
+            console.log('[Game] Using fallback canvas dimensions: 800x600');
+        }
     }
 
     setupEventListeners() {
@@ -349,8 +396,26 @@ class Game {
     }
 
     render() {
-        // Clear canvas
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Save context state
+        this.ctx.save();
+        
+        // Clear canvas (account for device pixel ratio)
+        const dpr = window.devicePixelRatio || 1;
+        this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
+        
+        // Debug: Log canvas dimensions and rendering info periodically
+        this.frameCount = (this.frameCount || 0) + 1;
+        if (this.frameCount % 300 === 0) { // Every 5 seconds at 60fps
+            console.log(`[Game] Render frame ${this.frameCount}:`, {
+                canvasWidth: this.canvas.width,
+                canvasHeight: this.canvas.height,
+                canvasStyleWidth: this.canvas.style.width,
+                canvasStyleHeight: this.canvas.style.height,
+                enemies: this.enemies.length,
+                gameRunning: this.isRunning,
+                contextTransform: this.ctx.getTransform ? this.ctx.getTransform() : 'unavailable'
+            });
+        }
         
         // Apply camera transform
         let restoreCamera = null;
@@ -361,6 +426,22 @@ class Game {
         // Render game world
         this.renderBackground();
         this.renderPath();
+        
+        // Debug: Draw test circles to verify rendering system
+        if (this.frameCount % 60 === 0) { // Every second
+            this.ctx.save();
+            this.ctx.fillStyle = '#00FF00';
+            this.ctx.beginPath();
+            this.ctx.arc(100, 100, 20, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            this.ctx.fillStyle = '#FF0000';
+            this.ctx.beginPath();
+            this.ctx.arc(400, 300, 15, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.restore();
+        }
+        
         this.renderEnemies();
         this.defenseManager.render(this.ctx);
         this.renderProjectiles();
@@ -373,6 +454,9 @@ class Game {
         
         // Render UI overlay
         this.renderUI();
+        
+        // Restore context state
+        this.ctx.restore();
     }
 
     renderBackground() {
@@ -387,13 +471,22 @@ class Game {
 
     renderPath() {
         const levelManager = this.systemManager.getLevelManager();
-        if (!levelManager) return;
+        if (!levelManager) {
+            console.warn('[Game] No level manager available for path rendering');
+            return;
+        }
         
         const path = levelManager.getCurrentPath();
-        if (!path || path.length < 2) return;
+        if (!path || path.length < 2) {
+            console.warn('[Game] Invalid path for rendering:', path);
+            return;
+        }
         
-        this.ctx.strokeStyle = '#333333';
-        this.ctx.lineWidth = 30;
+        console.log(`[Game] Rendering path with ${path.length} points:`, path);
+        
+        // Make the path more visible for debugging
+        this.ctx.strokeStyle = '#8B4513'; // Brown color
+        this.ctx.lineWidth = 40;
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         
@@ -405,12 +498,36 @@ class Game {
         }
         
         this.ctx.stroke();
+        
+        // Add path endpoint markers for debugging
+        this.ctx.fillStyle = '#00FF00'; // Green for start
+        this.ctx.beginPath();
+        this.ctx.arc(path[0].x, path[0].y, 15, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        this.ctx.fillStyle = '#FF0000'; // Red for end
+        this.ctx.beginPath();
+        this.ctx.arc(path[path.length - 1].x, path[path.length - 1].y, 15, 0, Math.PI * 2);
+        this.ctx.fill();
     }
 
     renderEnemies() {
-        for (const enemy of this.enemies) {
-            if (enemy.render) {
+        if (this.enemies.length > 0) {
+            console.log(`[Game] Rendering ${this.enemies.length} enemies`);
+        }
+        
+        for (let i = 0; i < this.enemies.length; i++) {
+            const enemy = this.enemies[i];
+            if (enemy && enemy.render) {
+                console.log(`[Game] Rendering enemy ${i}:`, {
+                    type: enemy.type,
+                    x: enemy.x,
+                    y: enemy.y,
+                    isAlive: enemy.isAlive
+                });
                 enemy.render(this.ctx);
+            } else {
+                console.warn(`[Game] Enemy ${i} is invalid or missing render method:`, enemy);
             }
         }
     }
@@ -603,6 +720,16 @@ class Game {
             this.enemies.push(enemy);
             
             console.log(`[Game] Spawned ${enemyData.type} enemy at ${spawnPoint.x}, ${spawnPoint.y}`);
+            console.log(`[Game] Enemy details:`, {
+                type: enemy.type,
+                x: enemy.x,
+                y: enemy.y,
+                size: enemy.size,
+                color: enemy.color,
+                hasRenderMethod: typeof enemy.render === 'function',
+                isAlive: enemy.isAlive
+            });
+            console.log(`[Game] Total enemies now:`, this.enemies.length);
             
             // Notify level manager of successful spawn
             const levelManager = this.systemManager.getLevelManager();

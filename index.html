@@ -368,7 +368,24 @@
         <div class="tutorial-container">
             <h2>Tutorial - Path of the Digital Monk</h2>
             <div class="tutorial-content">
-                <!-- Tutorial content will be populated -->
+                <div class="tutorial-navigation">
+                    <button id="prevTutorialBtn" class="nav-btn" disabled>← Previous</button>
+                    <span id="tutorialProgress" class="progress-text">1 / 8</span>
+                    <button id="nextTutorialBtn" class="nav-btn">Next →</button>
+                </div>
+                
+                <div class="tutorial-steps">
+                    <!-- Tutorial steps will be populated dynamically -->
+                    <div class="tutorial-step active" data-step="1">
+                        <div class="step-content">
+                            <h3>🙏 Welcome to the Digital Monastery</h3>
+                            <p>Greetings, aspiring cyber-monk! You have entered the sacred digital realm where ancient Buddhist wisdom meets cutting-edge technology. Your mission is to protect the network servers from waves of digital corruption using mindful defense strategies.</p>
+                            <div class="tutorial-highlight">
+                                <p><strong>Philosophy:</strong> In Dharmapala Shield, we practice compassionate protection - defenses redirect and purify threats rather than destroying them.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <button id="backFromTutorialBtn" class="back-btn">← Back to Menu</button>
         </div>

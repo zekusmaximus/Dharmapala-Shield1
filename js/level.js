@@ -93,7 +93,7 @@ class LevelManager {
 
     initializeLevel(levelNumber) {
         this.currentLevel = levelNumber;
-        this.currentWave = 1;
+        this.currentWave = 0; // Start at 0 so first wave is wave 1
         this.waveInProgress = false;
         this.enemiesSpawned = 0;
         this.enemiesKilled = 0;
@@ -101,6 +101,8 @@ class LevelManager {
         
         this.generateLevelPath();
         this.triggerCallback('onLevelStart', { level: levelNumber });
+        
+        console.log(`[LevelManager] Level ${levelNumber} initialized, ready for wave 1`);
     }
 
     generateLevelPath() {
@@ -156,6 +158,7 @@ class LevelManager {
     }
 
     createFallbackPath() {
+        console.log('[LevelManager] Creating fallback path due to PathGenerator unavailability');
         this.currentPath = [
             { x: 50, y: 300 },
             { x: 200, y: 250 },
@@ -166,6 +169,14 @@ class LevelManager {
         ];
         this.spawnPoints = [{ x: 0, y: 300 }];
         this.exitPoints = [{ x: 800, y: 300 }];
+        
+        console.log('[LevelManager] Fallback path created:', {
+            pathPoints: this.currentPath.length,
+            spawnPoints: this.spawnPoints.length,
+            exitPoints: this.exitPoints.length,
+            firstPoint: this.currentPath[0],
+            lastPoint: this.currentPath[this.currentPath.length - 1]
+        });
     }
 
     setPathGenerator(pathGenerator) {
@@ -267,10 +278,11 @@ class LevelManager {
     }
 
     startWave() {
-        if (this.waveInProgress || this.currentWave > this.maxWaves) {
+        if (this.waveInProgress || this.currentWave >= this.maxWaves) {
             return false;
         }
 
+        this.currentWave++; // Increment to the actual wave number being started
         this.waveInProgress = true;
         this.waveStartTime = Utils.performance.now();
         this.enemiesSpawned = 0;
@@ -282,6 +294,8 @@ class LevelManager {
         
         // Populate spawn queue based on wave data
         this.populateSpawnQueue(waveData);
+        
+        console.log(`[LevelManager] Wave ${this.currentWave} started with ${this.spawnQueue.length} spawn events`);
         
         this.triggerCallback('onWaveStart', {
             wave: this.currentWave,
@@ -487,7 +501,9 @@ class LevelManager {
     }
 
     canStartNextWave() {
-        return !this.waveInProgress && this.currentWave <= this.maxWaves;
+        const canStart = !this.waveInProgress && this.currentWave < this.maxWaves;
+        console.log(`[LevelManager] canStartNextWave: waveInProgress=${this.waveInProgress}, currentWave=${this.currentWave}, maxWaves=${this.maxWaves}, canStart=${canStart}`);
+        return canStart;
     }
 
     getWaveProgress() {
@@ -502,9 +518,11 @@ class LevelManager {
     }
 
     getNextWavePreview() {
-        if (this.currentWave > this.maxWaves) return null;
+        // Calculate the next wave number that would be started
+        const nextWave = this.currentWave + 1;
         
-        const nextWave = this.currentWave + (this.waveInProgress ? 0 : 1);
+        console.log(`[LevelManager] getNextWavePreview: currentWave=${this.currentWave}, waveInProgress=${this.waveInProgress}, nextWave=${nextWave}, maxWaves=${this.maxWaves}`);
+        
         if (nextWave > this.maxWaves) return null;
         
         const tempWave = this.currentWave;
