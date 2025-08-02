@@ -150,45 +150,45 @@
 
 /* Compact left panel sections */
 .left-panel .panel-title {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     color: #4ecdc4;
-    margin: 0 0 4px 0;
+    margin: 0 0 3px 0;
     text-align: center;
 }
 
 .resource-section {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .resource-bar {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
 .resource.enhanced {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 3px 6px;
+    padding: 2px 4px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
+    border-radius: 3px;
     border: 1px solid rgba(78, 205, 196, 0.3);
-    min-height: 24px;
+    min-height: 20px;
 }
 
 .resource-header {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
 }
 
 .resource-icon {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
 }
 
 .resource-label {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: #ccc;
     font-weight: 500;
 }
@@ -196,14 +196,14 @@
 .resource-display {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
 }
 
 .resource-value {
-    font-size: 0.8rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: #ffd700;
-    min-width: 30px;
+    min-width: 25px;
     text-align: right;
 }
 
@@ -212,7 +212,7 @@
 }
 
 .resource-generation {
-    font-size: 0.6rem;
+    font-size: 0.5rem;
     color: #4ecdc4;
     white-space: nowrap;
 }
@@ -221,13 +221,13 @@
 .quick-stats-section,
 .dharma-wisdom-section,
 .cyberpunk-lore-section {
-    margin-bottom: 6px;
+    margin-bottom: 3px;
 }
 
 .section-title {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: #4ecdc4;
-    margin: 0 0 3px 0;
+    margin: 0 0 2px 0;
     text-align: center;
     font-weight: 600;
 }
@@ -236,13 +236,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 2px 4px;
-    font-size: 0.65rem;
+    padding: 1px 3px;
+    font-size: 0.55rem;
     color: #ccc;
+    line-height: 1.1;
 }
 
 .stat-icon {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     margin-right: 2px;
 }
 
@@ -252,10 +253,10 @@
 }
 
 .exp-progress {
-    height: 3px;
+    height: 2px;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 2px;
-    margin: 2px 0;
+    border-radius: 1px;
+    margin: 1px 0;
     overflow: hidden;
 }
 
@@ -268,43 +269,44 @@
 .wisdom-quote {
     background: rgba(255, 215, 0, 0.1);
     border-left: 2px solid #ffd700;
-    padding: 4px 6px;
-    margin: 4px 0;
-    border-radius: 0 4px 4px 0;
+    padding: 3px 4px;
+    margin: 2px 0;
+    border-radius: 0 3px 3px 0;
 }
 
 .quote-text {
-    font-size: 0.65rem;
+    font-size: 0.55rem;
     color: #ffd700;
     font-style: italic;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.1;
 }
 
 .quote-source {
-    font-size: 0.6rem;
+    font-size: 0.5rem;
     color: #ccc;
     text-align: right;
     display: block;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .meditation-status {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.65rem;
+    gap: 3px;
+    font-size: 0.55rem;
     color: #4ecdc4;
-    padding: 2px 4px;
+    padding: 1px 3px;
 }
 
 .lore-item {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.65rem;
+    gap: 3px;
+    font-size: 0.55rem;
     color: #ccc;
-    padding: 1px 4px;
+    padding: 1px 3px;
+    line-height: 1.1;
 }
 
 #game-screen .canvas-container {

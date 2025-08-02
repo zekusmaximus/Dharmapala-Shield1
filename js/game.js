@@ -38,6 +38,10 @@ class Game {
         this.lastUpdate = 0;
         this.deltaTime = 0;
         
+        // Canvas resize control
+        this.canvasResizeEnabled = false;
+        this.resizeRetryCount = 0;
+        
         // Event handlers
         this.eventHandlers = new Map();
         
@@ -135,16 +139,16 @@ class Game {
     }
 
     setupGameSystems() {
-        // Ensure canvas has proper dimensions
-        this.resizeCanvas();
+        // Don't resize canvas here - wait until we're on the game screen
+        // Just set fallback dimensions for now
+        this.canvas.width = 800;
+        this.canvas.height = 600;
         
-        // Setup camera with dynamic canvas dimensions
+        // Setup camera with fallback dimensions initially
         if (window.camera) {
             window.camera.setCanvas(this.canvas);
-            const canvasWidth = this.canvas.width;
-            const canvasHeight = this.canvas.height;
-            window.camera.setBounds(0, 0, canvasWidth, canvasHeight);
-            console.log(`[Game] Camera bounds set to: ${canvasWidth}x${canvasHeight}`);
+            window.camera.setBounds(0, 0, 800, 600);
+            console.log(`[Game] Camera bounds set to fallback: 800x600`);
         }
         
         // Initialize level
@@ -158,22 +162,32 @@ class Game {
     }
 
     resizeCanvas() {
+        // Check if canvas resizing is enabled
+        if (!this.canvasResizeEnabled) {
+            console.log('[Game] Canvas resize disabled, skipping');
+            return;
+        }
+        
+        // Only resize canvas when game is actually running and visible
+        const gameScreen = document.getElementById('game-screen');
+        if (!gameScreen || !gameScreen.classList.contains('active')) {
+            console.log('[Game] Game screen not active, skipping canvas resize');
+            return;
+        }
+        
         // Get the canvas container dimensions
         const container = this.canvas.parentElement;
         if (container) {
             const rect = container.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
             
-            // If container has no size yet, wait and try again
+            // If container has no size yet, use fallback without retrying
             if (rect.width === 0 || rect.height === 0) {
-                console.log('[Game] Container has no size yet, using fallback and will retry');
+                console.log('[Game] Container has no size yet, using fallback dimensions');
                 this.canvas.width = 800;
                 this.canvas.height = 600;
                 this.canvas.style.width = '100%';
                 this.canvas.style.height = '100%';
-                
-                // Try again after a short delay
-                setTimeout(() => this.resizeCanvas(), 100);
                 return;
             }
             
@@ -254,6 +268,18 @@ class Game {
             levelManager.initializeLevel(this.gameState.level);
         }
         
+        // Now that we're starting the game, enable and perform canvas resize
+        this.canvasResizeEnabled = true;
+        this.resizeRetryCount = 0;
+        setTimeout(() => {
+            this.resizeCanvas();
+            // Update camera bounds after canvas resize
+            if (window.camera) {
+                window.camera.setBounds(0, 0, this.canvas.width, this.canvas.height);
+                console.log(`[Game] Camera bounds updated to: ${this.canvas.width}x${this.canvas.height}`);
+            }
+        }, 100);
+        
         this.updateUI();
         this.startGameLoop();
     }
@@ -275,6 +301,19 @@ class Game {
         
         this.gameState.running = true;
         this.gameState.paused = false;
+        
+        // Enable and resize canvas when continuing game
+        this.canvasResizeEnabled = true;
+        this.resizeRetryCount = 0;
+        setTimeout(() => {
+            this.resizeCanvas();
+            // Update camera bounds after canvas resize
+            if (window.camera) {
+                window.camera.setBounds(0, 0, this.canvas.width, this.canvas.height);
+                console.log(`[Game] Camera bounds updated to: ${this.canvas.width}x${this.canvas.height}`);
+            }
+        }, 100);
+        
         this.startGameLoop();
     }
 
@@ -299,6 +338,7 @@ class Game {
 
     returnToMenu() {
         this.gameState.running = false;
+        this.canvasResizeEnabled = false; // Disable canvas resize when returning to menu
         console.log('[Game] Returned to menu');
     }
 
