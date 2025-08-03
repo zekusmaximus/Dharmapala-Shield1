@@ -160,11 +160,56 @@ class Enemy {
         
         // Store path reference (will be set when spawned)
         this.storedPath = null;
+        this.cachedPath = null;
+        this.pathCacheTime = 0;
+        this.pathCacheTimeout = 5000; // Cache path for 5 seconds
     }
     
     setPath(path) {
         this.storedPath = path;
+        this.cachedPath = path;
+        this.pathCacheTime = Utils.performance.now();
         console.log(`[Enemy] Path set for ${this.type} with ${path ? path.length : 0} points`);
+    }
+
+    getCachedPath() {
+        const currentTime = Utils.performance.now();
+        
+        // Return cached path if still valid
+        if (this.cachedPath && (currentTime - this.pathCacheTime) < this.pathCacheTimeout) {
+            return this.cachedPath;
+        }
+        
+        // Cache expired or no cache, get fresh path
+        let path = null;
+        
+        // Try stored path first (most reliable)
+        if (this.storedPath) {
+            path = this.storedPath;
+        } else {
+            // Try accessing through game (expensive fallback)
+            if (window.game?.systemManager?.getLevelManager) {
+                const levelManager = window.game.systemManager.getLevelManager();
+                if (levelManager && typeof levelManager.getCurrentPath === 'function') {
+                    path = levelManager.getCurrentPath();
+                }
+            }
+            
+            // Try direct access to levelManager (fallback)
+            if (!path && window.levelManager) {
+                if (typeof window.levelManager.getCurrentPath === 'function') {
+                    path = window.levelManager.getCurrentPath();
+                }
+            }
+        }
+        
+        // Update cache
+        if (path) {
+            this.cachedPath = path;
+            this.pathCacheTime = currentTime;
+        }
+        
+        return path;
     }
 
     update(deltaTime, defenses = [], enemies = []) {
@@ -216,28 +261,8 @@ class Enemy {
     }
 
     updateMovement(deltaTime) {
-        // Get current path - try multiple access methods
-        let path = null;
-        
-        // Try accessing through game
-        if (window.game?.systemManager?.getLevelManager) {
-            const levelManager = window.game.systemManager.getLevelManager();
-            if (levelManager && typeof levelManager.getCurrentPath === 'function') {
-                path = levelManager.getCurrentPath();
-            }
-        }
-        
-        // Try direct access to levelManager
-        if (!path && window.levelManager) {
-            if (typeof window.levelManager.getCurrentPath === 'function') {
-                path = window.levelManager.getCurrentPath();
-            }
-        }
-        
-        // If still no path, store reference when enemy is spawned
-        if (!path && this.storedPath) {
-            path = this.storedPath;
-        }
+        // Get cached path (much more efficient)
+        const path = this.getCachedPath();
         
         if (!path || path.length === 0) {
             console.warn('[Enemy] No path available for movement');
@@ -394,11 +419,8 @@ class Enemy {
     }
 
     performTeleport() {
-        // Teleport forward along the path
-        const levelManager = window.game?.systemManager?.getLevelManager();
-        if (!levelManager) return;
-        
-        const path = levelManager.getCurrentPath();
+        // Teleport forward along the path using cached path
+        const path = this.getCachedPath();
         if (!path || path.length === 0) return;
         
         const teleportDistance = Math.min(3, path.length - this.pathIndex - 1);

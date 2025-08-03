@@ -45,7 +45,172 @@ class Game {
         // Event handlers
         this.eventHandlers = new Map();
         
+        // Performance monitoring and frame rate control
+        this.performanceConfig = {
+            targetFPS: 60,
+            maxFPS: 120,
+            minFPS: 30,
+            frameTimeTarget: 1000 / 60, // 16.67ms
+            adaptiveFrameRate: true,
+            performanceMode: 'auto' // 'auto', 'performance', 'quality'
+        };
+        
+        this.frameStats = {
+            lastFrameTime: 0,
+            frameCount: 0,
+            fpsHistory: [],
+            averageFPS: 60,
+            frameTimeAccumulator: 0,
+            lastFPSUpdate: 0
+        };
+        
+        this.performanceThresholds = {
+            lowFPS: 45,
+            criticalFPS: 30,
+            highFPS: 55
+        };
+        
+        // Debug and logging configuration
+        this.debugConfig = {
+            enabled: false, // Set to false for production
+            logLevel: 'warn', // 'debug', 'info', 'warn', 'error'
+            renderLogging: false,
+            performanceLogging: false,
+            maxLogFrequency: 5000, // Max one log per 5 seconds for performance logs
+            logHistory: new Map()
+        };
+        
+        // Background caching system
+        this.backgroundCache = {
+            canvas: null,
+            ctx: null,
+            cached: false,
+            needsUpdate: false,
+            lastCanvasSize: { width: 0, height: 0 }
+        };
+        
+        this.initializeDebugMode();
+        this.initializeBackgroundCache();
         this.setupEventListeners();
+    }
+
+    // Debug and logging methods
+    initializeDebugMode() {
+        // Set debug mode based on environment or URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const debugParam = urlParams.get('debug');
+        
+        if (debugParam === 'true' || debugParam === '1') {
+            this.debugConfig.enabled = true;
+            this.debugConfig.logLevel = 'debug';
+            this.debugConfig.renderLogging = true;
+            this.debugConfig.performanceLogging = true;
+        }
+        
+        // Production mode detection
+        if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+            this.debugConfig.enabled = false;
+            this.debugConfig.renderLogging = false;
+            this.debugConfig.performanceLogging = false;
+        }
+    }
+
+    logDebug(message, data = null, category = 'general') {
+        if (!this.debugConfig.enabled) return;
+        
+        const now = Date.now();
+        const lastLog = this.debugConfig.logHistory.get(category) || 0;
+        
+        // Rate limiting for performance logs
+        if (category === 'performance' && (now - lastLog) < this.debugConfig.maxLogFrequency) {
+            return;
+        }
+        
+        this.debugConfig.logHistory.set(category, now);
+        
+        const logLevels = { debug: 0, info: 1, warn: 2, error: 3 };
+        const currentLevel = logLevels[this.debugConfig.logLevel] || 1;
+        const messageLevel = logLevels[category] || 0;
+        
+        if (messageLevel >= currentLevel) {
+            const prefix = `[Game:${category.toUpperCase()}]`;
+            if (data) {
+                console.log(prefix, message, data);
+            } else {
+                console.log(prefix, message);
+            }
+        }
+    }
+
+    // Background caching system
+    initializeBackgroundCache() {
+        this.backgroundCache.canvas = document.createElement('canvas');
+        this.backgroundCache.ctx = this.backgroundCache.canvas.getContext('2d');
+        this.backgroundCache.cached = false;
+        this.backgroundCache.needsUpdate = true;
+    }
+
+    updateBackgroundCache() {
+        if (!this.backgroundCache.needsUpdate) return;
+        
+        const canvas = this.backgroundCache.canvas;
+        const ctx = this.backgroundCache.ctx;
+        
+        // Resize cache canvas if needed
+        if (canvas.width !== this.canvas.width || canvas.height !== this.canvas.height) {
+            canvas.width = this.canvas.width;
+            canvas.height = this.canvas.height;
+            this.backgroundCache.lastCanvasSize = { width: this.canvas.width, height: this.canvas.height };
+        }
+        
+        // Clear cache canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Render background to cache
+        this.renderBackgroundToCache(ctx);
+        
+        this.backgroundCache.cached = true;
+        this.backgroundCache.needsUpdate = false;
+        
+        this.logDebug('Background cache updated', {
+            width: canvas.width,
+            height: canvas.height
+        }, 'performance');
+    }
+
+    renderBackgroundToCache(ctx) {
+        // Create a more vibrant gradient background
+        const gradient = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+        gradient.addColorStop(0, '#0f1419'); // Dark blue-black
+        gradient.addColorStop(0.3, '#1a1a2e'); // Dark purple-blue
+        gradient.addColorStop(0.7, '#16213e'); // Lighter blue
+        gradient.addColorStop(1, '#0e1b2e'); // Back to darker
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Add some visual interest with a subtle pattern
+        ctx.globalAlpha = 0.1;
+        ctx.fillStyle = '#ffffff';
+        
+        // Add some "digital" dot pattern
+        const dotSize = 2;
+        const spacing = 30;
+        for (let x = 0; x < this.canvas.width; x += spacing) {
+            for (let y = 0; y < this.canvas.height; y += spacing) {
+                ctx.beginPath();
+                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Reset alpha
+        ctx.globalAlpha = 1.0;
+    }
+
+    invalidateBackgroundCache() {
+        this.backgroundCache.needsUpdate = true;
+        this.backgroundCache.cached = false;
     }
 
     async initialize() {
@@ -388,24 +553,133 @@ class Game {
 
     // Game Loop
     startGameLoop() {
-        this.lastUpdate = Utils.performance.now();
+        this.frameStats.lastFrameTime = Utils.performance.now();
+        this.frameStats.lastFPSUpdate = this.frameStats.lastFrameTime;
         this.gameLoop();
     }
 
-    gameLoop() {
+    gameLoop(currentTime = Utils.performance.now()) {
         if (!this.gameState.running) return;
         
-        const currentTime = Utils.performance.now();
-        this.deltaTime = (currentTime - this.lastUpdate) * this.gameState.gameSpeed;
-        this.lastUpdate = currentTime;
+        // Calculate frame timing
+        const deltaTime = currentTime - this.frameStats.lastFrameTime;
         
-        if (!this.gameState.paused) {
-            this.update(this.deltaTime);
+        // Frame rate limiting with adaptive performance
+        if (deltaTime < this.performanceConfig.frameTimeTarget) {
+            requestAnimationFrame((time) => this.gameLoop(time));
+            return;
         }
         
-        this.render();
+        // Update frame statistics
+        this.updateFrameStats(currentTime, deltaTime);
         
-        requestAnimationFrame(() => this.gameLoop());
+        // Adaptive performance scaling
+        this.adaptPerformanceSettings();
+        
+        // Game update and render
+        const scaledDeltaTime = Math.min(deltaTime * this.gameState.gameSpeed, 33.33); // Cap at 30fps equivalent
+        
+        if (!this.gameState.paused) {
+            this.update(scaledDeltaTime);
+        }
+        
+        // Conditional rendering based on performance
+        if (this.shouldRender()) {
+            this.render();
+        }
+        
+        this.frameStats.lastFrameTime = currentTime;
+        requestAnimationFrame((time) => this.gameLoop(time));
+    }
+
+    updateFrameStats(currentTime, deltaTime) {
+        this.frameStats.frameCount++;
+        this.frameStats.frameTimeAccumulator += deltaTime;
+        
+        // Update FPS every second
+        if (currentTime - this.frameStats.lastFPSUpdate >= 1000) {
+            const fps = this.frameStats.frameCount;
+            this.frameStats.fpsHistory.push(fps);
+            
+            // Keep only last 10 seconds of FPS data
+            if (this.frameStats.fpsHistory.length > 10) {
+                this.frameStats.fpsHistory.shift();
+            }
+            
+            // Calculate average FPS
+            this.frameStats.averageFPS = this.frameStats.fpsHistory.reduce((a, b) => a + b, 0) / this.frameStats.fpsHistory.length;
+            
+            // Reset counters
+            this.frameStats.frameCount = 0;
+            this.frameStats.frameTimeAccumulator = 0;
+            this.frameStats.lastFPSUpdate = currentTime;
+        }
+    }
+
+    adaptPerformanceSettings() {
+        if (!this.performanceConfig.adaptiveFrameRate) return;
+        
+        const avgFPS = this.frameStats.averageFPS;
+        
+        // Automatic performance scaling
+        if (avgFPS < this.performanceThresholds.criticalFPS) {
+            this.setPerformanceMode('performance');
+        } else if (avgFPS < this.performanceThresholds.lowFPS) {
+            this.setPerformanceMode('balanced');
+        } else if (avgFPS > this.performanceThresholds.highFPS) {
+            this.setPerformanceMode('quality');
+        }
+    }
+
+    setPerformanceMode(mode) {
+        switch (mode) {
+            case 'performance':
+                this.performanceConfig.targetFPS = 30;
+                this.performanceConfig.frameTimeTarget = 1000 / 30;
+                // Reduce particle count, disable some effects
+                if (window.particleSystem) {
+                    window.particleSystem.setMaxParticles(200);
+                }
+                break;
+                
+            case 'balanced':
+                this.performanceConfig.targetFPS = 45;
+                this.performanceConfig.frameTimeTarget = 1000 / 45;
+                if (window.particleSystem) {
+                    window.particleSystem.setMaxParticles(350);
+                }
+                break;
+                
+            case 'quality':
+                this.performanceConfig.targetFPS = 60;
+                this.performanceConfig.frameTimeTarget = 1000 / 60;
+                if (window.particleSystem) {
+                    window.particleSystem.setMaxParticles(500);
+                }
+                break;
+        }
+        
+        this.performanceConfig.performanceMode = mode;
+        this.logDebug(`Performance mode set to: ${mode} (Target FPS: ${this.performanceConfig.targetFPS})`, null, 'performance');
+    }
+
+    shouldRender() {
+        // Skip rendering frames if performance is critical
+        if (this.performanceConfig.performanceMode === 'performance') {
+            return this.frameStats.frameCount % 2 === 0; // Render every other frame
+        }
+        return true;
+    }
+
+    // Add performance monitoring method
+    getPerformanceStats() {
+        return {
+            currentFPS: this.frameStats.averageFPS,
+            targetFPS: this.performanceConfig.targetFPS,
+            performanceMode: this.performanceConfig.performanceMode,
+            frameTimeAverage: this.frameStats.frameTimeAccumulator / Math.max(1, this.frameStats.frameCount),
+            fpsHistory: [...this.frameStats.fpsHistory]
+        };
     }
 
     update(deltaTime) {
@@ -486,19 +760,13 @@ class Game {
         // Clear canvas properly
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Debug: Log canvas dimensions and rendering info periodically
-        this.frameCount = (this.frameCount || 0) + 1;
-        if (this.frameCount % 300 === 0) { // Every 5 seconds at 60fps
-            console.log(`[Game] Render frame ${this.frameCount}:`, {
-                canvasWidth: this.canvas.width,
-                canvasHeight: this.canvas.height,
-                canvasStyleWidth: this.canvas.style.width,
-                canvasStyleHeight: this.canvas.style.height,
-                enemies: this.enemies.length,
-                gameRunning: this.isRunning,
-                contextTransform: this.ctx.getTransform ? this.ctx.getTransform() : 'unavailable'
-            });
-        }
+        // Debug logging (rate limited)
+        this.logDebug('Render frame', {
+            canvasSize: { width: this.canvas.width, height: this.canvas.height },
+            enemies: this.enemies.length,
+            gameRunning: this.gameState.running,
+            paused: this.gameState.paused
+        }, 'performance');
         
         // Apply camera transform
         let restoreCamera = null;
@@ -528,74 +796,49 @@ class Game {
     }
 
     renderBackground() {
-        // Clear any previous alpha settings
-        this.ctx.globalAlpha = 1.0;
-        
-        // Debug: Log canvas info every 5 seconds
-        this.backgroundFrameCount = (this.backgroundFrameCount || 0) + 1;
-        if (this.backgroundFrameCount % 300 === 0) {
-            console.log(`[Game] Background render debug:`, {
-                canvasWidth: this.canvas.width,
-                canvasHeight: this.canvas.height,
-                canvasStyleWidth: this.canvas.style.width,
-                canvasStyleHeight: this.canvas.style.height
-            });
+        // Check if canvas size changed and invalidate cache if needed
+        if (this.backgroundCache.lastCanvasSize.width !== this.canvas.width ||
+            this.backgroundCache.lastCanvasSize.height !== this.canvas.height) {
+            this.invalidateBackgroundCache();
         }
         
-        // Create a more vibrant gradient background
-        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        gradient.addColorStop(0, '#0f1419'); // Dark blue-black
-        gradient.addColorStop(0.3, '#1a1a2e'); // Dark purple-blue
-        gradient.addColorStop(0.7, '#16213e'); // Lighter blue
-        gradient.addColorStop(1, '#0e1b2e'); // Back to darker
+        // Update cache if needed
+        this.updateBackgroundCache();
         
-        this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Add some visual interest with a subtle pattern
-        this.ctx.globalAlpha = 0.1;
-        this.ctx.fillStyle = '#ffffff';
-        
-        // Add some "digital" dot pattern
-        const dotSize = 2;
-        const spacing = 30;
-        for (let x = 0; x < this.canvas.width; x += spacing) {
-            for (let y = 0; y < this.canvas.height; y += spacing) {
-                this.ctx.beginPath();
-                this.ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-                this.ctx.fill();
-            }
+        // Use cached background if available
+        if (this.backgroundCache.cached) {
+            this.ctx.drawImage(this.backgroundCache.canvas, 0, 0);
+        } else {
+            // Fallback to direct rendering if cache fails
+            this.renderBackgroundToCache(this.ctx);
         }
         
-        // Reset alpha
-        this.ctx.globalAlpha = 1.0;
+        // Debug logging (rate limited)
+        this.logDebug('Background rendered', {
+            cached: this.backgroundCache.cached,
+            canvasSize: { width: this.canvas.width, height: this.canvas.height }
+        }, 'performance');
     }
 
     renderPath() {
         const levelManager = this.systemManager.getLevelManager();
         if (!levelManager) {
-            console.warn('[Game] No level manager available for path rendering');
+            this.logDebug('No level manager available for path rendering', null, 'warn');
             return;
         }
         
         const path = levelManager.getCurrentPath();
         if (!path || path.length < 2) {
-            console.warn('[Game] Invalid path for rendering:', path);
+            this.logDebug('Invalid path for rendering', { pathLength: path?.length }, 'warn');
             return;
         }
         
-        // Debug: Log path and canvas info every 5 seconds
-        this.pathFrameCount = (this.pathFrameCount || 0) + 1;
-        if (this.pathFrameCount % 300 === 0) {
-            console.log(`[Game] Path render debug:`, {
-                pathLength: path.length,
-                firstPoint: path[0],
-                lastPoint: path[path.length - 1],
-                canvasSize: { width: this.canvas.width, height: this.canvas.height },
-                cameraTransform: window.camera ? { x: window.camera.x, y: window.camera.y, zoom: window.camera.zoom } : 'none'
-            });
-            console.log(`[Game] Rendering path with ${path.length} points:`, path);
-        }
+        // Debug logging (rate limited)
+        this.logDebug('Path rendered', {
+            pathLength: path.length,
+            firstPoint: path[0],
+            lastPoint: path[path.length - 1]
+        }, 'performance');
         
         // Save context for path rendering
         this.ctx.save();
@@ -644,30 +887,32 @@ class Game {
         }
         this.ctx.stroke();
         
-        // 4. Add data flow effect dots
-        this.ctx.globalAlpha = 0.9;
-        const time = Date.now() * 0.003;
-        for (let i = 0; i < path.length - 1; i++) {
-            const segment = i / (path.length - 1);
-            const flowOffset = (time + segment * 2) % 1;
-            
-            const startX = path[i].x;
-            const startY = path[i].y;
-            const endX = path[i + 1].x;
-            const endY = path[i + 1].y;
-            
-            const dotX = startX + (endX - startX) * flowOffset;
-            const dotY = startY + (endY - startY) * flowOffset;
-            
-            this.ctx.fillStyle = '#ffd60a';
-            this.ctx.shadowBlur = 5;
-            this.ctx.shadowColor = '#ffd60a';
-            this.ctx.beginPath();
-            this.ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
-            this.ctx.fill();
+        // 4. Add data flow effect dots (only in quality mode for performance)
+        if (this.performanceConfig.performanceMode !== 'performance') {
+            this.ctx.globalAlpha = 0.9;
+            const time = Date.now() * 0.003;
+            for (let i = 0; i < path.length - 1; i++) {
+                const segment = i / (path.length - 1);
+                const flowOffset = (time + segment * 2) % 1;
+                
+                const startX = path[i].x;
+                const startY = path[i].y;
+                const endX = path[i + 1].x;
+                const endY = path[i + 1].y;
+                
+                const dotX = startX + (endX - startX) * flowOffset;
+                const dotY = startY + (endY - startY) * flowOffset;
+                
+                this.ctx.fillStyle = '#ffd60a';
+                this.ctx.shadowBlur = 5;
+                this.ctx.shadowColor = '#ffd60a';
+                this.ctx.beginPath();
+                this.ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
         }
         
-        // 5. Add path endpoint markers and waypoint numbers
+        // 5. Add path endpoint markers
         this.ctx.shadowBlur = 10;
         
         // Start point (spawn)
@@ -707,24 +952,15 @@ class Game {
     }
 
     renderEnemies() {
-        if (this.enemies.length > 0 && this.frameCount % 300 === 0) {
-            console.log(`[Game] Rendering ${this.enemies.length} enemies`);
-        }
+        // Debug logging (rate limited)
+        this.logDebug('Enemies rendered', { count: this.enemies.length }, 'performance');
         
         for (let i = 0; i < this.enemies.length; i++) {
             const enemy = this.enemies[i];
             if (enemy && enemy.render) {
-                if (this.frameCount % 300 === 0) {
-                    console.log(`[Game] Rendering enemy ${i}:`, {
-                        type: enemy.type,
-                        x: enemy.x,
-                        y: enemy.y,
-                        isAlive: enemy.isAlive
-                    });
-                }
                 enemy.render(this.ctx);
             } else {
-                console.warn(`[Game] Enemy ${i} is invalid or missing render method:`, enemy);
+                this.logDebug(`Enemy ${i} is invalid or missing render method`, { enemy }, 'warn');
             }
         }
     }
