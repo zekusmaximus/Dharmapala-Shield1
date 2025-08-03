@@ -157,6 +157,14 @@ class Enemy {
                     break;
             }
         });
+        
+        // Store path reference (will be set when spawned)
+        this.storedPath = null;
+    }
+    
+    setPath(path) {
+        this.storedPath = path;
+        console.log(`[Enemy] Path set for ${this.type} with ${path ? path.length : 0} points`);
     }
 
     update(deltaTime, defenses = [], enemies = []) {
@@ -208,12 +216,33 @@ class Enemy {
     }
 
     updateMovement(deltaTime) {
-        // Get current path
-        const levelManager = window.game?.systemManager?.getLevelManager();
-        if (!levelManager) return;
+        // Get current path - try multiple access methods
+        let path = null;
         
-        const path = levelManager.getCurrentPath();
-        if (!path || path.length === 0) return;
+        // Try accessing through game
+        if (window.game?.systemManager?.getLevelManager) {
+            const levelManager = window.game.systemManager.getLevelManager();
+            if (levelManager && typeof levelManager.getCurrentPath === 'function') {
+                path = levelManager.getCurrentPath();
+            }
+        }
+        
+        // Try direct access to levelManager
+        if (!path && window.levelManager) {
+            if (typeof window.levelManager.getCurrentPath === 'function') {
+                path = window.levelManager.getCurrentPath();
+            }
+        }
+        
+        // If still no path, store reference when enemy is spawned
+        if (!path && this.storedPath) {
+            path = this.storedPath;
+        }
+        
+        if (!path || path.length === 0) {
+            console.warn('[Enemy] No path available for movement');
+            return;
+        }
         
         // Handle distraction (decoy defense effect)
         if (this.distractedBy) {

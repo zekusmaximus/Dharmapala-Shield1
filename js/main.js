@@ -437,19 +437,16 @@ class GameBootstrap {
             const displayWidth = canvasWidth;
             const displayHeight = canvasHeight;
             
-            // Set canvas internal resolution (accounting for device pixel ratio)
-            canvas.width = Math.floor(canvasWidth * dpr);
-            canvas.height = Math.floor(canvasHeight * dpr);
+            // Set canvas size (use CSS pixels for simpler rendering)
+            canvas.width = Math.floor(canvasWidth);
+            canvas.height = Math.floor(canvasHeight);
             
             // Set CSS display size
             canvas.style.width = displayWidth + 'px';
             canvas.style.height = displayHeight + 'px';
             
-            // Scale context for device pixel ratio
+            // No context scaling needed since we're using CSS pixels
             const ctx = canvas.getContext('2d');
-            if (ctx && dpr !== 1) {
-                ctx.scale(dpr, dpr);
-            }
             
             // Store dimensions for later use
             canvas.displayWidth = displayWidth;

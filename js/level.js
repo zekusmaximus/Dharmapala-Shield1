@@ -77,10 +77,12 @@ class LevelManager {
 
         this.waveConfig = {
             enemy_types: [
-                { type: "basic", count: 10, health_multiplier: 1.0, speed_multiplier: 1.0, reward_multiplier: 1.0 },
-                { type: "fast", count: 8, health_multiplier: 0.7, speed_multiplier: 1.5, reward_multiplier: 1.2 },
-                { type: "armored", count: 6, health_multiplier: 2.0, speed_multiplier: 0.8, reward_multiplier: 1.5 },
-                { type: "elite", count: 3, health_multiplier: 3.0, speed_multiplier: 1.0, reward_multiplier: 2.0 }
+                { type: "scriptKiddie", count: 8, health_multiplier: 1.0, speed_multiplier: 1.0, reward_multiplier: 1.0 },
+                { type: "federalAgent", count: 6, health_multiplier: 2.0, speed_multiplier: 0.8, reward_multiplier: 1.5 },
+                { type: "corporateSaboteur", count: 4, health_multiplier: 1.5, speed_multiplier: 1.0, reward_multiplier: 1.2 },
+                { type: "aiSurveillance", count: 3, health_multiplier: 2.4, speed_multiplier: 0.9, reward_multiplier: 1.8 },
+                { type: "quantumHacker", count: 2, health_multiplier: 4.0, speed_multiplier: 0.7, reward_multiplier: 2.5 },
+                { type: "corruptedMonk", count: 1, health_multiplier: 3.0, speed_multiplier: 0.6, reward_multiplier: 2.0 }
             ],
             boss_waves: [5, 10, 15, 20],
             difficulty_progression: {
@@ -159,18 +161,50 @@ class LevelManager {
 
     createFallbackPath() {
         console.log('[LevelManager] Creating fallback path due to PathGenerator unavailability');
+        
+        // Create a very winding path with many waypoints for smooth tower defense gameplay
         this.currentPath = [
-            { x: 50, y: 300 },
-            { x: 200, y: 250 },
-            { x: 350, y: 300 },
-            { x: 500, y: 200 },
-            { x: 650, y: 300 },
-            { x: 750, y: 300 }
+            { x: 50, y: 300 },     // Start - left side
+            { x: 100, y: 250 },    // Up and right
+            { x: 160, y: 200 },    // Continue up-right
+            { x: 220, y: 180 },    // Right with slight up
+            { x: 280, y: 220 },    // Right and down
+            { x: 320, y: 280 },    // Down more
+            { x: 360, y: 350 },    // Down and right
+            { x: 420, y: 400 },    // Down-right
+            { x: 480, y: 420 },    // Right
+            { x: 540, y: 380 },    // Right and up
+            { x: 580, y: 320 },    // Up more
+            { x: 600, y: 260 },    // Up
+            { x: 620, y: 200 },    // Up
+            { x: 660, y: 150 },    // Up-right
+            { x: 700, y: 120 },    // Up-right
+            { x: 740, y: 140 },    // Right and slight down
+            { x: 770, y: 180 },    // Right-down
+            { x: 780, y: 220 },    // Down
+            { x: 770, y: 260 },    // Left and down
+            { x: 750, y: 300 },    // Left-down
+            { x: 720, y: 340 },    // Left-down
+            { x: 680, y: 370 },    // Left-down
+            { x: 640, y: 380 },    // Left
+            { x: 600, y: 370 },    // Left-up
+            { x: 570, y: 340 },    // Left-up
+            { x: 550, y: 300 },    // Up
+            { x: 540, y: 260 },    // Up
+            { x: 550, y: 220 },    // Up-right
+            { x: 580, y: 190 },    // Right-up
+            { x: 620, y: 180 },    // Right
+            { x: 660, y: 190 },    // Right-down
+            { x: 700, y: 220 },    // Right-down
+            { x: 730, y: 260 },    // Right-down
+            { x: 750, y: 300 }     // Final position - right side
         ];
+        
+        // Spawn and exit points
         this.spawnPoints = [{ x: 0, y: 300 }];
         this.exitPoints = [{ x: 800, y: 300 }];
         
-        console.log('[LevelManager] Fallback path created:', {
+        console.log('[LevelManager] Fallback winding path created:', {
             pathPoints: this.currentPath.length,
             spawnPoints: this.spawnPoints.length,
             exitPoints: this.exitPoints.length,
@@ -356,8 +390,16 @@ class LevelManager {
         let totalEnemies = 0;
 
         if (isBossWave) {
+            // Choose boss type based on wave number
+            let bossType = "raidTeam";
+            if (this.currentWave >= 15) {
+                bossType = "megaCorp";
+            } else if (this.currentWave >= 10) {
+                bossType = "corruptedMonk";
+            }
+            
             enemies.push({
-                type: "boss",
+                type: bossType,
                 count: 1,
                 health: levelData.baseEnemyHealth * 10 * levelMultiplier,
                 speed: levelData.baseEnemySpeed * 0.7,
@@ -400,11 +442,14 @@ class LevelManager {
 
     calculateSpawnDelay(enemyType) {
         const baseDelays = {
-            basic: 800,
-            fast: 600,
-            armored: 1200,
-            elite: 2000,
-            boss: 3000
+            scriptKiddie: 600,
+            federalAgent: 1000,
+            corporateSaboteur: 800,
+            aiSurveillance: 1200,
+            quantumHacker: 1800,
+            corruptedMonk: 2000,
+            raidTeam: 3000,
+            megaCorp: 3000
         };
         
         return baseDelays[enemyType] || 1000;

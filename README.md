@@ -106,7 +106,7 @@ The game follows a modular architecture designed for maintainability and extensi
 ```
 js/
 ├── main.js                    # Game bootstrap and initialization
-├── game_simplified.js         # Main game loop and coordination
+├── game.js                    # Main game loop and coordination
 ├── GameSystemManager.js       # System initialization and management
 ├── ScreenManager.js           # Screen navigation and UI flow
 ├── DefenseManager.js          # Defense placement and management
@@ -119,8 +119,8 @@ js/
 
 ```
 js/
-├── defense_simplified.js      # Defense tower logic and behavior
-├── enemy_simplified.js        # Enemy AI and movement
+├── defense.js                # Defense tower logic and behavior
+├── enemy.js                  # Enemy AI and movement
 ├── Boss.js                   # Boss mechanics and phase transitions
 ├── Projectile.js             # Projectile physics and collision
 ├── level.js                  # Level progression and wave management
@@ -131,7 +131,7 @@ js/
 
 ```
 js/
-├── achievementManager_simplified.js  # Achievement tracking and rewards
+├── achievementManager.js             # Achievement tracking and rewards
 ├── audioManager.js                   # Sound effects and music
 ├── saveSystem.js                     # Save/load game state
 ├── particle.js                       # Visual effects system
@@ -188,21 +188,21 @@ dharmapala-shield/
 
 #### New Defense Type
 
-1. Add configuration to `defense_simplified.js`
+1. Add configuration to `defense.js`
 2. Implement special abilities in defense update loop
 3. Add sprite assets and UI icons
 4. Update cost balancing and upgrade paths
 
 #### New Enemy Type
 
-1. Define enemy config in `enemy_simplified.js`
+1. Define enemy config in `enemy.js`
 2. Implement unique abilities and behaviors
 3. Add AI patterns and movement logic
 4. Create visual assets and animations
 
 #### New Achievement
 
-1. Add achievement definition to `achievementManager_simplified.js`
+1. Add achievement definition to `achievementManager.js`
 2. Define tracking events and requirements
 3. Implement reward logic
 4. Test progression and unlock conditions

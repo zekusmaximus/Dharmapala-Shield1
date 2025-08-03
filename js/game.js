@@ -144,6 +144,9 @@ class Game {
         this.canvas.width = 800;
         this.canvas.height = 600;
         
+        // Initialize sprite system with fallback sprites
+        this.initializeSpriteSystem();
+        
         // Setup camera with fallback dimensions initially
         if (window.camera) {
             window.camera.setCanvas(this.canvas);
@@ -159,6 +162,50 @@ class Game {
         
         // Setup UI
         this.updateUI();
+    }
+
+    initializeSpriteSystem() {
+        if (!window.spriteManager) {
+            console.warn('[Game] SpriteManager not available');
+            return;
+        }
+        
+        console.log('[Game] Initializing sprite system...');
+        
+        // Try to load actual sprite assets first
+        window.spriteManager.loadGameSprites().then(() => {
+            console.log('[Game] Game sprites loaded (some may be fallbacks)');
+        }).catch(error => {
+            console.warn('[Game] Error loading game sprites, using all fallbacks:', error);
+        });
+        
+        // Pre-generate common fallback sprites so they're ready when needed
+        const commonSprites = [
+            'enemy_scriptKiddie',
+            'enemy_federalAgent', 
+            'enemy_corporateSaboteur',
+            'enemy_aiSurveillance',
+            'enemy_quantumHacker',
+            'enemy_corruptedMonk',
+            'defense_firewall_level1',
+            'defense_encryption_level1',
+            'defense_decoy_level1',
+            'defense_quantum_level1',
+            'defense_dharma_level1',
+            'defense_cybermonk_level1',
+            'boss_raidTeam_phase1',
+            'boss_megaCorp_phase1',
+            'boss_corruptedMonk_phase1'
+        ];
+        
+        // Ensure fallback sprites exist for any that didn't load
+        commonSprites.forEach(spriteName => {
+            if (!window.spriteManager.hasSprite(spriteName)) {
+                window.spriteManager.createFallbackSprite(spriteName);
+            }
+        });
+        
+        console.log('[Game] Sprite system initialized with enhanced graphics');
     }
 
     resizeCanvas() {
@@ -179,7 +226,6 @@ class Game {
         const container = this.canvas.parentElement;
         if (container) {
             const rect = container.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
             
             // If container has no size yet, use fallback without retrying
             if (rect.width === 0 || rect.height === 0) {
@@ -195,13 +241,11 @@ class Game {
             this.canvas.style.width = rect.width + 'px';
             this.canvas.style.height = rect.height + 'px';
             
-            // Set actual size in memory (scaled by device pixel ratio)
-            this.canvas.width = rect.width * dpr;
-            this.canvas.height = rect.height * dpr;
+            // Set actual size in memory (use CSS pixels for simpler rendering)
+            this.canvas.width = rect.width;
+            this.canvas.height = rect.height;
             
-            // Scale the context to ensure correct drawing operations
-            this.ctx.scale(dpr, dpr);
-            
+            // No context scaling needed since we're using CSS pixels
             console.log(`[Game] Canvas resized to ${this.canvas.width}x${this.canvas.height} (${rect.width}x${rect.height} CSS)`);
         } else {
             // Fallback dimensions
@@ -439,9 +483,8 @@ class Game {
         // Save context state
         this.ctx.save();
         
-        // Clear canvas (account for device pixel ratio)
-        const dpr = window.devicePixelRatio || 1;
-        this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
+        // Clear canvas properly
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Debug: Log canvas dimensions and rendering info periodically
         this.frameCount = (this.frameCount || 0) + 1;
@@ -467,21 +510,6 @@ class Game {
         this.renderBackground();
         this.renderPath();
         
-        // Debug: Draw test circles to verify rendering system
-        if (this.frameCount % 60 === 0) { // Every second
-            this.ctx.save();
-            this.ctx.fillStyle = '#00FF00';
-            this.ctx.beginPath();
-            this.ctx.arc(100, 100, 20, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            this.ctx.fillStyle = '#FF0000';
-            this.ctx.beginPath();
-            this.ctx.arc(400, 300, 15, 0, Math.PI * 2);
-            this.ctx.fill();
-            this.ctx.restore();
-        }
-        
         this.renderEnemies();
         this.defenseManager.render(this.ctx);
         this.renderProjectiles();
@@ -500,13 +528,47 @@ class Game {
     }
 
     renderBackground() {
-        // Simple gradient background
+        // Clear any previous alpha settings
+        this.ctx.globalAlpha = 1.0;
+        
+        // Debug: Log canvas info every 5 seconds
+        this.backgroundFrameCount = (this.backgroundFrameCount || 0) + 1;
+        if (this.backgroundFrameCount % 300 === 0) {
+            console.log(`[Game] Background render debug:`, {
+                canvasWidth: this.canvas.width,
+                canvasHeight: this.canvas.height,
+                canvasStyleWidth: this.canvas.style.width,
+                canvasStyleHeight: this.canvas.style.height
+            });
+        }
+        
+        // Create a more vibrant gradient background
         const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        gradient.addColorStop(0, '#1a1a2e');
-        gradient.addColorStop(1, '#16213e');
+        gradient.addColorStop(0, '#0f1419'); // Dark blue-black
+        gradient.addColorStop(0.3, '#1a1a2e'); // Dark purple-blue
+        gradient.addColorStop(0.7, '#16213e'); // Lighter blue
+        gradient.addColorStop(1, '#0e1b2e'); // Back to darker
         
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Add some visual interest with a subtle pattern
+        this.ctx.globalAlpha = 0.1;
+        this.ctx.fillStyle = '#ffffff';
+        
+        // Add some "digital" dot pattern
+        const dotSize = 2;
+        const spacing = 30;
+        for (let x = 0; x < this.canvas.width; x += spacing) {
+            for (let y = 0; y < this.canvas.height; y += spacing) {
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+        
+        // Reset alpha
+        this.ctx.globalAlpha = 1.0;
     }
 
     renderPath() {
@@ -522,49 +584,144 @@ class Game {
             return;
         }
         
-        console.log(`[Game] Rendering path with ${path.length} points:`, path);
+        // Debug: Log path and canvas info every 5 seconds
+        this.pathFrameCount = (this.pathFrameCount || 0) + 1;
+        if (this.pathFrameCount % 300 === 0) {
+            console.log(`[Game] Path render debug:`, {
+                pathLength: path.length,
+                firstPoint: path[0],
+                lastPoint: path[path.length - 1],
+                canvasSize: { width: this.canvas.width, height: this.canvas.height },
+                cameraTransform: window.camera ? { x: window.camera.x, y: window.camera.y, zoom: window.camera.zoom } : 'none'
+            });
+            console.log(`[Game] Rendering path with ${path.length} points:`, path);
+        }
         
-        // Make the path more visible for debugging
-        this.ctx.strokeStyle = '#8B4513'; // Brown color
-        this.ctx.lineWidth = 40;
+        // Save context for path rendering
+        this.ctx.save();
+        
+        // Create a glowing, cyberpunk-style path
+        // 1. Draw outer glow/shadow
+        this.ctx.globalAlpha = 0.3;
+        this.ctx.strokeStyle = '#00d4ff';
+        this.ctx.lineWidth = 20;
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = '#00d4ff';
         
         this.ctx.beginPath();
         this.ctx.moveTo(path[0].x, path[0].y);
-        
         for (let i = 1; i < path.length; i++) {
             this.ctx.lineTo(path[i].x, path[i].y);
         }
-        
         this.ctx.stroke();
         
-        // Add path endpoint markers for debugging
-        this.ctx.fillStyle = '#00FF00'; // Green for start
+        // 2. Draw main path body
+        this.ctx.globalAlpha = 0.8;
+        this.ctx.strokeStyle = '#0088cc';
+        this.ctx.lineWidth = 14;
+        this.ctx.shadowBlur = 8;
+        this.ctx.shadowColor = '#0088cc';
+        
         this.ctx.beginPath();
-        this.ctx.arc(path[0].x, path[0].y, 15, 0, Math.PI * 2);
+        this.ctx.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) {
+            this.ctx.lineTo(path[i].x, path[i].y);
+        }
+        this.ctx.stroke();
+        
+        // 3. Draw bright center line
+        this.ctx.globalAlpha = 1.0;
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 4;
+        this.ctx.shadowBlur = 0;
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) {
+            this.ctx.lineTo(path[i].x, path[i].y);
+        }
+        this.ctx.stroke();
+        
+        // 4. Add data flow effect dots
+        this.ctx.globalAlpha = 0.9;
+        const time = Date.now() * 0.003;
+        for (let i = 0; i < path.length - 1; i++) {
+            const segment = i / (path.length - 1);
+            const flowOffset = (time + segment * 2) % 1;
+            
+            const startX = path[i].x;
+            const startY = path[i].y;
+            const endX = path[i + 1].x;
+            const endY = path[i + 1].y;
+            
+            const dotX = startX + (endX - startX) * flowOffset;
+            const dotY = startY + (endY - startY) * flowOffset;
+            
+            this.ctx.fillStyle = '#ffd60a';
+            this.ctx.shadowBlur = 5;
+            this.ctx.shadowColor = '#ffd60a';
+            this.ctx.beginPath();
+            this.ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+        
+        // 5. Add path endpoint markers and waypoint numbers
+        this.ctx.shadowBlur = 10;
+        
+        // Start point (spawn)
+        this.ctx.fillStyle = '#00ff88';
+        this.ctx.shadowColor = '#00ff88';
+        this.ctx.beginPath();
+        this.ctx.arc(path[0].x, path[0].y, 12, 0, Math.PI * 2);
         this.ctx.fill();
         
-        this.ctx.fillStyle = '#FF0000'; // Red for end
+        // Inner glow for start
+        this.ctx.globalAlpha = 0.6;
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.shadowBlur = 0;
         this.ctx.beginPath();
-        this.ctx.arc(path[path.length - 1].x, path[path.length - 1].y, 15, 0, Math.PI * 2);
+        this.ctx.arc(path[0].x, path[0].y, 6, 0, Math.PI * 2);
         this.ctx.fill();
+        
+        // End point (exit)
+        this.ctx.globalAlpha = 1.0;
+        this.ctx.fillStyle = '#ff4444';
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = '#ff4444';
+        this.ctx.beginPath();
+        this.ctx.arc(path[path.length - 1].x, path[path.length - 1].y, 12, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Inner glow for end
+        this.ctx.globalAlpha = 0.6;
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.shadowBlur = 0;
+        this.ctx.beginPath();
+        this.ctx.arc(path[path.length - 1].x, path[path.length - 1].y, 6, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Restore context
+        this.ctx.restore();
     }
 
     renderEnemies() {
-        if (this.enemies.length > 0) {
+        if (this.enemies.length > 0 && this.frameCount % 300 === 0) {
             console.log(`[Game] Rendering ${this.enemies.length} enemies`);
         }
         
         for (let i = 0; i < this.enemies.length; i++) {
             const enemy = this.enemies[i];
             if (enemy && enemy.render) {
-                console.log(`[Game] Rendering enemy ${i}:`, {
-                    type: enemy.type,
-                    x: enemy.x,
-                    y: enemy.y,
-                    isAlive: enemy.isAlive
-                });
+                if (this.frameCount % 300 === 0) {
+                    console.log(`[Game] Rendering enemy ${i}:`, {
+                        type: enemy.type,
+                        x: enemy.x,
+                        y: enemy.y,
+                        isAlive: enemy.isAlive
+                    });
+                }
                 enemy.render(this.ctx);
             } else {
                 console.warn(`[Game] Enemy ${i} is invalid or missing render method:`, enemy);
@@ -744,17 +901,26 @@ class Game {
                 return false;
             }
             
-            // Create enemy with configuration
-            const enemy = new Enemy({
-                type: enemyData.type,
-                x: spawnPoint.x,
-                y: spawnPoint.y,
-                health: enemyData.health,
-                speed: enemyData.speed,
-                reward: enemyData.reward,
-                path: path,
-                spawnDelay: enemyData.spawnDelay || 0
-            });
+            // Create enemy with correct parameters (type, x, y)
+            const enemy = new Enemy(enemyData.type, spawnPoint.x, spawnPoint.y);
+            
+            // Set the path for the enemy
+            if (enemy.setPath && typeof enemy.setPath === 'function') {
+                enemy.setPath(path);
+            }
+            
+            // Override with specific spawn data if provided
+            if (enemyData.health !== undefined) {
+                enemy.health = enemyData.health;
+                enemy.maxHealth = enemyData.health;
+            }
+            if (enemyData.speed !== undefined) {
+                enemy.speed = enemyData.speed;
+                enemy.baseSpeed = enemyData.speed;
+            }
+            if (enemyData.reward !== undefined) {
+                enemy.reward = enemyData.reward;
+            }
             
             // Add enemy to game
             this.enemies.push(enemy);
