@@ -505,11 +505,11 @@
 }
 
 .left-panel .quote-text {
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 .left-panel .lore-item {
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 /* Prevent hover enlargement inside compact panel */
