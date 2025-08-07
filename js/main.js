@@ -362,7 +362,16 @@ class GameBootstrap {
             
             // Publish global references used by various systems
             window.game = this.game;
-            window.camera = window.camera || new Camera(canvas);
+            // Initialize camera cautiously to avoid inconsistent state
+            if (!window.camera) {
+                if (typeof Camera !== 'undefined') {
+                    window.camera = new Camera(canvas);
+                } else {
+                    console.warn('[GameBootstrap] Camera class not available; proceeding without global camera');
+                }
+            } else if (typeof window.camera.setCanvas === 'function') {
+                window.camera.setCanvas(canvas);
+            }
             
             // Pass the early ScreenManager to the game if available
             if (this.screenManager) {
