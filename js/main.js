@@ -360,6 +360,10 @@ class GameBootstrap {
             
             this.game = new Game(canvas);
             
+            // Publish global references used by various systems
+            window.game = this.game;
+            window.camera = window.camera || new Camera(canvas);
+            
             // Pass the early ScreenManager to the game if available
             if (this.screenManager) {
                 this.game.screenManager = this.screenManager;
@@ -648,8 +652,10 @@ class GameBootstrap {
 document.addEventListener('DOMContentLoaded', () => {
     const bootstrap = new GameBootstrap();
     bootstrap.setupGlobalErrorHandlers();
+    // expose bootstrap early so emergency-fallback can see the initializing flag
+    window.gameBootstrap = bootstrap;
     bootstrap.init();
-    
+
     // Make troubleshooting function globally accessible
     window.GameBootstrap = {
         showTroubleshootingInfo: () => bootstrap.showTroubleshootingInfo(),
