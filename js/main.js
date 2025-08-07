@@ -360,6 +360,19 @@ class GameBootstrap {
             
             this.game = new Game(canvas);
             
+            // Publish global references used by various systems
+            window.game = this.game;
+            // Initialize camera cautiously to avoid inconsistent state
+            if (!window.camera) {
+                if (typeof Camera !== 'undefined') {
+                    window.camera = new Camera(canvas);
+                } else {
+                    console.warn('[GameBootstrap] Camera class not available; proceeding without global camera');
+                }
+            } else if (typeof window.camera.setCanvas === 'function') {
+                window.camera.setCanvas(canvas);
+            }
+            
             // Pass the early ScreenManager to the game if available
             if (this.screenManager) {
                 this.game.screenManager = this.screenManager;
@@ -648,8 +661,10 @@ class GameBootstrap {
 document.addEventListener('DOMContentLoaded', () => {
     const bootstrap = new GameBootstrap();
     bootstrap.setupGlobalErrorHandlers();
+    // expose bootstrap early so emergency-fallback can see the initializing flag
+    window.gameBootstrap = bootstrap;
     bootstrap.init();
-    
+
     // Make troubleshooting function globally accessible
     window.GameBootstrap = {
         showTroubleshootingInfo: () => bootstrap.showTroubleshootingInfo(),
