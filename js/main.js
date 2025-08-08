@@ -1,3 +1,8 @@
+import LoadingScreenManager from './LoadingScreenManager.js';
+import ProgressIndicatorManager from './ProgressIndicatorManager.js';
+import AssetLoader from './AssetLoader.js';
+import ErrorNotificationManager from './ErrorNotificationManager.js';
+
 export default class GameBootstrap {
     constructor() {
         this.loadingScreen = null;
@@ -11,19 +16,15 @@ export default class GameBootstrap {
             steps: ['Assets', 'Systems', 'Game Core', 'Finalization']
         };
 
-        // Simple device performance snapshot (non-critical)
         this.devicePerformance = this.assessDevicePerformance();
 
-        // Initialize module managers (resolved from window for compatibility)
-        this.loadingScreenManager = new (window.LoadingScreenManager || class {})();
-        this.progressIndicatorManager = new (window.ProgressIndicatorManager || class {})();
-        this.assetLoader = new (window.AssetLoader || class { loadCriticalAssets() { return Promise.resolve(); } loadScript(){return Promise.resolve();} loadCSS(){return Promise.resolve();} })();
-        this.errorNotificationManager = new (window.ErrorNotificationManager || class { showError(){} })();
+        this.loadingScreenManager = new LoadingScreenManager();
+        this.progressIndicatorManager = new ProgressIndicatorManager();
+        this.assetLoader = new AssetLoader();
+        this.errorNotificationManager = new ErrorNotificationManager();
     }
 
-    applyConfigurationOverrides() {
-        // No-op for now; kept for API compatibility if CONFIG is used elsewhere
-    }
+    applyConfigurationOverrides() {}
 
     assessDevicePerformance() {
         const performanceSummary = { score: 1.0, factors: {} };
@@ -51,21 +52,16 @@ export default class GameBootstrap {
     async init() {
         this.showLoadingScreen();
         try {
-            // Initialize ScreenManager if available (non-blocking for menu)
             if (typeof window.ScreenManager !== 'undefined') {
                 this.screenManager = new window.ScreenManager();
             }
-
-            // Immediately show menu; continue background initialization
             this.ensureMenuVisible('Normal initialization');
             this.showBackgroundProgressIndicator();
-
             await this.initializeBackgroundSystems();
             this.hideBackgroundProgressIndicator();
         } catch (error) {
             console.error('[GameBootstrap] Initialization failed:', error);
             this.showErrorNotification(error);
-            // Ensure menu remains visible even on error
             this.ensureMenuVisible('Error initialization path', error);
         } finally {
             this.hideLoadingScreen();
@@ -76,10 +72,8 @@ export default class GameBootstrap {
         try {
             this.updateBackgroundProgress('Loading critical assets...', 1);
             await this.preloadCriticalAssets();
-
             this.updateBackgroundProgress('Initializing game systems...', 2);
             await this.initializeGame();
-
             this.updateBackgroundProgress('Finalizing systems...', 3);
             await new Promise(resolve => setTimeout(resolve, 200));
             this.updateBackgroundProgress('Ready!', 4);
@@ -90,17 +84,11 @@ export default class GameBootstrap {
         }
     }
 
-    ensureMenuVisible(reason, error = null) {
-        // Hide loading screen
+    ensureMenuVisible() {
         this.hideLoadingScreen();
-
-        // Prefer ScreenManager, fallback to direct DOM manipulation
         const screenManager = this.screenManager || (this.game && this.game.screenManager);
         if (screenManager && typeof screenManager.showScreen === 'function') {
-            try {
-                screenManager.showScreen('main-menu');
-                return;
-            } catch {}
+            try { screenManager.showScreen('main-menu'); return; } catch {}
         }
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
@@ -114,93 +102,33 @@ export default class GameBootstrap {
         }
     }
 
-    showLoadingScreen() {
-        if (this.loadingScreenManager && this.loadingScreenManager.show) {
-            this.loadingScreenManager.show();
-        } else {
-            const loading = document.getElementById('loading-screen');
-            if (loading) {
-                loading.style.display = 'flex';
-                loading.classList.add('active');
-            }
-        }
-    }
+    showLoadingScreen() { this.loadingScreenManager.show?.(); }
+    hideLoadingScreen() { this.loadingScreenManager.hide?.(); }
+    showBackgroundProgressIndicator() { this.progressIndicatorManager.show?.(); }
+    hideBackgroundProgressIndicator() { this.progressIndicatorManager.hide?.(); }
+    updateBackgroundProgress(message, stepIndex) { this.progressIndicatorManager.update?.(message, stepIndex, this.backgroundProgress.total); }
+    showErrorNotification(error) { this.errorNotificationManager.showError?.(error); }
 
-    hideLoadingScreen() {
-        if (this.loadingScreenManager && this.loadingScreenManager.hide) {
-            this.loadingScreenManager.hide();
-        } else {
-            const loading = document.getElementById('loading-screen');
-            if (loading) {
-                loading.style.display = 'none';
-                loading.classList.remove('active');
-            }
-        }
-    }
-
-    showBackgroundProgressIndicator() {
-        if (this.progressIndicatorManager && this.progressIndicatorManager.show) {
-            this.progressIndicatorManager.show();
-        }
-    }
-
-    hideBackgroundProgressIndicator() {
-        if (this.progressIndicatorManager && this.progressIndicatorManager.hide) {
-            this.progressIndicatorManager.hide();
-        }
-    }
-
-    updateBackgroundProgress(message, stepIndex) {
-        if (this.progressIndicatorManager && this.progressIndicatorManager.update) {
-            this.progressIndicatorManager.update(message, stepIndex, this.backgroundProgress.total);
-        }
-    }
-
-    showErrorNotification(error) {
-        if (this.errorNotificationManager && this.errorNotificationManager.showError) {
-            this.errorNotificationManager.showError(error);
-        }
-    }
-
-    async preloadCriticalAssets() {
-        return this.assetLoader.loadCriticalAssets();
-    }
-
+    async preloadCriticalAssets() { return this.assetLoader.loadCriticalAssets(); }
     loadScript(src) { return this.assetLoader.loadScript(src); }
     loadStylesheet(href) { return this.assetLoader.loadCSS(href); }
 
     async initializeGame() {
-        if (typeof window.Game === 'undefined') {
-            throw new Error('Game class not loaded');
-        }
-        // Get the canvas element
+        const { default: Game } = await import('./game.js');
         const canvas = document.getElementById('gameCanvas');
-        if (!canvas) {
-            throw new Error('Game canvas not found in DOM');
-        }
+        if (!canvas) throw new Error('Game canvas not found in DOM');
         this.setupResponsiveCanvas(canvas);
-        this.game = new window.Game(canvas);
-
-        // For backward compatibility with existing systems still using window.game
-        window.game = this.game;
-
-        // Initialize camera if available
+        this.game = new Game(canvas);
+        window.game = this.game; // temporary compatibility
         if (!window.camera && typeof window.Camera !== 'undefined') {
             window.camera = new window.Camera(canvas);
         } else if (window.camera && typeof window.camera.setCanvas === 'function') {
             window.camera.setCanvas(canvas);
         }
-
-        // Pass ScreenManager if we created one early
-        if (this.screenManager) {
-            this.game.screenManager = this.screenManager;
-        }
-
+        if (this.screenManager) this.game.screenManager = this.screenManager;
         this.setupCanvasResizeHandler(canvas);
         const initResult = await this.game.initialize();
-        if (initResult === false) {
-            throw new Error('Game initialization returned false');
-        }
+        if (initResult === false) throw new Error('Game initialization returned false');
         this.initialized = true;
     }
 

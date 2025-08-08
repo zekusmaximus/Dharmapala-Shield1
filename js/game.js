@@ -1,4 +1,6 @@
-class Game {
+import ScreenManager from './ScreenManager.js';
+
+export default class Game {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');

@@ -1,7 +1,7 @@
 /**
  * ProgressIndicatorManager - Handles background progress indicators
  */
-class ProgressIndicatorManager {
+export default class ProgressIndicatorManager {
     constructor() {
         this.backgroundProgress = {
             total: 4,
@@ -10,11 +10,7 @@ class ProgressIndicatorManager {
         };
     }
 
-    /**
-     * Shows the background progress indicator
-     * @deprecated Use showIndicator() for API compatibility
-     */
-    showBackgroundProgressIndicator() {
+    show() {
         const indicator = document.createElement('div');
         indicator.id = 'background-progress-indicator';
         indicator.innerHTML = `
@@ -26,8 +22,6 @@ class ProgressIndicatorManager {
                 <div class="progress-step">Step 0 of 4</div>
             </div>
         `;
-        
-        // Add styles
         indicator.style.cssText = `
             position: fixed;
             bottom: 20px;
@@ -46,8 +40,6 @@ class ProgressIndicatorManager {
             transform: translateY(20px);
             transition: all 0.3s ease;
         `;
-        
-        // Style the progress bar
         const progressBar = indicator.querySelector('.progress-bar');
         if (progressBar) {
             progressBar.style.cssText = `
@@ -59,7 +51,6 @@ class ProgressIndicatorManager {
                 overflow: hidden;
             `;
         }
-        
         const progressFill = indicator.querySelector('.progress-fill');
         if (progressFill) {
             progressFill.style.cssText = `
@@ -70,7 +61,6 @@ class ProgressIndicatorManager {
                 border-radius: 3px;
             `;
         }
-        
         const progressText = indicator.querySelector('.progress-text');
         if (progressText) {
             progressText.style.cssText = `
@@ -78,7 +68,6 @@ class ProgressIndicatorManager {
                 font-weight: 500;
             `;
         }
-        
         const progressStep = indicator.querySelector('.progress-step');
         if (progressStep) {
             progressStep.style.cssText = `
@@ -87,39 +76,22 @@ class ProgressIndicatorManager {
                 margin-top: 2px;
             `;
         }
-        
         document.body.appendChild(indicator);
-        
-        // Animate in
         requestAnimationFrame(() => {
             indicator.style.opacity = '1';
             indicator.style.transform = 'translateY(0)';
         });
-        
-        console.log('[ProgressIndicatorManager] Background progress indicator shown');
     }
 
-    /**
-     * Updates the background progress indicator
-     * @param {string} message - Progress message to display
-     * @param {number} step - Current step number (-1 for error state)
-     * @deprecated Use updateProgress() for API compatibility
-     */
-    updateBackgroundProgress(message, step) {
+    update(message, step) {
         const indicator = document.getElementById('background-progress-indicator');
         if (!indicator) return;
-        
         const progressText = indicator.querySelector('.progress-text');
         const progressFill = indicator.querySelector('.progress-fill');
         const progressStep = indicator.querySelector('.progress-step');
-        
-        if (progressText) {
-            progressText.textContent = message;
-        }
-        
+        if (progressText) progressText.textContent = message;
         if (progressFill) {
             if (step === -1) {
-                // Error state
                 progressFill.style.background = 'linear-gradient(90deg, #f44336, #ff5722)';
                 progressFill.style.width = '100%';
             } else {
@@ -128,89 +100,34 @@ class ProgressIndicatorManager {
                 progressFill.style.background = 'linear-gradient(90deg, #4CAF50, #8BC34A)';
             }
         }
-        
         if (progressStep) {
-            if (step === -1) {
-                progressStep.textContent = 'Error occurred';
-            } else {
-                progressStep.textContent = `Step ${step} of ${this.backgroundProgress.total}`;
-            }
+            if (step === -1) progressStep.textContent = 'Error occurred';
+            else progressStep.textContent = `Step ${step} of ${this.backgroundProgress.total}`;
         }
-        
-        console.log(`[ProgressIndicatorManager] Progress updated: ${message} (${step}/${this.backgroundProgress.total})`);
     }
 
-    /**
-     * Hides the background progress indicator
-     * @deprecated Use hideIndicator() for API compatibility
-     */
-    hideBackgroundProgressIndicator() {
+    hide() {
         const indicator = document.getElementById('background-progress-indicator');
         if (!indicator) return;
-        
-        console.log('[ProgressIndicatorManager] Starting progress indicator fade-out');
-        
-        // Use smooth transition
         indicator.style.opacity = '0';
         indicator.style.transform = 'translateY(20px)';
-        
-        // Get transition duration from CSS or use default
         const duration = this.getTransitionDuration(indicator) || 300;
-        
         setTimeout(() => {
             if (indicator.parentNode) {
                 indicator.parentNode.removeChild(indicator);
-                console.log('[ProgressIndicatorManager] Progress indicator removed after transition');
             }
         }, duration);
     }
 
-    /**
-     * Gets the transition duration from CSS
-     * @param {HTMLElement} element - The element to check
-     * @returns {number|null} Duration in milliseconds or null if not found
-     */
     getTransitionDuration(element) {
         try {
             const computedStyle = window.getComputedStyle(element);
             const duration = computedStyle.transitionDuration;
-            
             if (duration && duration !== '0s') {
-                // Convert from seconds to milliseconds
                 const seconds = parseFloat(duration.replace('s', ''));
                 return Math.round(seconds * 1000);
             }
-        } catch (error) {
-            console.warn('[ProgressIndicatorManager] Could not determine transition duration:', error);
-        }
+        } catch {}
         return null;
-    }
-
-    // API Compatibility Wrapper Methods
-    
-    /**
-     * Shows the progress indicator (wrapper for API compatibility)
-     * @deprecated Use showBackgroundProgressIndicator() directly
-     */
-    showIndicator() {
-        return this.showBackgroundProgressIndicator();
-    }
-
-    /**
-     * Updates the progress indicator (wrapper for API compatibility)
-     * @param {string} message - Progress message to display
-     * @param {number} step - Current step number (-1 for error state)
-     * @deprecated Use updateBackgroundProgress() directly
-     */
-    updateProgress(message, step) {
-        return this.updateBackgroundProgress(message, step);
-    }
-
-    /**
-     * Hides the progress indicator (wrapper for API compatibility)
-     * @deprecated Use hideBackgroundProgressIndicator() directly
-     */
-    hideIndicator() {
-        return this.hideBackgroundProgressIndicator();
     }
 }

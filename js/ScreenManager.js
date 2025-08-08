@@ -1,4 +1,4 @@
-class ScreenManager {
+export default class ScreenManager {
     constructor() {
         this.currentScreen = 'loading';
         this.previousScreen = null;
@@ -926,10 +926,4 @@ class ScreenManager {
         this.modalStack.length = 0;
         this.screens.clear();
     }
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ScreenManager;
-} else {
-    window.ScreenManager = ScreenManager;
 }

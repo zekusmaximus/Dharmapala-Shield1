@@ -1,31 +1,21 @@
 /**
  * ErrorNotificationManager - Handles error notifications and critical error displays
  */
-class ErrorNotificationManager {
-    constructor() {
-        this.notificationCount = 0;
-    }
-
-    /**
-     * Shows a standard error notification
-     * @param {Error} error - The error to display
-     */
-    showErrorNotification(error) {
+export default class ErrorNotificationManager {
+    showError(error) {
         const notification = document.createElement('div');
         notification.className = 'error-notification';
-        notification.id = `error-notification-${++this.notificationCount}`;
         notification.innerHTML = `
             <div class="error-content">
                 <strong>Initialization Error</strong>
-                <p>${error.message}</p>
-                <button onclick="location.reload()">Reload</button>
-                <button onclick="this.parentElement.parentElement.remove()">Dismiss</button>
+                <p>${(error && error.message) ? error.message : 'An error occurred'}</p>
+                <button id="error-reload-btn">Reload</button>
+                <button id="error-dismiss-btn">Dismiss</button>
             </div>
         `;
-        
         notification.style.cssText = `
             position: fixed;
-            top: ${20 + (this.notificationCount - 1) * 80}px;
+            top: 20px;
             right: 20px;
             background: rgba(244, 67, 54, 0.9);
             color: white;
@@ -33,58 +23,16 @@ class ErrorNotificationManager {
             border-radius: 8px;
             font-family: Arial, sans-serif;
             font-size: 14px;
-            z-index: ${10001 + this.notificationCount};
+            z-index: 10001;
             max-width: 300px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
         `;
-        
-        // Style the buttons
-        const buttons = notification.querySelectorAll('button');
-        buttons.forEach(button => {
-            button.style.cssText = `
-                margin: 5px 5px 0 0;
-                padding: 5px 10px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 12px;
-                transition: background 0.2s ease;
-            `;
-            
-            if (button.textContent === 'Reload') {
-                button.style.background = 'rgba(255, 255, 255, 0.9)';
-                button.style.color = '#333';
-            } else {
-                button.style.background = 'rgba(255, 255, 255, 0.2)';
-                button.style.color = 'white';
-            }
-        });
-        
         document.body.appendChild(notification);
-        
-        // Animate in
-        requestAnimationFrame(() => {
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateX(0)';
-        });
-        
-        // Auto-dismiss after 10 seconds
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
-                    }
-                }, 300);
-            }
-        }, 10000);
-
-        console.log('[ErrorNotificationManager] Error notification displayed:', error.message);
+        const reload = () => window.location.reload();
+        const dismiss = () => notification.remove();
+        notification.querySelector('#error-reload-btn')?.addEventListener('click', reload);
+        notification.querySelector('#error-dismiss-btn')?.addEventListener('click', dismiss);
+        setTimeout(() => { if (notification.parentNode) notification.remove(); }, 10000);
     }
 
     /**
