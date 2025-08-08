@@ -220,6 +220,7 @@ export default class Game {
         
         try {
             // Initialize system manager
+            const { default: GameSystemManager } = await import('./GameSystemManager.js');
             this.systemManager = new GameSystemManager();
             const initResult = await this.systemManager.initialize();
             

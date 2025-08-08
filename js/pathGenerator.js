@@ -12,7 +12,7 @@
 // - Theme-based procedural variations
 // - Configurable smoothing intensity
 
-class PathGenerator {
+export default class PathGenerator {
     // Comprehensive input validation for constructor
     validateConstructorInputs(canvasWidth, canvasHeight, gridSize) {
         const errors = [];
