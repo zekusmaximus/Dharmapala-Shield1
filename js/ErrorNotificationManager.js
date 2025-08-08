@@ -1,7 +1,7 @@
 /**
  * ErrorNotificationManager - Handles error notifications and critical error displays
  */
-class ErrorNotificationManager {
+export default class ErrorNotificationManager {
     constructor() {
         this.notificationCount = 0;
     }

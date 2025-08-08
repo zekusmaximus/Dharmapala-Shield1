@@ -1,7 +1,7 @@
 /**
  * LoadingScreenManager - Handles loading screen display and transitions for GameBootstrap
  */
-class LoadingScreenManager {
+export default class LoadingScreenManager {
     constructor() {
         this.loadingScreen = null;
     }

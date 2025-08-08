@@ -1,15 +1,24 @@
+import GameSystemManager from './GameSystemManager.js';
+import ScreenManager from './ScreenManager.js';
+import DefenseManager from './DefenseManager.js';
+import UIManager from './UIManager.js';
+import { camera } from './camera.js';
+import { inputManager } from './input.js';
+import { particleSystem } from './particle.js';
+import { projectilePool } from './projectile.js';
+import { spriteManager } from './sprite.js';
+import Utils from './utils.js';
+
 class Game {
-    constructor(canvas) {
+    constructor(canvas, { screenManager, uiManager, systemManager }) {
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
-        
-        // High-DPI handling will be done in resizeCanvas method
-        
-        // Core systems - simplified initialization
-        this.systemManager = null;
-        this.screenManager = null;
-        this.defenseManager = null;
-        this.uiManager = null;
+        this.ctx = this.canvas.getContext('2d');
+
+        // Core systems
+        this.systemManager = systemManager;
+        this.screenManager = screenManager;
+        this.defenseManager = new DefenseManager();
+        this.uiManager = uiManager;
         
         // Game state
         this.gameState = {
@@ -225,13 +234,6 @@ class Game {
                 throw new Error(`System initialization failed: ${initResult.error}`);
             }
             
-            // Initialize managers
-            if (!this.screenManager) {
-                this.screenManager = new ScreenManager();
-            }
-            this.defenseManager = new DefenseManager();
-            this.uiManager = window.uiManager || new UIManager();
-            
             // Setup input handling
             this.setupInput();
             
@@ -252,16 +254,16 @@ class Game {
     }
 
     setupInput() {
-        if (window.inputManager) {
-            window.inputManager.setCanvas(this.canvas);
-            window.inputManager.setCamera(window.camera);
+        if (inputManager) {
+            inputManager.setCanvas(this.canvas);
+            inputManager.setCamera(camera);
             
             // Handle input events
-            window.inputManager.addEventListener('mousedown', (data) => {
+            inputManager.addEventListener('mousedown', (data) => {
                 this.handleMouseDown(data);
             });
             
-            window.inputManager.addEventListener('mousemove', (data) => {
+            inputManager.addEventListener('mousemove', (data) => {
                 this.handleMouseMove(data);
             });
         }
@@ -313,9 +315,9 @@ class Game {
         this.initializeSpriteSystem();
         
         // Setup camera with fallback dimensions initially
-        if (window.camera) {
-            window.camera.setCanvas(this.canvas);
-            window.camera.setBounds(0, 0, 800, 600);
+        if (camera) {
+            camera.setCanvas(this.canvas);
+            camera.setBounds(0, 0, 800, 600);
             console.log(`[Game] Camera bounds set to fallback: 800x600`);
         }
         
@@ -330,7 +332,7 @@ class Game {
     }
 
     initializeSpriteSystem() {
-        if (!window.spriteManager) {
+        if (!spriteManager) {
             console.warn('[Game] SpriteManager not available');
             return;
         }
@@ -338,7 +340,7 @@ class Game {
         console.log('[Game] Initializing sprite system...');
         
         // Try to load actual sprite assets first
-        window.spriteManager.loadGameSprites().then(() => {
+        spriteManager.loadGameSprites().then(() => {
             console.log('[Game] Game sprites loaded (some may be fallbacks)');
         }).catch(error => {
             console.warn('[Game] Error loading game sprites, using all fallbacks:', error);
@@ -365,8 +367,8 @@ class Game {
         
         // Ensure fallback sprites exist for any that didn't load
         commonSprites.forEach(spriteName => {
-            if (!window.spriteManager.hasSprite(spriteName)) {
-                window.spriteManager.createFallbackSprite(spriteName);
+            if (!spriteManager.hasSprite(spriteName)) {
+                spriteManager.createFallbackSprite(spriteName);
             }
         });
         
@@ -468,8 +470,8 @@ class Game {
         
         // Reset managers
         this.defenseManager.clear();
-        if (window.particleSystem) window.particleSystem.clear();
-        if (window.projectilePool) window.projectilePool.clear();
+        if (particleSystem) particleSystem.clear();
+        if (projectilePool) projectilePool.clear();
         
         // Initialize level
         const levelManager = this.systemManager.getLevelManager();
@@ -483,8 +485,8 @@ class Game {
         setTimeout(() => {
             this.resizeCanvas();
             // Update camera bounds after canvas resize
-            if (window.camera) {
-                window.camera.setBounds(0, 0, this.canvas.width, this.canvas.height);
+            if (camera) {
+                camera.setBounds(0, 0, this.canvas.width, this.canvas.height);
                 console.log(`[Game] Camera bounds updated to: ${this.canvas.width}x${this.canvas.height}`);
             }
         }, 100);
@@ -517,8 +519,8 @@ class Game {
         setTimeout(() => {
             this.resizeCanvas();
             // Update camera bounds after canvas resize
-            if (window.camera) {
-                window.camera.setBounds(0, 0, this.canvas.width, this.canvas.height);
+            if (camera) {
+                camera.setBounds(0, 0, this.canvas.width, this.canvas.height);
                 console.log(`[Game] Camera bounds updated to: ${this.canvas.width}x${this.canvas.height}`);
             }
         }, 100);
@@ -684,14 +686,14 @@ class Game {
 
     update(deltaTime) {
         // Update input
-        if (window.inputManager) {
-            window.inputManager.processEvents();
-            window.inputManager.update();
+        if (inputManager) {
+            inputManager.processEvents();
+            inputManager.update();
         }
         
         // Update camera
-        if (window.camera) {
-            window.camera.update(deltaTime);
+        if (camera) {
+            camera.update(deltaTime);
         }
         
         // Update enemies
@@ -704,8 +706,8 @@ class Game {
         this.updateProjectiles(deltaTime);
         
         // Update particles
-        if (window.particleSystem) {
-            window.particleSystem.update(deltaTime);
+        if (particleSystem) {
+            particleSystem.update(deltaTime);
         }
         
         // Update level/wave system
@@ -748,8 +750,8 @@ class Game {
     }
 
     updateProjectiles(deltaTime) {
-        if (window.projectilePool) {
-            window.projectilePool.updateAll(deltaTime);
+        if (projectilePool) {
+            projectilePool.updateAll(deltaTime);
         }
     }
 
@@ -770,8 +772,8 @@ class Game {
         
         // Apply camera transform
         let restoreCamera = null;
-        if (window.camera) {
-            restoreCamera = window.camera.applyTransform(this.ctx);
+        if (camera) {
+            restoreCamera = camera.applyTransform(this.ctx);
         }
         
         // Render game world
@@ -966,14 +968,14 @@ class Game {
     }
 
     renderProjectiles() {
-        if (window.projectilePool) {
-            window.projectilePool.renderAll(this.ctx);
+        if (projectilePool) {
+            projectilePool.renderAll(this.ctx);
         }
     }
 
     renderParticles() {
-        if (window.particleSystem) {
-            window.particleSystem.render(this.ctx);
+        if (particleSystem) {
+            particleSystem.render(this.ctx);
         }
     }
 
@@ -987,8 +989,8 @@ class Game {
             const placed = this.defenseManager.placeDefense(data.worldX, data.worldY);
             if (!placed) {
                 // Show error feedback
-                if (window.audioManager) {
-                    window.audioManager.playSound('ui_error');
+                if (this.systemManager.getAudioManager()) {
+                    this.systemManager.getAudioManager().playSound('ui_error');
                 }
             }
         } else {
@@ -1088,8 +1090,8 @@ class Game {
             console.log(`[Game] Starting enemy spawning for wave ${data.wave}`);
         }
         
-        if (window.audioManager) {
-            window.audioManager.playSound('wave_start');
+        if (this.systemManager.getAudioManager()) {
+            this.systemManager.getAudioManager().playSound('wave_start');
         }
     }
 
@@ -1103,8 +1105,8 @@ class Game {
         // Show completion notification
         this.uiManager.showNotification(`Wave ${data.wave} Complete! +${reward.dharma} Dharma`, 'success');
         
-        if (window.audioManager) {
-            window.audioManager.playSound('wave_complete');
+        if (this.systemManager.getAudioManager()) {
+            this.systemManager.getAudioManager().playSound('wave_complete');
         }
     }
 
@@ -1118,8 +1120,8 @@ class Game {
         
         this.uiManager.showNotification(`Level ${data.level} Complete!`, 'success', 5000);
         
-        if (window.audioManager) {
-            window.audioManager.playSound('level_complete');
+        if (this.systemManager.getAudioManager()) {
+            this.systemManager.getAudioManager().playSound('level_complete');
         }
     }
 
@@ -1238,8 +1240,8 @@ class Game {
         this.gameState.score += reward.dharma * 10;
         
         // Create death effect
-        if (window.particleSystem) {
-            window.particleSystem.emit('death', data.enemy.x, data.enemy.y);
+        if (particleSystem) {
+            particleSystem.emit('death', data.enemy.x, data.enemy.y);
         }
         
         const levelManager = this.systemManager.getLevelManager();
@@ -1270,27 +1272,27 @@ class Game {
             levelManager.onEnemyEscaped();
         }
         
-        if (window.audioManager) {
-            window.audioManager.playSound('life_lost');
+        if (this.systemManager.getAudioManager()) {
+            this.systemManager.getAudioManager().playSound('life_lost');
         }
     }
 
     onDefensePlace(data) {
         console.log(`[Game] Placed ${data.defense.type} defense`);
         
-        if (window.audioManager) {
-            window.audioManager.playSound('defense_place');
+        if (this.systemManager.getAudioManager()) {
+            this.systemManager.getAudioManager().playSound('defense_place');
         }
         
-        if (window.particleSystem) {
-            window.particleSystem.emit('upgrade', data.defense.x, data.defense.y);
+        if (particleSystem) {
+            particleSystem.emit('upgrade', data.defense.x, data.defense.y);
         }
     }
 
     onDefenseFireProjectile(data) {
         // Projectile is handled by the projectile pool
-        if (window.audioManager) {
-            window.audioManager.playSound('defense_fire');
+        if (this.systemManager.getAudioManager()) {
+            this.systemManager.getAudioManager().playSound('defense_fire');
         }
     }
 
@@ -1416,9 +1418,4 @@ class Game {
     }
 }
 
-// Export for module systems
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Game;
-} else {
-    window.Game = Game;
-}
+export default Game;

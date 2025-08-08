@@ -1,7 +1,7 @@
 /**
  * ProgressIndicatorManager - Handles background progress indicators
  */
-class ProgressIndicatorManager {
+export default class ProgressIndicatorManager {
     constructor() {
         this.backgroundProgress = {
             total: 4,
