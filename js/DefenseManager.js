@@ -229,7 +229,7 @@ class DefenseManager {
                 
                 // Create projectile
                 const projectile = window.projectilePool?.getProjectile(
-                    this.x, this.y, target, this.damage, 200, 'normal', this.type
+                    this.x, this.y, target, this.damage, 260, 'normal', this.type
                 );
                 
                 return projectile;
@@ -384,6 +384,13 @@ class DefenseManager {
         
         // Apply targeting strategy
         const targetingMode = defense.targetingMode || 'first';
+        
+        // Prefer targets the defense can actually hit (basic lead feasibility)
+        validTargets.sort((a, b) => {
+            const da = Utils.math.distance(defense.x, defense.y, a.x + (a.velocityX||0)*0.25, a.y + (a.velocityY||0)*0.25);
+            const db = Utils.math.distance(defense.x, defense.y, b.x + (b.velocityX||0)*0.25, b.y + (b.velocityY||0)*0.25);
+            return da - db;
+        });
         
         switch (targetingMode) {
             case 'first':

@@ -307,6 +307,11 @@ class Enemy {
         const angle = Utils.math.angle(this.x, this.y, targetX, targetY);
         const currentSpeed = this.speed * this.slowEffect * deltaTime * 0.1;
         
+        // Update per-second velocity components for aiming prediction
+        const perSecondSpeed = this.speed * this.slowEffect * 100; // units per second
+        this.velocityX = Math.cos(angle) * perSecondSpeed;
+        this.velocityY = Math.sin(angle) * perSecondSpeed;
+        
         this.x += Math.cos(angle) * currentSpeed;
         this.y += Math.sin(angle) * currentSpeed;
     }
