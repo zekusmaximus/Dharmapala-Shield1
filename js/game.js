@@ -106,7 +106,7 @@ class Game {
     // Debug and logging methods
     initializeDebugMode() {
         // Set debug mode based on environment or URL parameters
-        const urlParams = new URLSearchParams(location.search);
+        const urlParams = new URLSearchParams(window.location.search);
         const debugParam = urlParams.get('debug');
         
         if (debugParam === 'true' || debugParam === '1') {
