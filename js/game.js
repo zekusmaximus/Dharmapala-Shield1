@@ -262,6 +262,7 @@ export default class Game {
 
     setupInput() {
         this.inputManager = new InputManager();
+        window.inputManager = this.inputManager;
         this.inputManager.setCanvas?.(this.canvas);
         this.inputManager.setCamera?.(window.camera);
         this.inputManager.addEventListener?.('mousedown', (data) => this.handleMouseDown(data));
