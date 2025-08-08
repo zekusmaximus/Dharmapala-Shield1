@@ -14,11 +14,63 @@ export default class GameBootstrap {
         // Simple device performance snapshot (non-critical)
         this.devicePerformance = this.assessDevicePerformance();
 
+        // Fallback stub classes for missing dependencies
+        class FallbackLoadingScreenManager {
+            constructor() {
+                console.warn('[GameBootstrap] LoadingScreenManager dependency missing. Using fallback.');
+            }
+            show() {
+                console.warn('[GameBootstrap] FallbackLoadingScreenManager.show() called.');
+            }
+            hide() {
+                console.warn('[GameBootstrap] FallbackLoadingScreenManager.hide() called.');
+            }
+        }
+        class FallbackProgressIndicatorManager {
+            constructor() {
+                console.warn('[GameBootstrap] ProgressIndicatorManager dependency missing. Using fallback.');
+            }
+            show() {
+                console.warn('[GameBootstrap] FallbackProgressIndicatorManager.show() called.');
+            }
+            hide() {
+                console.warn('[GameBootstrap] FallbackProgressIndicatorManager.hide() called.');
+            }
+            update(progress, message) {
+                console.warn('[GameBootstrap] FallbackProgressIndicatorManager.update() called.', { progress, message });
+            }
+        }
+        class FallbackAssetLoader {
+            constructor() {
+                console.warn('[GameBootstrap] AssetLoader dependency missing. Using fallback.');
+            }
+            loadCriticalAssets() {
+                console.warn('[GameBootstrap] FallbackAssetLoader.loadCriticalAssets() called.');
+                return Promise.resolve();
+            }
+            loadScript() {
+                console.warn('[GameBootstrap] FallbackAssetLoader.loadScript() called.');
+                return Promise.resolve();
+            }
+            loadCSS() {
+                console.warn('[GameBootstrap] FallbackAssetLoader.loadCSS() called.');
+                return Promise.resolve();
+            }
+        }
+        class FallbackErrorNotificationManager {
+            constructor() {
+                console.warn('[GameBootstrap] ErrorNotificationManager dependency missing. Using fallback.');
+            }
+            showError(error) {
+                console.warn('[GameBootstrap] FallbackErrorNotificationManager.showError() called.', error);
+            }
+        }
+
         // Initialize module managers (resolved from window for compatibility)
-        this.loadingScreenManager = new (window.LoadingScreenManager || class {})();
-        this.progressIndicatorManager = new (window.ProgressIndicatorManager || class {})();
-        this.assetLoader = new (window.AssetLoader || class { loadCriticalAssets() { return Promise.resolve(); } loadScript(){return Promise.resolve();} loadCSS(){return Promise.resolve();} })();
-        this.errorNotificationManager = new (window.ErrorNotificationManager || class { showError(){} })();
+        this.loadingScreenManager = new (window.LoadingScreenManager || FallbackLoadingScreenManager)();
+        this.progressIndicatorManager = new (window.ProgressIndicatorManager || FallbackProgressIndicatorManager)();
+        this.assetLoader = new (window.AssetLoader || FallbackAssetLoader)();
+        this.errorNotificationManager = new (window.ErrorNotificationManager || FallbackErrorNotificationManager)();
     }
 
     applyConfigurationOverrides() {
