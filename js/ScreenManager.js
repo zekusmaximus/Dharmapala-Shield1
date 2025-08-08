@@ -928,8 +928,4 @@ class ScreenManager {
     }
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ScreenManager;
-} else {
-    window.ScreenManager = ScreenManager;
-}
+export default ScreenManager;
