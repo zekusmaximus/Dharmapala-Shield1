@@ -1108,7 +1108,9 @@ class EnhancedAchievementGallery {
     }
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = EnhancedAchievementGallery;
+// Export for use in other modules and expose globally
+export default EnhancedAchievementGallery;
+
+if (typeof window !== 'undefined') {
+    window.EnhancedAchievementGallery = EnhancedAchievementGallery;
 }

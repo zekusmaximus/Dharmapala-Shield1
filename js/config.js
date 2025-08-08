@@ -1082,4 +1082,9 @@ setTimeout(() => {
         CONFIG.validateUpgradeTreesStructure();
     }
 }, 100);
+// Expose configuration globally and as ES module
+if (typeof window !== 'undefined') {
+    window.CONFIG = CONFIG;
+}
 
+export default CONFIG;

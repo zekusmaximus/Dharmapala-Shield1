@@ -312,8 +312,13 @@ class Camera {
     }
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Camera;
-} else {
+// Create a shared camera instance
+const camera = new Camera();
+
+// Export for ES module consumers and expose globally
+export { Camera, camera };
+
+if (typeof window !== 'undefined') {
     window.Camera = Camera;
+    window.camera = camera;
 }

@@ -432,9 +432,10 @@ class ProjectilePool {
 
 const projectilePool = new ProjectilePool();
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { Projectile, ProjectilePool };
-} else {
+// Export for ES module consumers and expose globals
+export { Projectile, ProjectilePool, projectilePool };
+
+if (typeof window !== 'undefined') {
     window.Projectile = Projectile;
     window.ProjectilePool = ProjectilePool;
     window.projectilePool = projectilePool;

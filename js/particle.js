@@ -325,9 +325,10 @@ class Particle {
 
 const particleSystem = new ParticleSystem();
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ParticleSystem, Particle };
-} else {
+// Export for ES module consumers and expose globals
+export { ParticleSystem, Particle, particleSystem };
+
+if (typeof window !== 'undefined') {
     window.ParticleSystem = ParticleSystem;
     window.Particle = Particle;
     window.particleSystem = particleSystem;

@@ -59,12 +59,12 @@ Dharmapala Shield is a unique tower defense game that blends Buddhist philosophy
 
 ### Defense Types
 
-1. **🪷 Lotus Cannon** - Basic energy defense, cost-effective and reliable
-2. **🌀 Mandala Shield** - Protective barrier that slows enemies
-3. **🌸 Zen Garden** - Meditative tower that grows stronger over time  
-4. **⚛️ Quantum Pagoda** - Advanced tower effective against phase-shifted enemies
-5. **☸️ Dharma Wheel** - Spinning wheel of justice that pierces armor
-6. **🤖 Cyber Monk** - Elite defensive unit with multiple attack modes
+1. **🛡️ Firewall Fortress** – Basic blocking defense with prayer flag flair
+2. **🔐 Encryption Monastery** – Scrambles data packets with rotating ciphers
+3. **🎯 Decoy Temple** – False targets that misdirect attackers
+4. **🔁 Mirror Server** – Reflects hostile traffic back to its source
+5. **🕶️ Anonymity Shroud** – Cloaks friendly network activity
+6. **📡 Dharma Distributor** – Speeds up delivery and resource flow
 
 ### Enemy Types
 
@@ -78,24 +78,20 @@ Dharmapala Shield is a unique tower defense game that blends Buddhist philosophy
 ### Boss Encounters
 
 - **Raid Team**: Spawns minions and uses EMP bursts
-- **Mega Corp**: Shield regeneration and market manipulation
-- **Corrupted Monk**: Corruption fields and meditation storms
+- **MegaCorp Titan**: Shield regeneration and market manipulation
 
 ### Controls
 
 #### Desktop
 - **Left Click**: Place defense / Select UI elements
-- **Right Click**: Cancel placement / Context menu
-- **Mouse Wheel**: Zoom in/out
 - **Space**: Pause/Resume game
 - **ESC**: Open main menu
+- **1–6**: Select defense type
+- **N**: Start next wave
 
 #### Mobile
 - **Tap**: Place defense / Select
-- **Hold**: Show defense info / Context menu
-- **Pinch**: Zoom in/out
-- **Swipe**: Pan camera
-- **Touch Controls**: Access pause, menu, upgrade modes
+- *(Gesture support such as hold, swipe, or pinch is not yet fully implemented)*
 
 ## 🏗️ Architecture
 
@@ -239,10 +235,10 @@ tests/
 
 The game is designed mobile-first with:
 
-- **Touch Controls**: Intuitive tap, hold, and swipe gestures
+- **Touch Controls**: Basic tap support
 - **Responsive Design**: Adapts to all screen sizes and orientations
 - **Performance Optimization**: Reduced effects on low-end devices
-- **Accessibility**: High contrast mode and reduced motion support
+- **Accessibility**: Reduced motion support
 - **Progressive Enhancement**: Graceful degradation for older devices
 
 ### Mobile-Specific Features
@@ -250,8 +246,7 @@ The game is designed mobile-first with:
 - Virtual action buttons for common commands
 - Automatic orientation locking to landscape
 - Low-power mode detection and optimization
-- Touch gesture recognition (tap, hold, swipe, pinch)
-- Haptic feedback support where available
+- Touch gesture recognition (tap, hold, swipe; pinch-to-zoom not yet available)
 
 ## 🌐 Browser Compatibility
 
@@ -268,7 +263,6 @@ The game is designed mobile-first with:
 - Local Storage
 - Touch Events (mobile)
 - Web Audio API (optional)
-- Vibration API (optional)
 
 ## 🔧 Configuration
 
@@ -276,23 +270,19 @@ Game settings can be customized in `js/config.js`:
 
 ```javascript
 const CONFIG = {
-    GAME: {
-        targetFPS: 60,
-        debugMode: false,
-        autoSave: true,
-        difficulty: 'normal'
+    CANVAS_WIDTH: window.innerWidth > 768 ? 1200 : window.innerWidth,
+    CANVAS_HEIGHT: window.innerWidth > 768 ? 800 : window.innerHeight * 0.6,
+    GRID_SIZE: window.innerWidth > 768 ? 40 : 30,
+    INITIAL_DHARMA: 100,
+    INITIAL_BANDWIDTH: 50,
+    INITIAL_ANONYMITY: 75,
+    DEFENSE_TYPES: {
+        firewall: { name: 'Firewall Fortress', cost: 25, damage: 15, range: 200 },
+        // ...other defense types
     },
-    
-    GRAPHICS: {
-        particleCount: 'normal',
-        shadowQuality: 'normal',
-        animationSpeed: 1.0
-    },
-    
-    AUDIO: {
-        masterVolume: 1.0,
-        sfxVolume: 0.8,
-        musicVolume: 0.6
+    ENEMY_TYPES: {
+        scriptKiddie: { name: 'Script Kiddie', health: 20, speed: 80 },
+        // ...other enemy types
     }
 };
 ```
@@ -317,13 +307,11 @@ Use the browser's developer tools to monitor:
 
 ## 🎯 Accessibility
 
-The game supports accessibility features:
+The game currently includes some accessibility features:
 
-- **Keyboard Navigation**: Full keyboard support for menu navigation
-- **High Contrast Mode**: Enhanced visibility for visual impairments
-- **Reduced Motion**: Disable animations for motion sensitivity
-- **Screen Reader**: Semantic HTML and ARIA labels
-- **Touch Accessibility**: Large touch targets and clear feedback
+- **Keyboard Shortcuts**: Pause, menu access, and defense selection
+- **Screen Reader Announcements**: Achievement notifications use ARIA live regions
+- **Reduced Motion Support**: Certain effects respect `prefers-reduced-motion`
 
 ## 🤝 Contributing
 

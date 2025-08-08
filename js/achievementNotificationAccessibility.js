@@ -1714,7 +1714,9 @@ class AchievementNotificationAccessibility {
     }
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AchievementNotificationAccessibility;
+// Export for use in other modules and expose globally
+export default AchievementNotificationAccessibility;
+
+if (typeof window !== 'undefined') {
+    window.AchievementNotificationAccessibility = AchievementNotificationAccessibility;
 }
