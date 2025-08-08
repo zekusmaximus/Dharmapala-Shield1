@@ -1,4 +1,5 @@
 import ScreenManager from './ScreenManager.js';
+import Utils from './utils.js';
 
 export default class Game {
     constructor(canvas) {
@@ -555,7 +556,7 @@ export default class Game {
     }
 
     // Game Loop
-    startGameLoop() {
+    async startGameLoop() {
         this.frameStats.lastFrameTime = Utils.performance.now();
         this.frameStats.lastFPSUpdate = this.frameStats.lastFrameTime;
         this.gameLoop();

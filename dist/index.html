@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Dharmapala Shield - Buddhist Cyberpunk Tower Defense</title>
 <link rel="icon" href="/assets/favicon-Bied0rIH.ico" type="image/x-icon">
-  <script type="module" crossorigin src="/assets/index-V9W5gcHX.js"></script>
+  <script type="module" crossorigin src="/assets/index-D_BaDY8S.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-A59f6vI4.css">
 </head>
 <body>
@@ -551,7 +551,7 @@
 
     <!-- Core Scripts -->
     <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
+    <!-- utils now ESM imported by game.js -->
     <script src="js/sprite.js"></script>
     <script src="js/input.js"></script>
     <script src="js/camera.js"></script>
@@ -564,13 +564,13 @@
     
     <!-- System Management -->
     <script src="js/GameSystemManager.js"></script>
-    <script src="js/pathGenerator.js"></script>
+    <!-- pathGenerator now imported via ESM -->
     <script src="js/level.js"></script>
     
     <!-- Game Components -->
     <script src="js/Projectile.js"></script>
     <script src="js/DefenseManager.js"></script>
-    <script src="js/ScreenManager.js"></script>
+    <!-- ScreenManager now ESM import in game.js -->
     <script src="js/UIManager.js"></script>
     <script src="js/achievementManager.js"></script>
     
