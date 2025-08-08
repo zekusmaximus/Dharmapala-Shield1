@@ -30,8 +30,8 @@ export default class GameSystemManager {
     }
 
     async initializeConfig() {
-        if (typeof window.CONFIG === 'undefined') throw new Error('CONFIG object not available');
-        this.systems.set('config', window.CONFIG);
+        if (typeof CONFIG === 'undefined') throw new Error('CONFIG object not available');
+        this.systems.set('config', CONFIG);
         this.initialized.config = true;
     }
 
