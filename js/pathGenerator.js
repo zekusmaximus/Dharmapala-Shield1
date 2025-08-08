@@ -1262,8 +1262,4 @@ class PathGenerator {
 }
 
 // Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PathGenerator;
-} else {
-    window.PathGenerator = PathGenerator;
-}
+export default PathGenerator;

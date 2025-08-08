@@ -444,8 +444,4 @@ const Utils = {
     }
 };
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Utils;
-} else {
-    window.Utils = Utils;
-}
+export default Utils;

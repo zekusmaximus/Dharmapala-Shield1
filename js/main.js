@@ -1,76 +1,27 @@
-export default class GameBootstrap {
+import Game from './game.js';
+import GameSystemManager from './GameSystemManager.js';
+import ScreenManager from './ScreenManager.js';
+import UIManager from './UIManager.js';
+import LoadingScreenManager from './LoadingScreenManager.js';
+import ProgressIndicatorManager from './ProgressIndicatorManager.js';
+import AssetLoader from './AssetLoader.js';
+import ErrorNotificationManager from './ErrorNotificationManager.js';
+import { camera } from './camera.js';
+import { CONFIG } from './config.js';
+
+class GameBootstrap {
     constructor() {
-        this.loadingScreen = null;
         this.game = null;
-        this.screenManager = null;
         this.initialized = false;
-        this.progressIndicator = null;
-        this.backgroundProgress = {
-            total: 4,
-            completed: 0,
-            steps: ['Assets', 'Systems', 'Game Core', 'Finalization']
-        };
 
-        // Simple device performance snapshot (non-critical)
-        this.devicePerformance = this.assessDevicePerformance();
-
-        // Fallback stub classes for missing dependencies
-        class FallbackLoadingScreenManager {
-            constructor() {
-                console.warn('[GameBootstrap] LoadingScreenManager dependency missing. Using fallback.');
-            }
-            show() {
-                console.warn('[GameBootstrap] FallbackLoadingScreenManager.show() called.');
-            }
-            hide() {
-                console.warn('[GameBootstrap] FallbackLoadingScreenManager.hide() called.');
-            }
-        }
-        class FallbackProgressIndicatorManager {
-            constructor() {
-                console.warn('[GameBootstrap] ProgressIndicatorManager dependency missing. Using fallback.');
-            }
-            show() {
-                console.warn('[GameBootstrap] FallbackProgressIndicatorManager.show() called.');
-            }
-            hide() {
-                console.warn('[GameBootstrap] FallbackProgressIndicatorManager.hide() called.');
-            }
-            update(progress, message) {
-                console.warn('[GameBootstrap] FallbackProgressIndicatorManager.update() called.', { progress, message });
-            }
-        }
-        class FallbackAssetLoader {
-            constructor() {
-                console.warn('[GameBootstrap] AssetLoader dependency missing. Using fallback.');
-            }
-            loadCriticalAssets() {
-                console.warn('[GameBootstrap] FallbackAssetLoader.loadCriticalAssets() called.');
-                return Promise.resolve();
-            }
-            loadScript() {
-                console.warn('[GameBootstrap] FallbackAssetLoader.loadScript() called.');
-                return Promise.resolve();
-            }
-            loadCSS() {
-                console.warn('[GameBootstrap] FallbackAssetLoader.loadCSS() called.');
-                return Promise.resolve();
-            }
-        }
-        class FallbackErrorNotificationManager {
-            constructor() {
-                console.warn('[GameBootstrap] ErrorNotificationManager dependency missing. Using fallback.');
-            }
-            showError(error) {
-                console.warn('[GameBootstrap] FallbackErrorNotificationManager.showError() called.', error);
-            }
-        }
-
-        // Initialize module managers (resolved from window for compatibility)
-        this.loadingScreenManager = new (window.LoadingScreenManager || FallbackLoadingScreenManager)();
-        this.progressIndicatorManager = new (window.ProgressIndicatorManager || FallbackProgressIndicatorManager)();
-        this.assetLoader = new (window.AssetLoader || FallbackAssetLoader)();
-        this.errorNotificationManager = new (window.ErrorNotificationManager || FallbackErrorNotificationManager)();
+        // Initialize managers
+        this.loadingScreenManager = new LoadingScreenManager();
+        this.progressIndicatorManager = new ProgressIndicatorManager();
+        this.assetLoader = new AssetLoader();
+        this.errorNotificationManager = new ErrorNotificationManager();
+        this.screenManager = new ScreenManager();
+        this.uiManager = new UIManager();
+        this.systemManager = new GameSystemManager();
     }
 
     applyConfigurationOverrides() {
@@ -103,11 +54,6 @@ export default class GameBootstrap {
     async init() {
         this.showLoadingScreen();
         try {
-            // Initialize ScreenManager if available (non-blocking for menu)
-            if (typeof window.ScreenManager !== 'undefined') {
-                this.screenManager = new window.ScreenManager();
-            }
-
             // Immediately show menu; continue background initialization
             this.ensureMenuVisible('Normal initialization');
             this.showBackgroundProgressIndicator();
@@ -231,30 +177,24 @@ export default class GameBootstrap {
     loadStylesheet(href) { return this.assetLoader.loadCSS(href); }
 
     async initializeGame() {
-        if (typeof window.Game === 'undefined') {
-            throw new Error('Game class not loaded');
-        }
         // Get the canvas element
         const canvas = document.getElementById('gameCanvas');
         if (!canvas) {
             throw new Error('Game canvas not found in DOM');
         }
         this.setupResponsiveCanvas(canvas);
-        this.game = new window.Game(canvas);
+        this.game = new Game(canvas, {
+            screenManager: this.screenManager,
+            uiManager: this.uiManager,
+            systemManager: this.systemManager,
+        });
 
         // For backward compatibility with existing systems still using window.game
         window.game = this.game;
 
         // Initialize camera if available
-        if (!window.camera && typeof window.Camera !== 'undefined') {
-            window.camera = new window.Camera(canvas);
-        } else if (window.camera && typeof window.camera.setCanvas === 'function') {
-            window.camera.setCanvas(canvas);
-        }
-
-        // Pass ScreenManager if we created one early
-        if (this.screenManager) {
-            this.game.screenManager = this.screenManager;
+        if (camera && typeof camera.setCanvas === 'function') {
+            camera.setCanvas(canvas);
         }
 
         this.setupCanvasResizeHandler(canvas);
@@ -269,12 +209,12 @@ export default class GameBootstrap {
         try {
             let canvasWidth = 800;
             let canvasHeight = 600;
-            if (typeof window.CONFIG !== 'undefined' && window.CONFIG.CANVAS_WIDTH && window.CONFIG.CANVAS_HEIGHT) {
-                if (typeof window.CONFIG.CANVAS_WIDTH === 'number' && window.CONFIG.CANVAS_WIDTH > 0 && window.CONFIG.CANVAS_WIDTH <= 4096) {
-                    canvasWidth = window.CONFIG.CANVAS_WIDTH;
+            if (typeof CONFIG !== 'undefined' && CONFIG.CANVAS_WIDTH && CONFIG.CANVAS_HEIGHT) {
+                if (typeof CONFIG.CANVAS_WIDTH === 'number' && CONFIG.CANVAS_WIDTH > 0 && CONFIG.CANVAS_WIDTH <= 4096) {
+                    canvasWidth = CONFIG.CANVAS_WIDTH;
                 }
-                if (typeof window.CONFIG.CANVAS_HEIGHT === 'number' && window.CONFIG.CANVAS_HEIGHT > 0 && window.CONFIG.CANVAS_HEIGHT <= 4096) {
-                    canvasHeight = window.CONFIG.CANVAS_HEIGHT;
+                if (typeof CONFIG.CANVAS_HEIGHT === 'number' && CONFIG.CANVAS_HEIGHT > 0 && CONFIG.CANVAS_HEIGHT <= 4096) {
+                    canvasHeight = CONFIG.CANVAS_HEIGHT;
                 }
             }
             const container = canvas.parentElement;
@@ -311,3 +251,13 @@ export default class GameBootstrap {
         });
     }
 }
+
+window.addEventListener('load', () => {
+    const bootstrap = new GameBootstrap();
+    bootstrap.init().catch(err => {
+        console.error('Bootstrap initialization failed', err);
+        // Display a critical error message to the user
+        const errorManager = new ErrorNotificationManager();
+        errorManager.showCriticalError(err);
+    });
+});

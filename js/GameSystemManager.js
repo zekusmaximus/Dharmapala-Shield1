@@ -330,8 +330,4 @@ class GameSystemManager {
     }
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GameSystemManager;
-} else {
-    window.GameSystemManager = GameSystemManager;
-}
+export default GameSystemManager;

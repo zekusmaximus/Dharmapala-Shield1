@@ -1,7 +1,7 @@
 /**
  * AssetLoader - Handles asset loading and preloading for GameBootstrap
  */
-class AssetLoader {
+export default class AssetLoader {
     constructor() {
         this.loadedAssets = new Set();
     }
