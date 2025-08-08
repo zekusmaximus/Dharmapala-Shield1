@@ -159,7 +159,9 @@ export default class GameBootstrap {
             try {
                 screenManager.showScreen('main-menu');
                 return;
-            } catch {}
+            } catch (error) {
+                console.error('Failed to show main menu screen via screenManager:', error);
+            }
         }
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
