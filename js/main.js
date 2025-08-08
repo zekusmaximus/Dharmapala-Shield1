@@ -145,7 +145,6 @@ export default class GameBootstrap {
             this.updateBackgroundProgress('Ready!', 4);
         } catch (error) {
             this.updateBackgroundProgress(`Failed: ${error.message}`, -1);
-            this.showErrorNotification(error);
             throw error;
         }
     }
