@@ -1,5 +1,10 @@
 import ScreenManager from './ScreenManager.js';
 import Utils from './utils.js';
+import DefenseManager from './DefenseManager.js';
+import UIManager from './UIManager.js';
+import Enemy from './Enemy.js';
+import Boss from './Boss.js';
+import InputManager from './input.js';
 
 export default class Game {
     constructor(canvas) {
@@ -234,7 +239,7 @@ export default class Game {
                 this.screenManager = new ScreenManager();
             }
             this.defenseManager = new DefenseManager();
-            this.uiManager = window.uiManager || new UIManager();
+            this.uiManager = new UIManager();
             
             // Setup input handling
             this.setupInput();
@@ -256,19 +261,11 @@ export default class Game {
     }
 
     setupInput() {
-        if (window.inputManager) {
-            window.inputManager.setCanvas(this.canvas);
-            window.inputManager.setCamera(window.camera);
-            
-            // Handle input events
-            window.inputManager.addEventListener('mousedown', (data) => {
-                this.handleMouseDown(data);
-            });
-            
-            window.inputManager.addEventListener('mousemove', (data) => {
-                this.handleMouseMove(data);
-            });
-        }
+        this.inputManager = new InputManager();
+        this.inputManager.setCanvas?.(this.canvas);
+        this.inputManager.setCamera?.(window.camera);
+        this.inputManager.addEventListener?.('mousedown', (data) => this.handleMouseDown(data));
+        this.inputManager.addEventListener?.('mousemove', (data) => this.handleMouseMove(data));
     }
 
     setupManagerCallbacks() {
@@ -688,9 +685,9 @@ export default class Game {
 
     update(deltaTime) {
         // Update input
-        if (window.inputManager) {
-            window.inputManager.processEvents();
-            window.inputManager.update();
+        if (this.inputManager) {
+            this.inputManager.processEvents();
+            this.inputManager.update();
         }
         
         // Update camera

@@ -1,4 +1,4 @@
-class Camera {
+export default class Camera {
     constructor(canvas) {
         this.canvas = canvas;
         this.x = 0;
@@ -310,10 +310,4 @@ class Camera {
         this.targetZoom = state.targetZoom || this.zoom;
         this.constrainToBounds();
     }
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Camera;
-} else {
-    window.Camera = Camera;
 }

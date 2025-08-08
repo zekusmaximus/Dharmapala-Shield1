@@ -1076,10 +1076,5 @@ const CONFIG = {
     }
 };
 
-// Validate the CONFIG structure on load
-setTimeout(() => {
-    if (CONFIG && typeof CONFIG.validateUpgradeTreesStructure === 'function') {
-        CONFIG.validateUpgradeTreesStructure();
-    }
-}, 100);
+export default CONFIG;
 

@@ -1,4 +1,6 @@
-class Boss {
+import Utils from './utils.js';
+
+export default class Boss {
     constructor(type, x, y) {
         this.type = type;
         this.x = x;
@@ -676,10 +678,4 @@ class Boss {
             damageDealt: this.damageDealt
         };
     }
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Boss;
-} else {
-    window.Boss = Boss;
 }

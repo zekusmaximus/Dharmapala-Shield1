@@ -2,6 +2,7 @@ import LoadingScreenManager from './LoadingScreenManager.js';
 import ProgressIndicatorManager from './ProgressIndicatorManager.js';
 import AssetLoader from './AssetLoader.js';
 import ErrorNotificationManager from './ErrorNotificationManager.js';
+import Camera from './camera.js';
 
 export default class GameBootstrap {
     constructor() {
@@ -119,9 +120,9 @@ export default class GameBootstrap {
         if (!canvas) throw new Error('Game canvas not found in DOM');
         this.setupResponsiveCanvas(canvas);
         this.game = new Game(canvas);
-        window.game = this.game; // temporary compatibility
-        if (!window.camera && typeof window.Camera !== 'undefined') {
-            window.camera = new window.Camera(canvas);
+        // Initialize camera via ESM
+        if (!window.camera) {
+            window.camera = new Camera(canvas);
         } else if (window.camera && typeof window.camera.setCanvas === 'function') {
             window.camera.setCanvas(canvas);
         }

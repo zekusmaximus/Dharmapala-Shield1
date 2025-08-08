@@ -1,4 +1,4 @@
-class InputManager {
+export default class InputManager {
     constructor() {
         this.mouse = {
             x: 0,

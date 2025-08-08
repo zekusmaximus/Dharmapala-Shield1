@@ -1,4 +1,4 @@
-class DefenseManager {
+export default class DefenseManager {
     constructor() {
         this.defenses = [];
         this.selectedDefense = null;

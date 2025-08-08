@@ -430,12 +430,5 @@ class ProjectilePool {
     }
 }
 
-const projectilePool = new ProjectilePool();
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { Projectile, ProjectilePool };
-} else {
-    window.Projectile = Projectile;
-    window.ProjectilePool = ProjectilePool;
-    window.projectilePool = projectilePool;
-}
+export default Projectile;
+export { ProjectilePool };
