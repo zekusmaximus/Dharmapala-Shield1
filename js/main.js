@@ -85,7 +85,7 @@ export default class GameBootstrap {
         }
     }
 
-    ensureMenuVisible() {
+    ensureMenuVisible(reason, error = null) {
         this.hideLoadingScreen();
         const screenManager = this.screenManager || (this.game && this.game.screenManager);
         if (screenManager && typeof screenManager.showScreen === 'function') {
