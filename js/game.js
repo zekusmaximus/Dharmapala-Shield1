@@ -117,7 +117,7 @@ class Game {
         }
         
         // Production mode detection
-        if (location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
+        if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
             this.debugConfig.enabled = false;
             this.debugConfig.renderLogging = false;
             this.debugConfig.performanceLogging = false;
