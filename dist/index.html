@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Dharmapala Shield - Buddhist Cyberpunk Tower Defense</title>
+<link rel="icon" href="/assets/favicon-Bied0rIH.ico" type="image/x-icon">
+  <script type="module" crossorigin src="/assets/index-DXTql2ua.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-A59f6vI4.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen active">
+        <div class="loading-container">
+            <div class="loading-logo">🛡️</div>
+            <h1>Dharmapala Shield</h1>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <p class="loading-text">Initializing Buddhist Cyberpunk Defense Systems...</p>
+            <div class="loading-message"></div>
+        </div>
+    </div>
+
+    <!-- Main Menu Screen -->
+    <div id="main-menu-screen" class="screen">
+        <div class="menu-container">
+            <h1 class="game-title">🛡️ Dharmapala Shield</h1>
+            <p class="game-subtitle">Buddhist Cyberpunk Tower Defense</p>
+            
+            <div class="menu-buttons">
+                <button id="start-game-btn" class="menu-btn primary">Start Campaign</button>
+                <button id="continue-game-btn" class="menu-btn">Continue Game</button>
+                <button id="levelSelectBtn" class="menu-btn">Level Select</button>
+                <button id="save-load-btn" class="menu-btn">Load Game</button>
+                <button id="tutorialBtn" class="menu-btn">Tutorial</button>
+                <button id="achievements-btn" class="menu-btn">Achievements</button>
+                <button id="settings-btn" class="menu-btn">Settings</button>
+                <button id="creditsBtn" class="menu-btn">Credits</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen" style="display: none;">
+        <!-- Top HUD -->
+        <div class="hud">
+            <!-- Game Title Section -->
+            <div class="game-header">
+                <h1 class="game-title-header">🛡️ Dharmapala Shield</h1>
+                <p class="game-subtitle-header">Buddhist Cyberpunk Tower Defense</p>
+                <div class="main-menu-controls">
+                    <button id="main-menu-btn" class="menu-btn">Main Menu</button>
+                    <button id="tutorial-btn" class="menu-btn">Tutorial</button>
+                    <button id="achievements-btn-header" class="menu-btn">Achievements</button>
+                    <button id="settings-btn-header" class="menu-btn">Settings</button>
+                    <button id="credits-btn-header" class="menu-btn">Credits</button>
+                </div>
+            </div>
+            
+            <div class="wave-info">
+                <span id="wave-display" class="wave-counter">Wave 1/10</span>
+                <button id="start-wave-btn" class="wave-btn">Start Wave 1</button>
+            </div>
+            
+            <div class="game-controls">
+                <button id="pause-game-btn" class="control-btn">⏸️</button>
+                <button id="speed-up-btn" class="control-btn">▶️</button>
+                <button id="speed-normal-btn" class="control-btn">1x</button>
+                <button id="menuBtn" class="control-btn">📱</button>
+            </div>
+            <!-- Additional HUD Elements -->
+            <div class="additional-info">
+                <div id="level-display" class="resource-value">Level 1</div>
+                <div id="score-display" class="resource-value">Score: 0</div>
+                <div id="lives-display" class="resource-value">Lives: 3</div>
+            </div>
+            
+            <!-- Progress Bars -->
+            <div id="wave-progress-bar" class="progress-bar hidden"><div class="progress-fill"></div></div>
+            <div id="boss-health-bar" class="progress-bar hidden"><div class="progress-fill"></div></div>
+        </div>
+
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Resource Displays -->
+            <div class="resource-section">
+                <h3 class="panel-title">🛡️ Digital Sanctuary</h3>
+                
+                <div class="resource-bar">
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">💎</span>
+                            <span class="resource-label">Dharma</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="dharma-display" class="resource-value">100</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill dharma-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+2.5/sec</div>
+                    </div>
+                    
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">📡</span>
+                            <span class="resource-label">Bandwidth</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="bandwidth-display" class="resource-value">50</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill bandwidth-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+1.8/sec</div>
+                    </div>
+                    
+                    <div class="resource enhanced">
+                        <div class="resource-header">
+                            <span class="resource-icon">👤</span>
+                            <span class="resource-label">Anonymity</span>
+                        </div>
+                        <div class="resource-display">
+                            <span id="anonymity-display" class="resource-value">75</span>
+                            <div class="resource-progress">
+                                <div class="progress-fill anonymity-progress"></div>
+                            </div>
+                        </div>
+                        <div class="resource-generation">+1.2/sec</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Player Stats -->
+            <div class="player-stats-section">
+                <h4 class="section-title">Monk Status</h4>
+                <div class="stat-item">
+                    <span class="stat-icon">🧘</span>
+                    <span class="stat-label">Level:</span>
+                    <span id="player-level" class="stat-value">1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">⭐</span>
+                    <span class="stat-label">Experience:</span>
+                    <span id="player-exp" class="stat-value">0/100</span>
+                </div>
+                <div class="exp-progress">
+                    <div class="progress-fill exp-progress-fill"></div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="quick-stats-section">
+                <h4 class="section-title">Session Stats</h4>
+                <div class="stat-item">
+                    <span class="stat-icon">⚔️</span>
+                    <span class="stat-label">Enemies Defeated:</span>
+                    <span id="enemies-defeated" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🌊</span>
+                    <span class="stat-label">Waves Completed:</span>
+                    <span id="waves-completed" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🏆</span>
+                    <span class="stat-label">Total Score:</span>
+                    <span id="total-score" class="stat-value">0</span>
+                </div>
+            </div>
+            
+            <!-- Dharma Philosophy -->
+            <div class="dharma-wisdom-section">
+                <h4 class="section-title">Digital Dharma</h4>
+                <div class="wisdom-quote">
+                    <p class="quote-text">"In the digital realm, as in life, compassionate protection guards against suffering."</p>
+                    <cite class="quote-source">- Path of the Cyber Monk</cite>
+                </div>
+                <div class="meditation-status">
+                    <span class="meditation-icon">🕯️</span>
+                    <span class="meditation-text">Network Mindfulness: Active</span>
+                </div>
+            </div>
+            
+            <!-- Cyberpunk Lore -->
+            <div class="cyberpunk-lore-section">
+                <h4 class="section-title">System Status</h4>
+                <div class="lore-item">
+                    <span class="lore-icon">🔮</span>
+                    <span class="lore-text">Quantum encryption stable</span>
+                </div>
+                <div class="lore-item">
+                    <span class="lore-icon">🌐</span>
+                    <span class="lore-text">Neural pathways secured</span>
+                </div>
+                <div class="lore-item">
+                    <span class="lore-icon">⚡</span>
+                    <span class="lore-text">Digital essence flowing</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="canvas-container">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- Defense Panel -->
+        <div class="defense-panel">
+            <h3>Defenses</h3>
+            <div class="defense-grid">
+                <div class="defense-item" data-type="firewall">
+                    <div class="defense-icon">🏯</div>
+                    <div class="defense-name">Firewall</div>
+                    <div class="defense-cost">25 💎</div>
+                </div>
+                <div class="defense-item" data-type="encryption">
+                    <div class="defense-icon">🏛️</div>
+                    <div class="defense-name">Encryption</div>
+                    <div class="defense-cost">40 💎</div>
+                </div>
+                <div class="defense-item" data-type="decoy">
+                    <div class="defense-icon">🕌</div>
+                    <div class="defense-name">Decoy</div>
+                    <div class="defense-cost">30 💎</div>
+                </div>
+                <div class="defense-item" data-type="mirror">
+                    <div class="defense-icon">🏢</div>
+                    <div class="defense-name">Mirror</div>
+                    <div class="defense-cost">35 💎</div>
+                </div>
+                <div class="defense-item" data-type="anonymity">
+                    <div class="defense-icon">👻</div>
+                    <div class="defense-name">Anonymity</div>
+                    <div class="defense-cost">45 💎</div>
+                </div>
+                <div class="defense-item" data-type="distributor">
+                    <div class="defense-icon">⚖️</div>
+                    <div class="defense-name">Distributor</div>
+                    <div class="defense-cost">50 💎</div>
+                </div>
+            </div>
+            
+            <div class="defense-actions">
+                <button id="sellAllBtn" class="action-btn secondary">Sell All</button>
+                <button id="upgradeAllBtn" class="action-btn primary">Upgrade All</button>
+            </div>
+        </div>
+
+        <!-- Additional UI Panels -->
+        <div id="defense-info-panel" class="panel hidden"></div>
+        <div id="defense-selection-panel" class="panel hidden"></div>
+        <div id="upgrade-tree-panel" class="panel hidden"></div>
+        <div id="notification-area" class="notification-container"></div>
+        <div id="achievement-popup" class="achievement-popup hidden"></div>
+        <div id="game-menu" class="menu-overlay hidden"></div>
+        <div id="settings-panel" class="settings-overlay hidden"></div>
+
+        <!-- Boss Warning Overlay (hidden by default) -->
+        <div id="boss-warning-modal" class="boss-warning-overlay hidden">
+            <div class="boss-warning-content">
+                <div class="boss-warning-title">⚠️ BOSS ABILITY WARNING ⚠️</div>
+                <div class="boss-warning-text" id="bossWarningText">Incoming boss ability!</div>
+                <div class="boss-warning-timer" id="bossWarningTimer">3</div>
+                <button id="close-boss-warning" class="close-btn">×</button>
+            </div>
+        </div>
+
+        <!-- Pause Menu Overlay -->
+        <div id="pause-menu-overlay" class="pause-overlay hidden">
+            <div class="pause-content">
+                <h3>Game Paused</h3>
+                <div class="pause-buttons">
+                    <button id="resume-game-btn" class="btn primary">Resume Game</button>
+                    <button id="back-to-menu-btn" class="btn secondary">Back to Menu</button>
+                    <button id="return-to-menu-btn" class="btn secondary">Return to Main Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boss Health Container -->
+        <div id="bossHealthContainer" class="boss-health-container hidden">
+            <div id="bossPhaseText" class="boss-phase-text">Phase 1</div>
+            <div class="boss-health-bar">
+                <div id="bossHealthFill" class="boss-health-fill"></div>
+            </div>
+            <div id="bossHealthSegments" class="boss-health-segments"></div>
+            <div id="bossHealthText" class="boss-health-text">100 / 100</div>
+        </div>
+    </div>
+
+    <!-- Achievement Gallery Screen -->
+    <div id="achievement-gallery-screen" class="screen" style="display: none;">
+        <div class="achievement-container">
+            <h2>Achievement Gallery</h2>
+            
+            <div class="achievement-stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="achievementProgress">0/25</span>
+                    <span class="stat-label">Unlocked</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="achievementPercentage">0%</span>
+                    <span class="stat-label">Complete</span>
+                </div>
+            </div>
+            
+            <div class="achievement-categories">
+                <button class="category-btn active" data-category="all">All</button>
+                <button class="category-btn" data-category="first_steps">First Steps</button>
+                <button class="category-btn" data-category="combat">Combat</button>
+                <button class="category-btn" data-category="strategy">Strategy</button>
+                <button class="category-btn" data-category="progression">Progression</button>
+                <button class="category-btn" data-category="secret">Secrets</button>
+            </div>
+            
+            <div class="achievement-grid" id="achievementGrid">
+                <!-- Achievement items will be populated dynamically -->
+            </div>
+            
+            <button id="back-from-achievements" class="back-btn">← Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- Upgrade Tree Modal -->
+    <div id="upgrade-tree-modal" class="modal hidden">
+        <div class="modal-content upgrade-tree">
+            <div class="modal-header">
+                <h3 id="upgradeTreeTitle">Upgrade Tree</h3>
+                <button class="close-btn" id="close-upgrade-tree">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="upgrade-path-container" id="upgradePathContainer">
+                    <!-- Upgrade paths will be populated dynamically -->
+                </div>
+                <div class="upgrade-preview" id="upgradePreview">
+                    <h4>Next Upgrade</h4>
+                    <div class="stat-changes" id="statChanges"></div>
+                    <div class="new-abilities" id="newAbilities"></div>
+                    <div class="upgrade-cost" id="upgradeCost"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmUpgradeBtn" class="btn primary">Upgrade</button>
+                <button id="cancelUpgradeBtn" class="btn secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievement Toast Container -->
+    <div id="achievementToastContainer" class="achievement-toast-container">
+        <!-- Achievement toasts will be added here dynamically -->
+    </div>
+
+    <!-- Tutorial Screen -->
+    <div id="tutorialScreen" class="screen" style="display: none;">
+        <div class="tutorial-container">
+            <h2>Tutorial - Path of the Digital Monk</h2>
+            <div class="tutorial-content">
+                <div class="tutorial-navigation">
+                    <button id="prevTutorialBtn" class="nav-btn" disabled>← Previous</button>
+                    <span id="tutorialProgress" class="progress-text">1 / 8</span>
+                    <button id="nextTutorialBtn" class="nav-btn">Next →</button>
+                </div>
+                
+                <div class="tutorial-steps">
+                    <!-- Tutorial steps will be populated dynamically -->
+                    <div class="tutorial-step active" data-step="1">
+                        <div class="step-content">
+                            <h3>🙏 Welcome to the Digital Monastery</h3>
+                            <p>Greetings, aspiring cyber-monk! You have entered the sacred digital realm where ancient Buddhist wisdom meets cutting-edge technology. Your mission is to protect the network servers from waves of digital corruption using mindful defense strategies.</p>
+                            <div class="tutorial-highlight">
+                                <p><strong>Philosophy:</strong> In Dharmapala Shield, we practice compassionate protection - defenses redirect and purify threats rather than destroying them.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="backFromTutorialBtn" class="back-btn">← Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settings-screen" class="screen" style="display: none;">
+        <div class="settings-container">
+            <h2>Settings</h2>
+            
+            <div class="settings-section">
+                <h3>Audio</h3>
+                <div class="setting-item">
+                    <label for="masterVolume">Master Volume</label>
+                    <input type="range" id="masterVolume" min="0" max="100" value="70">
+                    <span class="setting-value">70%</span>
+                </div>
+                <div class="setting-item">
+                    <label for="musicVolume">Music Volume</label>
+                    <input type="range" id="musicVolume" min="0" max="100" value="50">
+                    <span class="setting-value">50%</span>
+                </div>
+                <div class="setting-item">
+                    <label for="sfxVolume">SFX Volume</label>
+                    <input type="range" id="sfxVolume" min="0" max="100" value="80">
+                    <span class="setting-value">80%</span>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>Graphics</h3>
+                <div class="setting-item">
+                    <label for="graphicsQuality">Quality</label>
+                    <select id="graphicsQuality">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="particleEffects">Particle Effects</label>
+                    <input type="checkbox" id="particleEffects" checked>
+                </div>
+                <div class="setting-item">
+                    <label for="reducedMotionGraphics">Reduced Motion</label>
+                    <input type="checkbox" id="reducedMotionGraphics">
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>Accessibility</h3>
+                <div class="setting-item">
+                    <label for="colorblindMode">Colorblind Mode</label>
+                    <input type="checkbox" id="colorblindMode">
+                </div>
+                <div class="setting-item">
+                    <label for="subtitles">Subtitles</label>
+                    <input type="checkbox" id="subtitles">
+                </div>
+                <div class="setting-item">
+                    <label for="highContrast">High Contrast Mode</label>
+                    <input type="checkbox" id="highContrast">
+                </div>
+                <div class="setting-item">
+                    <label for="reducedMotion">Reduced Motion</label>
+                    <input type="checkbox" id="reducedMotion">
+                </div>
+                <div class="setting-item">
+                    <label for="announceAchievements">Screen Reader Announcements</label>
+                    <input type="checkbox" id="announceAchievements" checked>
+                </div>
+                <div class="setting-item">
+                    <label for="keyboardNavigation">Keyboard Navigation</label>
+                    <input type="checkbox" id="keyboardNavigation" checked>
+                </div>
+            </div>
+            
+            <button id="back-from-settings" class="back-btn">← Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- Credits Screen -->
+    <div id="creditsScreen" class="screen" style="display: none;">
+        <div class="credits-container">
+            <h2>Credits</h2>
+            <div class="credits-content">
+                <h3>Dharmapala Shield</h3>
+                <p>A Buddhist Cyberpunk Tower Defense Experience</p>
+                
+                <div class="credit-section">
+                    <h4>Design & Development</h4>
+                    <p>Buddhist-inspired game mechanics</p>
+                    <p>Cyberpunk aesthetic integration</p>
+                </div>
+                
+                <div class="credit-section">
+                    <h4>Special Thanks</h4>
+                    <p>To the Buddhist philosophy of compassionate protection</p>
+                    <p>And the cyberpunk genre's vision of digital resistance</p>
+                </div>
+            </div>
+            <button id="backFromCreditsBtn" class="back-btn">← Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- Level Select Screen -->
+    <div id="levelSelectScreen" class="screen" style="display: none;">
+        <div class="level-select-container">
+            <h2>Level Select</h2>
+            <div class="level-grid" id="levelGrid">
+                <!-- Level buttons will be populated dynamically -->
+            </div>
+            <div class="level-select-actions">
+                <button id="playSelectedLevelBtn" class="btn primary">Play Level</button>
+                <button id="backFromLevelSelectBtn" class="btn secondary">← Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save/Load Screen -->
+    <div id="save-load-screen" class="screen" style="display: none;">
+        <div class="save-load-container">
+            <h2>Save/Load Game</h2>
+            <div class="save-slots" id="saveSlots">
+                <!-- Save slots will be populated dynamically -->
+            </div>
+            <div class="save-load-actions">
+                <button id="clearAllSavesBtn" class="btn danger">Clear All Saves</button>
+                <button id="back-from-save-load" class="btn secondary">← Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victoryScreen" class="screen" style="display: none;">
+        <div class="victory-container">
+            <h2>🏆 Victory! 🏆</h2>
+            <div class="victory-stats">
+                <div class="star-rating" id="starRating">
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                </div>
+                <div class="completion-time">Time: <span id="completionTime">0:00</span></div>
+                <div class="final-score">Score: <span id="finalScore">0</span></div>
+            </div>
+            <div class="victory-actions">
+                <button id="nextLevelBtn" class="btn primary">Next Level</button>
+                <button id="replayLevelBtn" class="btn secondary">Replay</button>
+                <button id="backToMenuFromVictoryBtn" class="btn secondary">← Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defeat Screen -->
+    <div id="defeatScreen" class="screen" style="display: none;">
+        <div class="defeat-container">
+            <h2>💀 Network Compromised 💀</h2>
+            <div class="defeat-message">
+                <p>The digital realm has been breached.</p>
+                <p>Meditate on your strategy and try again.</p>
+            </div>
+            <div class="defeat-actions">
+                <button id="retryFromDefeatBtn" class="btn primary">Retry Level</button>
+                <button id="selectLevelFromDefeatBtn" class="btn secondary">Level Select</button>
+                <button id="backToMenuFromDefeatBtn" class="btn secondary">← Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/sprite.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/camera.js"></script>
+    <script src="js/particle.js"></script>
+    <script src="js/audioManager.js"></script>
+    <script src="js/saveSystem.js"></script>
+    <script src="js/loadingManager.js"></script>
+    <script src="js/imageOptimizer.js"></script>
+    <script src="js/mobile.js"></script>
+    
+    <!-- System Management -->
+    <script src="js/GameSystemManager.js"></script>
+    <script src="js/pathGenerator.js"></script>
+    <script src="js/level.js"></script>
+    
+    <!-- Game Components -->
+    <script src="js/Projectile.js"></script>
+    <script src="js/DefenseManager.js"></script>
+    <script src="js/ScreenManager.js"></script>
+    <script src="js/UIManager.js"></script>
+    <script src="js/achievementManager.js"></script>
+    
+    <!-- Enhanced Features -->
+    <script src="js/enhancedAchievementGallery.js"></script>
+    <script src="js/achievementNotificationAccessibility.js"></script>
+    <script src="js/levelPathPreservation.js"></script>
+    <script src="js/flexiblePathValidation.js"></script>
+    <script src="js/bossPhaseTransitionManager.js"></script>
+    <script src="js/bossWarningSynchronizer.js"></script>
+    <script src="js/upgradeTreeCleanupManager.js"></script>
+    
+    <!-- Game Logic -->
+    <script src="js/defense.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/Boss.js"></script>
+    <script src="js/game.js"></script>
+    <!-- emergency-fallback removed: consolidated init -->
+    
+    <!-- New modular components for GameBootstrap -->
+    <script src="js/LoadingScreenManager.js"></script>
+    <script src="js/ProgressIndicatorManager.js"></script>
+    <script src="js/AssetLoader.js"></script>
+    <script src="js/ErrorNotificationManager.js"></script>
+    <script src="js/EmergencyHandler.js"></script>
+    
+    
+    <!-- Removed inline emergency fallback: init is promise-driven in ESM entry -->
+</body>
+</html>
