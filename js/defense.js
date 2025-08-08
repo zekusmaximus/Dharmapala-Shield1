@@ -294,7 +294,7 @@ class Defense {
         let projectile = null;
         if (window.projectilePool) {
             projectile = window.projectilePool.getProjectile(
-                this.x, this.y, this.target, this.damage, 200, 'normal', this.type
+                this.x, this.y, this.target, this.damage, 260, 'normal', this.type
             );
         }
         

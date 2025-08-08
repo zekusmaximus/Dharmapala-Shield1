@@ -415,7 +415,7 @@ class LevelManager {
                               Math.pow(1 + this.waveConfig.difficulty_progression.health_increase, this.currentWave - 1);
                 const speed = levelData.baseEnemySpeed * 
                              enemyType.speed_multiplier * 
-                             Math.pow(1 + this.waveConfig.difficulty_progression.speed_increase, this.currentWave - 1);
+                             Math.pow(1 + this.waveConfig.difficulty_progression.speed_increase * 0.6, this.currentWave - 1);
                 const reward = Math.ceil(levelData.baseReward * enemyType.reward_multiplier * levelMultiplier);
 
                 enemies.push({

@@ -32,8 +32,54 @@ class Projectile {
     
     calculateVelocity() {
         if (this.target && this.target.isAlive) {
-            const dx = this.target.x - this.x;
-            const dy = this.target.y - this.y;
+            // Predictive aiming: lead target using current velocity
+            const targetVX = this.target.velocityX || 0;
+            const targetVY = this.target.velocityY || 0;
+            const dx0 = this.target.x - this.x;
+            const dy0 = this.target.y - this.y;
+            
+            // Solve for time to intercept t using quadratic: (v_t^2 - v_p^2) t^2 + 2(d·v_t) t + d^2 = 0
+            const vtx2 = targetVX * targetVX;
+            const vty2 = targetVY * targetVY;
+            const vt2 = vtx2 + vty2;
+            const vp2 = this.speed * this.speed;
+            const dDotVt = dx0 * targetVX + dy0 * targetVY;
+            const d2 = dx0 * dx0 + dy0 * dy0;
+            
+            let interceptX = this.target.x;
+            let interceptY = this.target.y;
+            
+            // Only attempt lead if projectile is faster than target or math permits
+            const a = vt2 - vp2;
+            const b = 2 * dDotVt;
+            const c = d2;
+            let t = 0;
+            if (Math.abs(a) < 1e-6) {
+                // Linear case: vp ~= vt -> t = -c / b if b != 0
+                if (Math.abs(b) > 1e-6) {
+                    t = Math.max(0, -c / b);
+                }
+            } else {
+                const disc = b * b - 4 * a * c;
+                if (disc >= 0) {
+                    const sqrtDisc = Math.sqrt(disc);
+                    const t1 = (-b - sqrtDisc) / (2 * a);
+                    const t2 = (-b + sqrtDisc) / (2 * a);
+                    // Choose the smallest positive time
+                    const candidates = [t1, t2].filter(val => val > 0);
+                    if (candidates.length > 0) {
+                        t = Math.min(...candidates);
+                    }
+                }
+            }
+            
+            if (t > 0 && t < MAX_LEAD_TIME_SECONDS) { // clamp to avoid extreme leads
+                interceptX = this.target.x + targetVX * t;
+                interceptY = this.target.y + targetVY * t;
+            }
+            
+            const dx = interceptX - this.x;
+            const dy = interceptY - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance > 0) {
