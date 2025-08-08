@@ -396,9 +396,10 @@ class InputManager {
 
 const inputManager = new InputManager();
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = InputManager;
-} else {
+// Export for ES module consumers and expose globals
+export { InputManager, inputManager };
+
+if (typeof window !== 'undefined') {
     window.InputManager = InputManager;
     window.inputManager = inputManager;
 }

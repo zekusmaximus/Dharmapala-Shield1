@@ -617,9 +617,10 @@ class UIManager {
 // Create global instance
 const uiManager = new UIManager();
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = UIManager;
-} else {
+// Export for ES module consumers and expose globals
+export { UIManager as default, uiManager };
+
+if (typeof window !== 'undefined') {
     window.UIManager = UIManager;
     window.uiManager = uiManager;
 }

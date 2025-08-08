@@ -407,9 +407,10 @@ class AnimatedSprite {
 
 const spriteManager = new SpriteManager();
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { SpriteManager, AnimatedSprite };
-} else {
+// Export for ES module consumers and expose globals
+export { SpriteManager, AnimatedSprite, spriteManager };
+
+if (typeof window !== 'undefined') {
     window.SpriteManager = SpriteManager;
     window.AnimatedSprite = AnimatedSprite;
     window.spriteManager = spriteManager;

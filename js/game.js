@@ -5,7 +5,7 @@ import UIManager from './UIManager.js';
 import { camera } from './camera.js';
 import { inputManager } from './input.js';
 import { particleSystem } from './particle.js';
-import { projectilePool } from './projectile.js';
+import { projectilePool } from './Projectile.js';
 import { spriteManager } from './sprite.js';
 import Utils from './utils.js';
 

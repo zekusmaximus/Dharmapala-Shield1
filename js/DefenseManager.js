@@ -725,8 +725,9 @@ class DefenseManager {
     }
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DefenseManager;
-} else {
+// Export and expose globally
+export default DefenseManager;
+
+if (typeof window !== 'undefined') {
     window.DefenseManager = DefenseManager;
 }
