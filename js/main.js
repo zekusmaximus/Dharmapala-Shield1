@@ -112,7 +112,15 @@ export default class GameBootstrap {
             this.ensureMenuVisible('Normal initialization');
             this.showBackgroundProgressIndicator();
 
-            await this.initializeBackgroundSystems();
+            try {
+                await this.initializeBackgroundSystems();
+            } catch (error) {
+                console.error('[GameBootstrap] Background systems initialization failed:', error);
+                this.showErrorNotification(error);
+                // Optionally, update the UI or progress indicator here if needed
+                // Ensure menu remains visible even on error in background systems
+                this.ensureMenuVisible('Background systems error', error);
+            }
             this.hideBackgroundProgressIndicator();
         } catch (error) {
             console.error('[GameBootstrap] Initialization failed:', error);
