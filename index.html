@@ -595,7 +595,7 @@
     <script src="js/enemy.js"></script>
     <script src="js/Boss.js"></script>
     <script src="js/game.js"></script>
-    <script src="js/emergency-fallback.js"></script>
+    <!-- emergency-fallback removed: consolidated init -->
     
     <!-- New modular components for GameBootstrap -->
     <script src="js/LoadingScreenManager.js"></script>
@@ -604,26 +604,8 @@
     <script src="js/ErrorNotificationManager.js"></script>
     <script src="js/EmergencyHandler.js"></script>
     
-    <script src="js/main.js"></script>
+    <script type="module" src="/src/main.js"></script>
     
-    <!-- Emergency Fallback Script -->
-    <script>
-        // Emergency fallback that runs if main initialization fails
-        setTimeout(function() {
-            const loadingScreen = document.getElementById('loading-screen');
-            const mainMenuScreen = document.getElementById('main-menu-screen');
-            
-            if (loadingScreen && loadingScreen.style.display !== 'none') {
-                console.log('[Emergency] Loading screen still visible, forcing main menu');
-                loadingScreen.style.display = 'none';
-                loadingScreen.classList.remove('active');
-                
-                if (mainMenuScreen) {
-                    mainMenuScreen.style.display = 'flex';
-                    mainMenuScreen.classList.add('active');
-                }
-            }
-        }, 2500); // 2.5 second HTML fallback (after emergency system at 2s)
-    </script>
+    <!-- Removed inline emergency fallback: init is promise-driven in ESM entry -->
 </body>
 </html>
