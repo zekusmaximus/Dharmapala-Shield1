@@ -297,7 +297,9 @@ export default class GameBootstrap {
             canvas.height = Math.floor(canvasHeight);
             canvas.style.width = canvasWidth + 'px';
             canvas.style.height = canvasHeight + 'px';
-        } catch {}
+        } catch (err) {
+            console.error('Error in setupResponsiveCanvas:', err);
+        }
     }
 
     setupCanvasResizeHandler(canvas) {
