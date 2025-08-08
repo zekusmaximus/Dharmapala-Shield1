@@ -73,7 +73,7 @@ class Projectile {
                 }
             }
             
-            if (t > 0 && t < 3) { // clamp to avoid extreme leads
+            if (t > 0 && t < MAX_LEAD_TIME_SECONDS) { // clamp to avoid extreme leads
                 interceptX = this.target.x + targetVX * t;
                 interceptY = this.target.y + targetVY * t;
             }
