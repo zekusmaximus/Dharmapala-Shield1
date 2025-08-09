@@ -224,14 +224,18 @@ class Game {
 
     async initialize() {
         console.log('[Game] Initializing game systems...');
-        
+
         try {
-            // Initialize system manager
-            this.systemManager = new GameSystemManager();
-            const initResult = await this.systemManager.initialize();
-            
-            if (!initResult.success) {
-                throw new Error(`System initialization failed: ${initResult.error}`);
+            // Initialize system manager if needed
+            if (!this.systemManager) {
+                this.systemManager = new GameSystemManager();
+            }
+
+            if (!this.systemManager.initializationComplete && typeof this.systemManager.initialize === 'function') {
+                const initResult = await this.systemManager.initialize();
+                if (!initResult.success) {
+                    throw new Error(`System initialization failed: ${initResult.error}`);
+                }
             }
             
             // Setup input handling
