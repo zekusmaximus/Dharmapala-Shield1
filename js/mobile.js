@@ -24,7 +24,20 @@ class MobileManager {
         // Performance optimization for mobile
         this.isLowPowerMode = false;
         this.reducedQuality = false;
-        
+
+        // Bind handlers so they can be removed properly
+        this.handleTouchStart = this.handleTouchStart.bind(this);
+        this.handleTouchMove = this.handleTouchMove.bind(this);
+        this.handleTouchEnd = this.handleTouchEnd.bind(this);
+        this.handleTouchCancel = this.handleTouchCancel.bind(this);
+        this.preventDefaultTouch = this.preventDefaultTouch.bind(this);
+        this.preventDoubleClick = this.preventDoubleClick.bind(this);
+        this.handleOrientationChange = this.handleOrientationChange.bind(this);
+        this.handleResize = this.handleResize.bind(this);
+        this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
+        this.handleWindowBlur = this.handleWindowBlur.bind(this);
+        this.handleWindowFocus = this.handleWindowFocus.bind(this);
+
         this.detectMobile();
         this.initializeEventListeners();
         this.setupOrientationHandling();
@@ -70,28 +83,28 @@ class MobileManager {
         if (!this.isMobile) return;
         
         // Touch events
-        document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-        document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-        document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
-        document.addEventListener('touchcancel', this.handleTouchCancel.bind(this), { passive: false });
-        
+        document.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+        document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
+        document.addEventListener('touchend', this.handleTouchEnd, { passive: false });
+        document.addEventListener('touchcancel', this.handleTouchCancel, { passive: false });
+
         // Prevent default touch behaviors
-        document.addEventListener('touchstart', this.preventDefaultTouch.bind(this), { passive: false });
-        document.addEventListener('touchmove', this.preventDefaultTouch.bind(this), { passive: false });
-        
+        document.addEventListener('touchstart', this.preventDefaultTouch, { passive: false });
+        document.addEventListener('touchmove', this.preventDefaultTouch, { passive: false });
+
         // Prevent zoom on double tap
-        document.addEventListener('dblclick', (e) => e.preventDefault());
-        
+        document.addEventListener('dblclick', this.preventDoubleClick);
+
         // Handle device orientation changes
-        window.addEventListener('orientationchange', this.handleOrientationChange.bind(this));
-        window.addEventListener('resize', this.handleResize.bind(this));
-        
+        window.addEventListener('orientationchange', this.handleOrientationChange);
+        window.addEventListener('resize', this.handleResize);
+
         // Handle visibility changes (app backgrounding)
-        document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
-        
+        document.addEventListener('visibilitychange', this.handleVisibilityChange);
+
         // Handle focus/blur for pause on background
-        window.addEventListener('blur', this.handleWindowBlur.bind(this));
-        window.addEventListener('focus', this.handleWindowFocus.bind(this));
+        window.addEventListener('blur', this.handleWindowBlur);
+        window.addEventListener('focus', this.handleWindowFocus);
     }
 
     preventDefaultTouch(event) {
@@ -99,6 +112,10 @@ class MobileManager {
         if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
             event.preventDefault();
         }
+    }
+
+    preventDoubleClick(e) {
+        e.preventDefault();
     }
 
     handleTouchStart(event) {
@@ -548,6 +565,14 @@ class MobileManager {
         document.removeEventListener('touchmove', this.handleTouchMove);
         document.removeEventListener('touchend', this.handleTouchEnd);
         document.removeEventListener('touchcancel', this.handleTouchCancel);
+        document.removeEventListener('touchstart', this.preventDefaultTouch);
+        document.removeEventListener('touchmove', this.preventDefaultTouch);
+        document.removeEventListener('dblclick', this.preventDoubleClick);
+        window.removeEventListener('orientationchange', this.handleOrientationChange);
+        window.removeEventListener('resize', this.handleResize);
+        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+        window.removeEventListener('blur', this.handleWindowBlur);
+        window.removeEventListener('focus', this.handleWindowFocus);
         
         // Remove touch controls
         const controlsContainer = document.getElementById('touch-controls');

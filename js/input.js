@@ -34,7 +34,22 @@ class InputManager {
         this.camera = null;
         this.listeners = new Map();
         this.eventQueue = [];
-        
+
+        // Bind event handlers once so the same references can be removed later
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
+        this.onMouseLeave = this.onMouseLeave.bind(this);
+        this.onWheel = this.onWheel.bind(this);
+        this.onTouchStart = this.onTouchStart.bind(this);
+        this.onTouchMove = this.onTouchMove.bind(this);
+        this.onTouchEnd = this.onTouchEnd.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+        this.onKeyUp = this.onKeyUp.bind(this);
+        this.onWindowBlur = this.onWindowBlur.bind(this);
+        this.onWindowFocus = this.onWindowFocus.bind(this);
+        this.onContextMenu = this.onContextMenu.bind(this);
+
         this.setupEventListeners();
     }
 
@@ -54,28 +69,28 @@ class InputManager {
     }
 
     setupEventListeners() {
-        document.addEventListener('keydown', (e) => this.onKeyDown(e));
-        document.addEventListener('keyup', (e) => this.onKeyUp(e));
-        
-        window.addEventListener('blur', () => this.onWindowBlur());
-        window.addEventListener('focus', () => this.onWindowFocus());
+        document.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('keyup', this.onKeyUp);
+
+        window.addEventListener('blur', this.onWindowBlur);
+        window.addEventListener('focus', this.onWindowFocus);
     }
 
     setupCanvasListeners() {
         if (!this.canvas) return;
 
-        this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
-        this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
-        this.canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
-        this.canvas.addEventListener('mouseleave', (e) => this.onMouseLeave(e));
-        this.canvas.addEventListener('wheel', (e) => this.onWheel(e));
+        this.canvas.addEventListener('mousedown', this.onMouseDown);
+        this.canvas.addEventListener('mousemove', this.onMouseMove);
+        this.canvas.addEventListener('mouseup', this.onMouseUp);
+        this.canvas.addEventListener('mouseleave', this.onMouseLeave);
+        this.canvas.addEventListener('wheel', this.onWheel);
 
-        this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e));
-        this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e));
-        this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e));
-        this.canvas.addEventListener('touchcancel', (e) => this.onTouchEnd(e));
+        this.canvas.addEventListener('touchstart', this.onTouchStart);
+        this.canvas.addEventListener('touchmove', this.onTouchMove);
+        this.canvas.addEventListener('touchend', this.onTouchEnd);
+        this.canvas.addEventListener('touchcancel', this.onTouchEnd);
 
-        this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        this.canvas.addEventListener('contextmenu', this.onContextMenu);
     }
 
     removeCanvasListeners() {
@@ -90,6 +105,7 @@ class InputManager {
         this.canvas.removeEventListener('touchmove', this.onTouchMove);
         this.canvas.removeEventListener('touchend', this.onTouchEnd);
         this.canvas.removeEventListener('touchcancel', this.onTouchEnd);
+        this.canvas.removeEventListener('contextmenu', this.onContextMenu);
     }
 
     onMouseDown(e) {
@@ -142,13 +158,17 @@ class InputManager {
 
     onWheel(e) {
         e.preventDefault();
-        
+
         this.queueEvent('wheel', {
             x: this.mouse.x,
             y: this.mouse.y,
             deltaY: e.deltaY,
             deltaX: e.deltaX
         });
+    }
+
+    onContextMenu(e) {
+        e.preventDefault();
     }
 
     onTouchStart(e) {
