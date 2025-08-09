@@ -1,5 +1,3 @@
-import Utils from './utils.js';
-
 class ScreenManager {
     constructor() {
         this.currentScreen = 'loading';
