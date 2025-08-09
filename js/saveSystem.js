@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class SaveSystem {
     constructor() {
         this.saveSlots = 3;

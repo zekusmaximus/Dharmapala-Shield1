@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class Camera {
     constructor(canvas) {
         this.canvas = canvas;

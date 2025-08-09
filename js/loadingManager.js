@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class LoadingManager {
     constructor() {
         this.loadingScreen = null;

@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class UIManager {
     constructor() {
         this.elements = new Map();

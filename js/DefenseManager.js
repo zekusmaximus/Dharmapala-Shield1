@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class DefenseManager {
     constructor() {
         this.defenses = [];

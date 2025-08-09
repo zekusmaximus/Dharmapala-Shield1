@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class AudioManager {
     constructor() {
         this.context = null;

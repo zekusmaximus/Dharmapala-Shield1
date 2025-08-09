@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class Boss {
     constructor(type, x, y) {
         this.type = type;

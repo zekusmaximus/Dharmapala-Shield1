@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class Projectile {
     constructor(x, y, target, damage, speed, type = 'normal', defenseType = 'firewall') {
         this.x = x;
