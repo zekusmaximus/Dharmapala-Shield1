@@ -1,5 +1,3 @@
-import Utils from './utils.js';
-
 class Enemy {
     constructor(type, x, y) {
         this.type = type;
