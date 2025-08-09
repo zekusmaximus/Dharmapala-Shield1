@@ -1,4 +1,3 @@
-import Utils from './utils.js';
 
 class AchievementManager {
     constructor(saveSystem = null, audioManager = null) {
