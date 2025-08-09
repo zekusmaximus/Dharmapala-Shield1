@@ -217,7 +217,7 @@ class InputManager {
 
     onTouchEnd(e) {
         e.preventDefault();
-        
+
         if (this.touch.active) {
             this.queueEvent('touchend', {
                 x: this.touch.x,
@@ -232,6 +232,68 @@ class InputManager {
         this.touch.active = false;
         this.touch.deltaX = 0;
         this.touch.deltaY = 0;
+    }
+
+    handleTouch(type, data) {
+        if (!this.canvas) return;
+
+        const touchLike = { clientX: data.x, clientY: data.y };
+
+        switch (type) {
+            case 'start': {
+                this.updateTouchPosition(touchLike);
+                this.touch.active = true;
+                this.touch.startX = this.touch.x;
+                this.touch.startY = this.touch.y;
+                this.touch.deltaX = 0;
+                this.touch.deltaY = 0;
+
+                this.queueEvent('touchstart', {
+                    x: this.touch.x,
+                    y: this.touch.y,
+                    worldX: this.touch.worldX,
+                    worldY: this.touch.worldY
+                });
+                break;
+            }
+            case 'move': {
+                if (!this.touch.active) return;
+                const oldX = this.touch.x;
+                const oldY = this.touch.y;
+                this.updateTouchPosition(touchLike);
+                this.touch.deltaX = this.touch.x - this.touch.startX;
+                this.touch.deltaY = this.touch.y - this.touch.startY;
+
+                this.queueEvent('touchmove', {
+                    x: this.touch.x,
+                    y: this.touch.y,
+                    worldX: this.touch.worldX,
+                    worldY: this.touch.worldY,
+                    deltaX: this.touch.deltaX,
+                    deltaY: this.touch.deltaY,
+                    moveX: this.touch.x - oldX,
+                    moveY: this.touch.y - oldY
+                });
+                break;
+            }
+            case 'end':
+            case 'cancel': {
+                if (this.touch.active) {
+                    this.queueEvent('touchend', {
+                        x: this.touch.x,
+                        y: this.touch.y,
+                        worldX: this.touch.worldX,
+                        worldY: this.touch.worldY,
+                        deltaX: this.touch.deltaX,
+                        deltaY: this.touch.deltaY
+                    });
+                }
+                this.touch.active = false;
+                this.touch.deltaX = 0;
+                this.touch.deltaY = 0;
+                break;
+            }
+        }
     }
 
     onKeyDown(e) {
