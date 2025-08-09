@@ -1,3 +1,4 @@
+
 class UIManager {
     constructor() {
         this.elements = new Map();

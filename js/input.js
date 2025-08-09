@@ -1,3 +1,4 @@
+
 class InputManager {
     constructor() {
         this.mouse = {

@@ -1,3 +1,4 @@
+
 class AchievementManager {
     constructor(saveSystem = null, audioManager = null) {
         this.saveSystem = saveSystem;

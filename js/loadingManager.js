@@ -1,3 +1,4 @@
+
 class LoadingManager {
     constructor() {
         this.loadingScreen = null;

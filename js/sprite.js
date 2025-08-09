@@ -1,3 +1,4 @@
+
 class SpriteManager {
     constructor() {
         this.sprites = new Map();

@@ -1,3 +1,4 @@
+
 class DefenseManager {
     constructor() {
         this.defenses = [];

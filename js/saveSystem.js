@@ -1,3 +1,4 @@
+
 class SaveSystem {
     constructor() {
         this.saveSlots = 3;
