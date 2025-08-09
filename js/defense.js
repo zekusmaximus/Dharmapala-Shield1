@@ -1,4 +1,3 @@
-import Utils from './utils.js';
 
 class Defense {
     constructor(type, x, y) {
