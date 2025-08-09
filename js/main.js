@@ -16,6 +16,7 @@ class GameBootstrap {
         // Initialize managers
         this.loadingScreenManager = new LoadingScreenManager();
         this.progressIndicatorManager = new ProgressIndicatorManager();
+        this.backgroundProgress = this.progressIndicatorManager.backgroundProgress;
         this.assetLoader = new AssetLoader();
         this.errorNotificationManager = new ErrorNotificationManager();
         this.screenManager = new ScreenManager();
@@ -158,7 +159,7 @@ class GameBootstrap {
 
     updateBackgroundProgress(message, stepIndex) {
         if (this.progressIndicatorManager && this.progressIndicatorManager.update) {
-            this.progressIndicatorManager.update(message, stepIndex, this.backgroundProgress.total);
+            this.progressIndicatorManager.update(message, stepIndex);
         }
     }
 
