@@ -3,24 +3,24 @@ class AchievementManager {
     constructor(saveSystem = null, audioManager = null) {
         this.saveSystem = saveSystem;
         this.audioManager = audioManager;
-        
+
         // Achievement storage
         this.achievements = new Map();
         this.unlockedAchievements = new Set();
         this.achievementProgress = new Map();
-        
+
         // Event tracking
         this.eventQueue = [];
         this.eventStats = new Map();
-        
+
         // Simple deduplication
         this.recentEvents = new Map();
         this.deduplicationWindow = 1000; // 1 second
-        
+
         // Notification system
         this.notifications = [];
         this.notificationCallbacks = [];
-        
+
         this.initializeAchievements();
         this.loadProgress();
         this.startEventProcessor();
@@ -120,7 +120,7 @@ class AchievementManager {
                 icon: '🎯'
             }
         ];
-        
+
         // Initialize achievements
         achievementList.forEach(achievement => {
             this.achievements.set(achievement.id, achievement);
@@ -130,28 +130,28 @@ class AchievementManager {
 
     loadProgress() {
         if (!this.saveSystem) return;
-        
+
         try {
             const saveData = this.saveSystem.get('achievements', {});
-            
+
             if (saveData.unlocked) {
                 this.unlockedAchievements = new Set(saveData.unlocked);
             }
-            
+
             if (saveData.progress) {
                 for (const [id, progress] of Object.entries(saveData.progress)) {
                     this.achievementProgress.set(id, progress);
                 }
             }
-            
+
             if (saveData.stats) {
                 for (const [event, count] of Object.entries(saveData.stats)) {
                     this.eventStats.set(event, count);
                 }
             }
-            
+
             console.log(`[AchievementManager] Loaded ${this.unlockedAchievements.size} unlocked achievements`);
-            
+
         } catch (error) {
             console.error('[AchievementManager] Error loading progress:', error);
         }
@@ -159,7 +159,7 @@ class AchievementManager {
 
     saveProgress() {
         if (!this.saveSystem) return;
-        
+
         try {
             const saveData = {
                 unlocked: Array.from(this.unlockedAchievements),
@@ -167,9 +167,9 @@ class AchievementManager {
                 stats: Object.fromEntries(this.eventStats),
                 lastSaved: Date.now()
             };
-            
+
             this.saveSystem.set('achievements', saveData);
-            
+
         } catch (error) {
             console.error('[AchievementManager] Error saving progress:', error);
         }
@@ -181,7 +181,7 @@ class AchievementManager {
             this.processEventQueue();
             this.cleanupRecentEvents();
         }, 100);
-        
+
         // Save progress every 30 seconds
         setInterval(() => {
             this.saveProgress();
@@ -189,25 +189,25 @@ class AchievementManager {
     }
 
     trackEvent(eventType, data = {}) {
-        const timestamp = Utils.performance.now();
-        
+        const timestamp = performance.now();
+
         // Simple deduplication
         const eventKey = `${eventType}_${JSON.stringify(data)}`;
         const lastEvent = this.recentEvents.get(eventKey);
-        
+
         if (lastEvent && (timestamp - lastEvent) < this.deduplicationWindow) {
             return; // Skip duplicate event
         }
-        
+
         this.recentEvents.set(eventKey, timestamp);
-        
+
         // Add to event queue
         this.eventQueue.push({
             type: eventType,
             data: data,
             timestamp: timestamp
         });
-        
+
         // Update event statistics
         const currentCount = this.eventStats.get(eventType) || 0;
         this.eventStats.set(eventType, currentCount + 1);
@@ -215,11 +215,11 @@ class AchievementManager {
 
     processEventQueue() {
         if (this.eventQueue.length === 0) return;
-        
+
         // Process all queued events
         const eventsToProcess = [...this.eventQueue];
         this.eventQueue.length = 0;
-        
+
         eventsToProcess.forEach(event => {
             this.processEvent(event);
         });
@@ -231,7 +231,7 @@ class AchievementManager {
             if (this.unlockedAchievements.has(achievementId)) {
                 continue; // Already unlocked
             }
-            
+
             this.updateAchievementProgress(achievementId, achievement, event);
         }
     }
@@ -239,24 +239,24 @@ class AchievementManager {
     updateAchievementProgress(achievementId, achievement, event) {
         const progress = this.achievementProgress.get(achievementId);
         let updated = false;
-        
+
         // Update progress based on event
         for (const [requirement, targetValue] of Object.entries(achievement.requirements)) {
             if (this.shouldUpdateRequirement(requirement, event)) {
                 const currentValue = progress[requirement] || 0;
                 const increment = this.calculateIncrement(requirement, event);
                 const newValue = currentValue + increment;
-                
+
                 progress[requirement] = newValue;
                 updated = true;
-                
+
                 // Check if requirement is now met
                 if (newValue >= targetValue) {
                     console.log(`[Achievement] Requirement ${requirement} completed for ${achievementId}`);
                 }
             }
         }
-        
+
         if (updated) {
             this.achievementProgress.set(achievementId, progress);
             this.checkAchievementCompletion(achievementId, achievement);
@@ -278,7 +278,7 @@ class AchievementManager {
             'pause_used': ['game_paused'],
             'defense_types_used': ['defense_placed']
         };
-        
+
         const relevantEvents = eventMappings[requirement] || [];
         return relevantEvents.includes(event.type);
     }
@@ -292,7 +292,7 @@ class AchievementManager {
                     return event.data.reward?.dharma || 10;
                 }
                 break;
-            
+
             case 'defense_types_used':
                 // Track unique defense types used
                 const progress = this.achievementProgress.get('diversity_champion');
@@ -302,17 +302,17 @@ class AchievementManager {
                     return progress.usedTypes.size;
                 }
                 break;
-            
+
             default:
                 return 1; // Most requirements increment by 1
         }
-        
+
         return 1;
     }
 
     checkAchievementCompletion(achievementId, achievement) {
         const progress = this.achievementProgress.get(achievementId);
-        
+
         // Check if all requirements are met
         let allRequirementsMet = true;
         for (const [requirement, targetValue] of Object.entries(achievement.requirements)) {
@@ -322,7 +322,7 @@ class AchievementManager {
                 break;
             }
         }
-        
+
         if (allRequirementsMet) {
             this.unlockAchievement(achievementId);
         }
@@ -332,30 +332,30 @@ class AchievementManager {
         if (this.unlockedAchievements.has(achievementId)) {
             return; // Already unlocked
         }
-        
+
         const achievement = this.achievements.get(achievementId);
         if (!achievement) return;
-        
+
         this.unlockedAchievements.add(achievementId);
-        
+
         console.log(`[Achievement] Unlocked: ${achievement.name}`);
-        
+
         // Award rewards
         if (achievement.reward && window.game) {
             window.game.addResources(achievement.reward);
         }
-        
+
         // Show notification
         this.showAchievementNotification(achievement);
-        
+
         // Play sound
         if (this.audioManager) {
             this.audioManager.playSound('achievement_unlocked', 0.8);
         }
-        
+
         // Save progress immediately
         this.saveProgress();
-        
+
         // Trigger callbacks
         this.notificationCallbacks.forEach(callback => {
             try {
@@ -368,19 +368,19 @@ class AchievementManager {
 
     showAchievementNotification(achievement) {
         const notification = {
-            id: Utils.game.generateId(),
+            id: 'notif_' + Math.random().toString(36).substr(2, 9),
             achievement: achievement,
-            timestamp: Utils.performance.now(),
+            timestamp: performance.now(),
             duration: 5000
         };
-        
+
         this.notifications.push(notification);
-        
+
         // Show in UI
         if (window.uiManager) {
             window.uiManager.showAchievementUnlocked(achievement);
         }
-        
+
         // Auto-remove after duration
         setTimeout(() => {
             this.removeNotification(notification.id);
@@ -395,9 +395,9 @@ class AchievementManager {
     }
 
     cleanupRecentEvents() {
-        const now = Utils.performance.now();
+        const now = performance.now();
         const cutoff = now - this.deduplicationWindow;
-        
+
         for (const [key, timestamp] of this.recentEvents) {
             if (timestamp < cutoff) {
                 this.recentEvents.delete(key);
@@ -425,9 +425,9 @@ class AchievementManager {
     getAchievementProgress(id) {
         const achievement = this.achievements.get(id);
         const progress = this.achievementProgress.get(id);
-        
+
         if (!achievement || !progress) return null;
-        
+
         const result = {
             id: id,
             name: achievement.name,
@@ -436,7 +436,7 @@ class AchievementManager {
             unlocked: this.unlockedAchievements.has(id),
             requirements: {}
         };
-        
+
         // Calculate progress for each requirement
         for (const [requirement, targetValue] of Object.entries(achievement.requirements)) {
             const currentValue = progress[requirement] || 0;
@@ -447,7 +447,7 @@ class AchievementManager {
                 percentage: Math.min(100, (currentValue / targetValue) * 100)
             };
         }
-        
+
         return result;
     }
 
@@ -455,19 +455,19 @@ class AchievementManager {
         const total = this.achievements.size;
         const unlocked = this.unlockedAchievements.size;
         const categories = {};
-        
+
         // Calculate category stats
         for (const achievement of this.achievements.values()) {
             if (!categories[achievement.category]) {
                 categories[achievement.category] = { total: 0, unlocked: 0 };
             }
-            
+
             categories[achievement.category].total++;
             if (this.unlockedAchievements.has(achievement.id)) {
                 categories[achievement.category].unlocked++;
             }
         }
-        
+
         return {
             total: total,
             unlocked: unlocked,
@@ -506,7 +506,7 @@ class AchievementManager {
 
     trackLevelComplete(level, duration) {
         this.trackEvent('level_completed', { level, duration });
-        
+
         // Check for fast completion (under 5 minutes)
         if (duration < 300000) { // 5 minutes in milliseconds
             this.trackEvent('fast_level_completion', { level, duration });
@@ -540,7 +540,7 @@ class AchievementManager {
     // Admin/debug methods
     unlockAllAchievements() {
         console.log('[AchievementManager] Unlocking all achievements (debug)');
-        
+
         for (const achievementId of this.achievements.keys()) {
             if (!this.unlockedAchievements.has(achievementId)) {
                 this.unlockAchievement(achievementId);
@@ -550,11 +550,11 @@ class AchievementManager {
 
     resetAllProgress() {
         console.log('[AchievementManager] Resetting all progress (debug)');
-        
+
         this.unlockedAchievements.clear();
         this.achievementProgress.clear();
         this.eventStats.clear();
-        
+
         // Reinitialize
         this.initializeAchievements();
         this.saveProgress();
@@ -574,13 +574,13 @@ class AchievementManager {
     destroy() {
         // Save final progress
         this.saveProgress();
-        
+
         // Clear data
         this.eventQueue.length = 0;
         this.notifications.length = 0;
         this.notificationCallbacks.length = 0;
         this.recentEvents.clear();
-        
+
         console.log('[AchievementManager] Destroyed');
     }
 }

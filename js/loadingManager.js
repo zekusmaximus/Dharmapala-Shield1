@@ -5,19 +5,19 @@ class LoadingManager {
         this.progressBar = null;
         this.progressText = null;
         this.loadingMessage = null;
-        
+
         this.totalAssets = 0;
         this.loadedAssets = 0;
         this.currentProgress = 0;
         this.targetProgress = 0;
-        
+
         this.loadingQueue = [];
         this.loadedResources = new Map();
         this.failedResources = new Set();
-        
+
         this.isLoading = false;
         this.loadingComplete = false;
-        
+
         this.messages = [
             "Initializing digital dharma...",
             "Connecting to cyber monastery...",
@@ -30,11 +30,11 @@ class LoadingManager {
             "Setting up path algorithms...",
             "Finalizing game systems..."
         ];
-        
+
         this.currentMessageIndex = 0;
         this.messageChangeInterval = 2000;
         this.lastMessageChange = 0;
-        
+
         this.animationFrame = null;
         this.setupLoadingScreen();
     }
@@ -49,11 +49,11 @@ class LoadingManager {
         this.progressBar = this.loadingScreen.querySelector('.loading-progress');
         this.progressText = this.loadingScreen.querySelector('.loading-text');
         this.loadingMessage = this.loadingScreen.querySelector('.loading-message');
-        
+
         if (!this.progressBar || !this.progressText) {
             console.warn('Loading screen elements incomplete');
         }
-        
+
         if (!this.loadingMessage) {
             console.warn('Loading message element not found - using progress text for messages');
         }
@@ -80,7 +80,7 @@ class LoadingManager {
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
         }
-        
+
         this.animate();
     }
 
@@ -93,11 +93,11 @@ class LoadingManager {
 
     animate() {
         if (!this.isLoading) return;
-        
+
         this.updateProgress();
         this.updateMessage();
         this.updateVisuals();
-        
+
         this.animationFrame = requestAnimationFrame(() => this.animate());
     }
 
@@ -105,22 +105,22 @@ class LoadingManager {
         if (this.totalAssets > 0) {
             this.targetProgress = (this.loadedAssets / this.totalAssets) * 100;
         }
-        
+
         const diff = this.targetProgress - this.currentProgress;
         this.currentProgress += diff * 0.1;
-        
+
         if (Math.abs(diff) < 0.1) {
             this.currentProgress = this.targetProgress;
         }
     }
 
     updateMessage() {
-        const now = Utils.performance.now();
-        
+        const now = performance.now();
+
         if (now - this.lastMessageChange > this.messageChangeInterval) {
             this.currentMessageIndex = (this.currentMessageIndex + 1) % this.messages.length;
             this.lastMessageChange = now;
-            
+
             if (this.loadingMessage) {
                 this.loadingMessage.textContent = this.messages[this.currentMessageIndex];
             } else if (this.progressText) {
@@ -134,7 +134,7 @@ class LoadingManager {
         if (this.progressBar) {
             this.progressBar.style.width = `${this.currentProgress}%`;
         }
-        
+
         if (this.progressText) {
             this.progressText.textContent = `${Math.round(this.currentProgress)}%`;
         }
@@ -144,7 +144,7 @@ class LoadingManager {
         if (!Array.isArray(resources)) {
             resources = [resources];
         }
-        
+
         for (const resource of resources) {
             if (typeof resource === 'string') {
                 this.loadingQueue.push({
@@ -161,7 +161,7 @@ class LoadingManager {
                 });
             }
         }
-        
+
         this.totalAssets = this.loadingQueue.length;
     }
 
@@ -170,15 +170,15 @@ class LoadingManager {
         this.loadedAssets = 0;
         this.currentProgress = 0;
         this.targetProgress = 0;
-        
+
         const promises = this.loadingQueue.map(resource => this.loadResource(resource));
-        
+
         try {
             await Promise.allSettled(promises);
             this.loadingComplete = true;
-            
+
             await this.finishLoading();
-            
+
         } catch (error) {
             console.error('Loading failed:', error);
             this.handleLoadingError(error);
@@ -188,7 +188,7 @@ class LoadingManager {
     async loadResource(resource) {
         try {
             let result;
-            
+
             switch (resource.type) {
                 case 'script':
                     result = await this.loadScript(resource.url);
@@ -205,12 +205,12 @@ class LoadingManager {
                 default:
                     throw new Error(`Unknown resource type: ${resource.type}`);
             }
-            
+
             this.loadedResources.set(resource.name, result);
             this.loadedAssets++;
-            
+
             console.log(`Loaded: ${resource.name}`);
-            
+
         } catch (error) {
             if (!resource.optional) {
                 console.error(`Failed to load required resource: ${resource.name}`, error);
@@ -229,7 +229,7 @@ class LoadingManager {
                 resolve();
                 return;
             }
-            
+
             const script = document.createElement('script');
             script.src = url;
             script.onload = () => resolve(script);
@@ -244,7 +244,7 @@ class LoadingManager {
                 resolve();
                 return;
             }
-            
+
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = url;
@@ -275,27 +275,27 @@ class LoadingManager {
     async finishLoading() {
         this.currentProgress = 100;
         this.targetProgress = 100;
-        
+
         if (this.loadingMessage) {
             this.loadingMessage.textContent = "Loading complete!";
         } else if (this.progressText) {
             this.progressText.textContent = "Loading complete!";
         }
-        
+
         await this.delay(500);
-        
+
         this.hide();
     }
 
     handleLoadingError(error) {
         console.error('Critical loading error:', error);
-        
+
         if (this.loadingMessage) {
             this.loadingMessage.textContent = "Loading failed. Please refresh the page.";
         } else if (this.progressText) {
             this.progressText.textContent = "Loading failed. Please refresh the page.";
         }
-        
+
         if (this.progressBar) {
             this.progressBar.style.backgroundColor = '#ff0000';
         }
@@ -324,7 +324,7 @@ class LoadingManager {
             { type: 'css', url: 'css/ui-screens.css', name: 'ui-styles', optional: true },
             { type: 'css', url: 'css/mobile.css', name: 'mobile-styles', optional: true }
         ];
-        
+
         this.addToQueue(gameAssets);
         return this.loadAll();
     }

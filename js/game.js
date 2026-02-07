@@ -19,7 +19,7 @@ class Game {
         this.screenManager = screenManager;
         this.defenseManager = new DefenseManager();
         this.uiManager = uiManager;
-        
+
         // Game state
         this.gameState = {
             running: false,
@@ -30,30 +30,30 @@ class Game {
             lives: 10,
             score: 0
         };
-        
+
         // Resources
         this.resources = {
-            dharma: 100,
+            dharma: 250,
             bandwidth: 50,
             anonymity: 75
         };
-        
+
         // Game objects
         this.enemies = [];
         this.projectiles = [];
         this.effects = [];
-        
+
         // Timing
         this.lastUpdate = 0;
         this.deltaTime = 0;
-        
+
         // Canvas resize control
         this.canvasResizeEnabled = false;
         this.resizeRetryCount = 0;
-        
+
         // Event handlers
         this.eventHandlers = new Map();
-        
+
         // Performance monitoring and frame rate control
         this.performanceConfig = {
             targetFPS: 60,
@@ -63,7 +63,7 @@ class Game {
             adaptiveFrameRate: true,
             performanceMode: 'auto' // 'auto', 'performance', 'quality'
         };
-        
+
         this.frameStats = {
             lastFrameTime: 0,
             frameCount: 0,
@@ -72,13 +72,13 @@ class Game {
             frameTimeAccumulator: 0,
             lastFPSUpdate: 0
         };
-        
+
         this.performanceThresholds = {
             lowFPS: 45,
             criticalFPS: 30,
             highFPS: 55
         };
-        
+
         // Debug and logging configuration
         this.debugConfig = {
             enabled: false, // Set to false for production
@@ -88,7 +88,7 @@ class Game {
             maxLogFrequency: 5000, // Max one log per 5 seconds for performance logs
             logHistory: new Map()
         };
-        
+
         // Background caching system
         this.backgroundCache = {
             canvas: null,
@@ -97,7 +97,7 @@ class Game {
             needsUpdate: false,
             lastCanvasSize: { width: 0, height: 0 }
         };
-        
+
         this.initializeDebugMode();
         this.initializeBackgroundCache();
         this.setupEventListeners();
@@ -108,14 +108,14 @@ class Game {
         // Set debug mode based on environment or URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const debugParam = urlParams.get('debug');
-        
+
         if (debugParam === 'true' || debugParam === '1') {
             this.debugConfig.enabled = true;
             this.debugConfig.logLevel = 'debug';
             this.debugConfig.renderLogging = true;
             this.debugConfig.performanceLogging = true;
         }
-        
+
         // Production mode detection
         if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
             this.debugConfig.enabled = false;
@@ -126,21 +126,21 @@ class Game {
 
     logDebug(message, data = null, category = 'general') {
         if (!this.debugConfig.enabled) return;
-        
+
         const now = Date.now();
         const lastLog = this.debugConfig.logHistory.get(category) || 0;
-        
+
         // Rate limiting for performance logs
         if (category === 'performance' && (now - lastLog) < this.debugConfig.maxLogFrequency) {
             return;
         }
-        
+
         this.debugConfig.logHistory.set(category, now);
-        
+
         const logLevels = { debug: 0, info: 1, warn: 2, error: 3 };
         const currentLevel = logLevels[this.debugConfig.logLevel] || 1;
         const messageLevel = logLevels[category] || 0;
-        
+
         if (messageLevel >= currentLevel) {
             const prefix = `[Game:${category.toUpperCase()}]`;
             if (data) {
@@ -161,26 +161,26 @@ class Game {
 
     updateBackgroundCache() {
         if (!this.backgroundCache.needsUpdate) return;
-        
+
         const canvas = this.backgroundCache.canvas;
         const ctx = this.backgroundCache.ctx;
-        
+
         // Resize cache canvas if needed
         if (canvas.width !== this.canvas.width || canvas.height !== this.canvas.height) {
             canvas.width = this.canvas.width;
             canvas.height = this.canvas.height;
             this.backgroundCache.lastCanvasSize = { width: this.canvas.width, height: this.canvas.height };
         }
-        
+
         // Clear cache canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // Render background to cache
         this.renderBackgroundToCache(ctx);
-        
+
         this.backgroundCache.cached = true;
         this.backgroundCache.needsUpdate = false;
-        
+
         this.logDebug('Background cache updated', {
             width: canvas.width,
             height: canvas.height
@@ -194,14 +194,14 @@ class Game {
         gradient.addColorStop(0.3, '#1a1a2e'); // Dark purple-blue
         gradient.addColorStop(0.7, '#16213e'); // Lighter blue
         gradient.addColorStop(1, '#0e1b2e'); // Back to darker
-        
+
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
         // Add some visual interest with a subtle pattern
         ctx.globalAlpha = 0.1;
         ctx.fillStyle = '#ffffff';
-        
+
         // Add some "digital" dot pattern
         const dotSize = 2;
         const spacing = 30;
@@ -212,7 +212,7 @@ class Game {
                 ctx.fill();
             }
         }
-        
+
         // Reset alpha
         ctx.globalAlpha = 1.0;
     }
@@ -237,19 +237,19 @@ class Game {
                     throw new Error(`System initialization failed: ${initResult.error}`);
                 }
             }
-            
+
             // Setup input handling
             this.setupInput();
-            
+
             // Setup manager event handlers
             this.setupManagerCallbacks();
-            
+
             // Initialize game systems
             this.setupGameSystems();
-            
+
             console.log('[Game] Game initialization complete');
             return true;
-            
+
         } catch (error) {
             console.error('[Game] Initialization failed:', error);
             this.handleInitializationError(error);
@@ -261,12 +261,12 @@ class Game {
         if (inputManager) {
             inputManager.setCanvas(this.canvas);
             inputManager.setCamera(camera);
-            
+
             // Handle input events
             inputManager.addEventListener('mousedown', (data) => {
                 this.handleMouseDown(data);
             });
-            
+
             inputManager.addEventListener('mousemove', (data) => {
                 this.handleMouseMove(data);
             });
@@ -287,14 +287,14 @@ class Game {
         this.screenManager.on('pauseGame', () => this.pauseGame());
         this.screenManager.on('resumeGame', () => this.resumeGame());
         this.screenManager.on('returnToMenu', () => this.returnToMenu());
-        
+
         // Defense manager callbacks
         this.defenseManager.on('checkResources', (data) => this.checkResources(data.cost));
         this.defenseManager.on('deductResources', (data) => this.deductResources(data.cost));
         this.defenseManager.on('refundResources', (data) => this.refundResources(data.refund));
         this.defenseManager.on('defensePlace', (data) => this.onDefensePlace(data));
         this.defenseManager.on('defenseFireProjectile', (data) => this.onDefenseFireProjectile(data));
-        
+
         // Level manager callbacks
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
@@ -303,7 +303,7 @@ class Game {
                 onWaveComplete: (data) => this.onWaveComplete(data),
                 onLevelComplete: (data) => this.onLevelComplete(data),
                 onEnemySpawn: (data) => this.onEnemySpawn(data),
-                onEnemyKilled: (data) => this.onEnemyKilled(data),
+                // onEnemyKilled removed to prevent recursion loops
                 onEnemySpawnRequest: (enemyData, spawnPoint, path) => this.spawnEnemy(enemyData, spawnPoint, path)
             });
         }
@@ -314,23 +314,23 @@ class Game {
         // Just set fallback dimensions for now
         this.canvas.width = 800;
         this.canvas.height = 600;
-        
+
         // Initialize sprite system with fallback sprites
         this.initializeSpriteSystem();
-        
+
         // Setup camera with fallback dimensions initially
         if (camera) {
             camera.setCanvas(this.canvas);
             camera.setBounds(0, 0, 800, 600);
             console.log(`[Game] Camera bounds set to fallback: 800x600`);
         }
-        
+
         // Initialize level
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
             levelManager.initializeLevel(this.gameState.level);
         }
-        
+
         // Setup UI
         this.updateUI();
     }
@@ -340,20 +340,20 @@ class Game {
             console.warn('[Game] SpriteManager not available');
             return;
         }
-        
+
         console.log('[Game] Initializing sprite system...');
-        
+
         // Try to load actual sprite assets first
         spriteManager.loadGameSprites().then(() => {
             console.log('[Game] Game sprites loaded (some may be fallbacks)');
         }).catch(error => {
             console.warn('[Game] Error loading game sprites, using all fallbacks:', error);
         });
-        
+
         // Pre-generate common fallback sprites so they're ready when needed
         const commonSprites = [
             'enemy_scriptKiddie',
-            'enemy_federalAgent', 
+            'enemy_federalAgent',
             'enemy_corporateSaboteur',
             'enemy_aiSurveillance',
             'enemy_quantumHacker',
@@ -368,14 +368,14 @@ class Game {
             'boss_megaCorp_phase1',
             'boss_corruptedMonk_phase1'
         ];
-        
+
         // Ensure fallback sprites exist for any that didn't load
         commonSprites.forEach(spriteName => {
             if (!spriteManager.hasSprite(spriteName)) {
                 spriteManager.createFallbackSprite(spriteName);
             }
         });
-        
+
         console.log('[Game] Sprite system initialized with enhanced graphics');
     }
 
@@ -385,19 +385,19 @@ class Game {
             console.log('[Game] Canvas resize disabled, skipping');
             return;
         }
-        
+
         // Only resize canvas when game is actually running and visible
         const gameScreen = document.getElementById('game-screen');
         if (!gameScreen || !gameScreen.classList.contains('active')) {
             console.log('[Game] Game screen not active, skipping canvas resize');
             return;
         }
-        
+
         // Get the canvas container dimensions
         const container = this.canvas.parentElement;
         if (container) {
             const rect = container.getBoundingClientRect();
-            
+
             // If container has no size yet, use fallback without retrying
             if (rect.width === 0 || rect.height === 0) {
                 console.log('[Game] Container has no size yet, using fallback dimensions');
@@ -407,15 +407,15 @@ class Game {
                 this.canvas.style.height = '100%';
                 return;
             }
-            
+
             // Set display size (css pixels)
             this.canvas.style.width = rect.width + 'px';
             this.canvas.style.height = rect.height + 'px';
-            
+
             // Set actual size in memory (use CSS pixels for simpler rendering)
             this.canvas.width = rect.width;
             this.canvas.height = rect.height;
-            
+
             // No context scaling needed since we're using CSS pixels
             console.log(`[Game] Canvas resized to ${this.canvas.width}x${this.canvas.height} (${rect.width}x${rect.height} CSS)`);
         } else {
@@ -433,15 +433,15 @@ class Game {
         document.addEventListener('gameSpeedChange', (e) => {
             this.gameState.gameSpeed = e.detail.speed;
         });
-        
+
         document.addEventListener('togglePause', () => {
             this.togglePause();
         });
-        
+
         document.addEventListener('startNextWave', () => {
             this.startNextWave();
         });
-        
+
         document.addEventListener('selectDefenseType', (e) => {
             this.defenseManager.selectDefenseType(e.detail.type);
         });
@@ -450,7 +450,7 @@ class Game {
     // Game Flow Methods
     startNewGame() {
         console.log('[Game] Starting new game...');
-        
+
         this.gameState = {
             running: true,
             paused: false,
@@ -460,29 +460,29 @@ class Game {
             lives: 10,
             score: 0
         };
-        
+
         this.resources = {
-            dharma: 100,
+            dharma: 250,
             bandwidth: 50,
             anonymity: 75
         };
-        
+
         // Clear game objects
         this.enemies.length = 0;
         this.projectiles.length = 0;
         this.effects.length = 0;
-        
+
         // Reset managers
         this.defenseManager.clear();
         if (particleSystem) particleSystem.clear();
         if (projectilePool) projectilePool.clear();
-        
+
         // Initialize level
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
             levelManager.initializeLevel(this.gameState.level);
         }
-        
+
         // Now that we're starting the game, enable and perform canvas resize
         this.canvasResizeEnabled = true;
         this.resizeRetryCount = 0;
@@ -494,14 +494,14 @@ class Game {
                 console.log(`[Game] Camera bounds updated to: ${this.canvas.width}x${this.canvas.height}`);
             }
         }, 100);
-        
+
         this.updateUI();
         this.startGameLoop();
     }
 
     continueGame() {
         console.log('[Game] Continuing game...');
-        
+
         const saveSystem = this.systemManager.getSaveSystem();
         if (saveSystem) {
             const saveData = saveSystem.quickLoad();
@@ -513,10 +513,10 @@ class Game {
                 return;
             }
         }
-        
+
         this.gameState.running = true;
         this.gameState.paused = false;
-        
+
         // Enable and resize canvas when continuing game
         this.canvasResizeEnabled = true;
         this.resizeRetryCount = 0;
@@ -528,7 +528,7 @@ class Game {
                 console.log(`[Game] Camera bounds updated to: ${this.canvas.width}x${this.canvas.height}`);
             }
         }, 100);
-        
+
         this.startGameLoop();
     }
 
@@ -566,34 +566,34 @@ class Game {
 
     gameLoop(currentTime = Utils.performance.now()) {
         if (!this.gameState.running) return;
-        
+
         // Calculate frame timing
         const deltaTime = currentTime - this.frameStats.lastFrameTime;
-        
+
         // Frame rate limiting with adaptive performance
         if (deltaTime < this.performanceConfig.frameTimeTarget) {
             requestAnimationFrame((time) => this.gameLoop(time));
             return;
         }
-        
+
         // Update frame statistics
         this.updateFrameStats(currentTime, deltaTime);
-        
+
         // Adaptive performance scaling
         this.adaptPerformanceSettings();
-        
+
         // Game update and render
         const scaledDeltaTime = Math.min(deltaTime * this.gameState.gameSpeed, 33.33); // Cap at 30fps equivalent
-        
+
         if (!this.gameState.paused) {
             this.update(scaledDeltaTime);
         }
-        
+
         // Conditional rendering based on performance
         if (this.shouldRender()) {
             this.render();
         }
-        
+
         this.frameStats.lastFrameTime = currentTime;
         requestAnimationFrame((time) => this.gameLoop(time));
     }
@@ -601,20 +601,20 @@ class Game {
     updateFrameStats(currentTime, deltaTime) {
         this.frameStats.frameCount++;
         this.frameStats.frameTimeAccumulator += deltaTime;
-        
+
         // Update FPS every second
         if (currentTime - this.frameStats.lastFPSUpdate >= 1000) {
             const fps = this.frameStats.frameCount;
             this.frameStats.fpsHistory.push(fps);
-            
+
             // Keep only last 10 seconds of FPS data
             if (this.frameStats.fpsHistory.length > 10) {
                 this.frameStats.fpsHistory.shift();
             }
-            
+
             // Calculate average FPS
             this.frameStats.averageFPS = this.frameStats.fpsHistory.reduce((a, b) => a + b, 0) / this.frameStats.fpsHistory.length;
-            
+
             // Reset counters
             this.frameStats.frameCount = 0;
             this.frameStats.frameTimeAccumulator = 0;
@@ -624,9 +624,9 @@ class Game {
 
     adaptPerformanceSettings() {
         if (!this.performanceConfig.adaptiveFrameRate) return;
-        
+
         const avgFPS = this.frameStats.averageFPS;
-        
+
         // Automatic performance scaling
         if (avgFPS < this.performanceThresholds.criticalFPS) {
             this.setPerformanceMode('performance');
@@ -647,7 +647,7 @@ class Game {
                     window.particleSystem.setMaxParticles(200);
                 }
                 break;
-                
+
             case 'balanced':
                 this.performanceConfig.targetFPS = 45;
                 this.performanceConfig.frameTimeTarget = 1000 / 45;
@@ -655,7 +655,7 @@ class Game {
                     window.particleSystem.setMaxParticles(350);
                 }
                 break;
-                
+
             case 'quality':
                 this.performanceConfig.targetFPS = 60;
                 this.performanceConfig.frameTimeTarget = 1000 / 60;
@@ -664,7 +664,7 @@ class Game {
                 }
                 break;
         }
-        
+
         this.performanceConfig.performanceMode = mode;
         this.logDebug(`Performance mode set to: ${mode} (Target FPS: ${this.performanceConfig.targetFPS})`, null, 'performance');
     }
@@ -694,26 +694,26 @@ class Game {
             inputManager.processEvents();
             inputManager.update();
         }
-        
+
         // Update camera
         if (camera) {
             camera.update(deltaTime);
         }
-        
+
         // Update enemies
         this.updateEnemies(deltaTime);
-        
+
         // Update defenses
         this.defenseManager.update(deltaTime, this.enemies);
-        
+
         // Update projectiles
         this.updateProjectiles(deltaTime);
-        
+
         // Update particles
         if (particleSystem) {
             particleSystem.update(deltaTime);
         }
-        
+
         // Update level/wave system
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
@@ -723,10 +723,10 @@ class Game {
                 console.error('[Game] Error updating LevelManager:', error);
             }
         }
-        
+
         // Check game over conditions
         this.checkGameOver();
-        
+
         // Update UI
         this.updateUI();
     }
@@ -734,17 +734,17 @@ class Game {
     updateEnemies(deltaTime) {
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
-            
+
             if (enemy.update) {
                 enemy.update(deltaTime);
             }
-            
+
             // Remove dead enemies
             if (!enemy.isAlive) {
                 this.onEnemyDestroyed(enemy);
                 this.enemies.splice(i, 1);
             }
-            
+
             // Check if enemy reached the end
             if (enemy.reachedEnd) {
                 this.onEnemyEscaped(enemy);
@@ -762,10 +762,10 @@ class Game {
     render() {
         // Save context state
         this.ctx.save();
-        
+
         // Clear canvas properly
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
         // Debug logging (rate limited)
         this.logDebug('Render frame', {
             canvasSize: { width: this.canvas.width, height: this.canvas.height },
@@ -773,30 +773,30 @@ class Game {
             gameRunning: this.gameState.running,
             paused: this.gameState.paused
         }, 'performance');
-        
+
         // Apply camera transform
         let restoreCamera = null;
         if (camera) {
             restoreCamera = camera.applyTransform(this.ctx);
         }
-        
+
         // Render game world
         this.renderBackground();
         this.renderPath();
-        
+
         this.renderEnemies();
         this.defenseManager.render(this.ctx);
         this.renderProjectiles();
         this.renderParticles();
-        
+
         // Restore camera
         if (restoreCamera) {
             restoreCamera();
         }
-        
+
         // Render UI overlay
         this.renderUI();
-        
+
         // Restore context state
         this.ctx.restore();
     }
@@ -807,10 +807,10 @@ class Game {
             this.backgroundCache.lastCanvasSize.height !== this.canvas.height) {
             this.invalidateBackgroundCache();
         }
-        
+
         // Update cache if needed
         this.updateBackgroundCache();
-        
+
         // Use cached background if available
         if (this.backgroundCache.cached) {
             this.ctx.drawImage(this.backgroundCache.canvas, 0, 0);
@@ -818,7 +818,7 @@ class Game {
             // Fallback to direct rendering if cache fails
             this.renderBackgroundToCache(this.ctx);
         }
-        
+
         // Debug logging (rate limited)
         this.logDebug('Background rendered', {
             cached: this.backgroundCache.cached,
@@ -832,23 +832,23 @@ class Game {
             this.logDebug('No level manager available for path rendering', null, 'warn');
             return;
         }
-        
+
         const path = levelManager.getCurrentPath();
         if (!path || path.length < 2) {
             this.logDebug('Invalid path for rendering', { pathLength: path?.length }, 'warn');
             return;
         }
-        
+
         // Debug logging (rate limited)
         this.logDebug('Path rendered', {
             pathLength: path.length,
             firstPoint: path[0],
             lastPoint: path[path.length - 1]
         }, 'performance');
-        
+
         // Save context for path rendering
         this.ctx.save();
-        
+
         // Create a glowing, cyberpunk-style path
         // 1. Draw outer glow/shadow
         this.ctx.globalAlpha = 0.3;
@@ -858,41 +858,41 @@ class Game {
         this.ctx.lineJoin = 'round';
         this.ctx.shadowBlur = 15;
         this.ctx.shadowColor = '#00d4ff';
-        
+
         this.ctx.beginPath();
         this.ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) {
             this.ctx.lineTo(path[i].x, path[i].y);
         }
         this.ctx.stroke();
-        
+
         // 2. Draw main path body
         this.ctx.globalAlpha = 0.8;
         this.ctx.strokeStyle = '#0088cc';
         this.ctx.lineWidth = 14;
         this.ctx.shadowBlur = 8;
         this.ctx.shadowColor = '#0088cc';
-        
+
         this.ctx.beginPath();
         this.ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) {
             this.ctx.lineTo(path[i].x, path[i].y);
         }
         this.ctx.stroke();
-        
+
         // 3. Draw bright center line
         this.ctx.globalAlpha = 1.0;
         this.ctx.strokeStyle = '#ffffff';
         this.ctx.lineWidth = 4;
         this.ctx.shadowBlur = 0;
-        
+
         this.ctx.beginPath();
         this.ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) {
             this.ctx.lineTo(path[i].x, path[i].y);
         }
         this.ctx.stroke();
-        
+
         // 4. Add data flow effect dots (only in quality mode for performance)
         if (this.performanceConfig.performanceMode !== 'performance') {
             this.ctx.globalAlpha = 0.9;
@@ -900,15 +900,15 @@ class Game {
             for (let i = 0; i < path.length - 1; i++) {
                 const segment = i / (path.length - 1);
                 const flowOffset = (time + segment * 2) % 1;
-                
+
                 const startX = path[i].x;
                 const startY = path[i].y;
                 const endX = path[i + 1].x;
                 const endY = path[i + 1].y;
-                
+
                 const dotX = startX + (endX - startX) * flowOffset;
                 const dotY = startY + (endY - startY) * flowOffset;
-                
+
                 this.ctx.fillStyle = '#ffd60a';
                 this.ctx.shadowBlur = 5;
                 this.ctx.shadowColor = '#ffd60a';
@@ -917,17 +917,17 @@ class Game {
                 this.ctx.fill();
             }
         }
-        
+
         // 5. Add path endpoint markers
         this.ctx.shadowBlur = 10;
-        
+
         // Start point (spawn)
         this.ctx.fillStyle = '#00ff88';
         this.ctx.shadowColor = '#00ff88';
         this.ctx.beginPath();
         this.ctx.arc(path[0].x, path[0].y, 12, 0, Math.PI * 2);
         this.ctx.fill();
-        
+
         // Inner glow for start
         this.ctx.globalAlpha = 0.6;
         this.ctx.fillStyle = '#ffffff';
@@ -935,7 +935,7 @@ class Game {
         this.ctx.beginPath();
         this.ctx.arc(path[0].x, path[0].y, 6, 0, Math.PI * 2);
         this.ctx.fill();
-        
+
         // End point (exit)
         this.ctx.globalAlpha = 1.0;
         this.ctx.fillStyle = '#ff4444';
@@ -944,7 +944,7 @@ class Game {
         this.ctx.beginPath();
         this.ctx.arc(path[path.length - 1].x, path[path.length - 1].y, 12, 0, Math.PI * 2);
         this.ctx.fill();
-        
+
         // Inner glow for end
         this.ctx.globalAlpha = 0.6;
         this.ctx.fillStyle = '#ffffff';
@@ -952,7 +952,7 @@ class Game {
         this.ctx.beginPath();
         this.ctx.arc(path[path.length - 1].x, path[path.length - 1].y, 6, 0, Math.PI * 2);
         this.ctx.fill();
-        
+
         // Restore context
         this.ctx.restore();
     }
@@ -960,7 +960,7 @@ class Game {
     renderEnemies() {
         // Debug logging (rate limited)
         this.logDebug('Enemies rendered', { count: this.enemies.length }, 'performance');
-        
+
         for (let i = 0; i < this.enemies.length; i++) {
             const enemy = this.enemies[i];
             if (enemy && enemy.render) {
@@ -1038,15 +1038,15 @@ class Game {
 
     gameOver(victory) {
         this.gameState.running = false;
-        
+
         console.log(`[Game] Game Over - ${victory ? 'Victory' : 'Defeat'}`);
-        
+
         // Show game over screen
         const event = new CustomEvent('gameOver', {
             detail: { victory, score: this.gameState.score }
         });
         document.dispatchEvent(event);
-        
+
         // Track achievements
         this.trackGameOverAchievements(victory);
     }
@@ -1054,8 +1054,8 @@ class Game {
     // Resource Management
     checkResources(cost) {
         return this.resources.dharma >= cost.dharma &&
-               this.resources.bandwidth >= cost.bandwidth &&
-               this.resources.anonymity >= cost.anonymity;
+            this.resources.bandwidth >= cost.bandwidth &&
+            this.resources.anonymity >= cost.anonymity;
     }
 
     deductResources(cost) {
@@ -1088,12 +1088,12 @@ class Game {
         console.log(`[Game] Wave ${data.wave} started`);
         this.gameState.wave = data.wave;
         this.updateUI();
-        
+
         // Trigger enemy spawning based on wave data
         if (data.waveData && data.waveData.enemies) {
             console.log(`[Game] Starting enemy spawning for wave ${data.wave}`);
         }
-        
+
         if (this.systemManager.getAudioManager()) {
             this.systemManager.getAudioManager().playSound('wave_start');
         }
@@ -1101,14 +1101,14 @@ class Game {
 
     onWaveComplete(data) {
         console.log(`[Game] Wave ${data.wave} completed`);
-        
+
         // Reward player
         const reward = this.calculateWaveReward(data);
         this.addResources(reward);
-        
+
         // Show completion notification
         this.uiManager.showNotification(`Wave ${data.wave} Complete! +${reward.dharma} Dharma`, 'success');
-        
+
         if (this.systemManager.getAudioManager()) {
             this.systemManager.getAudioManager().playSound('wave_complete');
         }
@@ -1117,13 +1117,13 @@ class Game {
     onLevelComplete(data) {
         console.log(`[Game] Level ${data.level} completed`);
         this.gameState.level = data.level + 1;
-        
+
         // Big reward for level completion
         const reward = this.calculateLevelReward(data);
         this.addResources(reward);
-        
+
         this.uiManager.showNotification(`Level ${data.level} Complete!`, 'success', 5000);
-        
+
         if (this.systemManager.getAudioManager()) {
             this.systemManager.getAudioManager().playSound('level_complete');
         }
@@ -1136,21 +1136,21 @@ class Game {
                 console.error('[Game] Enemy class not available for spawning');
                 return false;
             }
-            
+
             // Validate spawn parameters
             if (!enemyData || !spawnPoint || !path) {
                 console.error('[Game] Invalid spawn parameters:', { enemyData, spawnPoint, path });
                 return false;
             }
-            
+
             // Create enemy with correct parameters (type, x, y)
             const enemy = new Enemy(enemyData.type, spawnPoint.x, spawnPoint.y);
-            
+
             // Set the path for the enemy
             if (enemy.setPath && typeof enemy.setPath === 'function') {
                 enemy.setPath(path);
             }
-            
+
             // Override with specific spawn data if provided
             if (enemyData.health !== undefined) {
                 enemy.health = enemyData.health;
@@ -1163,10 +1163,10 @@ class Game {
             if (enemyData.reward !== undefined) {
                 enemy.reward = enemyData.reward;
             }
-            
+
             // Add enemy to game
             this.enemies.push(enemy);
-            
+
             console.log(`[Game] Spawned ${enemyData.type} enemy at ${spawnPoint.x}, ${spawnPoint.y}`);
             console.log(`[Game] Enemy details:`, {
                 type: enemy.type,
@@ -1178,15 +1178,15 @@ class Game {
                 isAlive: enemy.isAlive
             });
             console.log(`[Game] Total enemies now:`, this.enemies.length);
-            
+
             // Notify level manager of successful spawn
             const levelManager = this.systemManager.getLevelManager();
             if (levelManager && typeof levelManager.onEnemySpawned === 'function') {
                 levelManager.onEnemySpawned();
             }
-            
+
             return true;
-            
+
         } catch (error) {
             console.error('[Game] Error spawning enemy:', error);
             return false;
@@ -1196,31 +1196,31 @@ class Game {
     handleCanvasResize(dimensions) {
         try {
             console.log('[Game] Handling canvas resize:', dimensions);
-            
+
             // Update camera bounds
             if (window.camera) {
                 window.camera.setBounds(0, 0, dimensions.width, dimensions.height);
                 console.log(`[Game] Updated camera bounds to: ${dimensions.width}x${dimensions.height}`);
             }
-            
+
             // Update any systems that need to know about canvas size changes
             if (this.uiManager && typeof this.uiManager.handleCanvasResize === 'function') {
                 this.uiManager.handleCanvasResize(dimensions);
             }
-            
+
             // Notify defense manager of size changes
             if (this.defenseManager && typeof this.defenseManager.handleCanvasResize === 'function') {
                 this.defenseManager.handleCanvasResize(dimensions);
             }
-            
+
             // Update any other systems that depend on canvas dimensions
             const levelManager = this.systemManager.getLevelManager();
             if (levelManager && typeof levelManager.handleCanvasResize === 'function') {
                 levelManager.handleCanvasResize(dimensions);
             }
-            
+
             console.log('[Game] Canvas resize handling complete');
-            
+
         } catch (error) {
             console.error('[Game] Error handling canvas resize:', error);
         }
@@ -1228,7 +1228,7 @@ class Game {
 
     onEnemySpawn(enemy) {
         this.enemies.push(enemy);
-        
+
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
             levelManager.onEnemySpawned();
@@ -1239,20 +1239,20 @@ class Game {
         // Award resources for kill
         const reward = this.calculateKillReward(data.enemy);
         this.addResources(reward);
-        
+
         // Update score
         this.gameState.score += reward.dharma * 10;
-        
+
         // Create death effect
         if (particleSystem) {
             particleSystem.emit('death', data.enemy.x, data.enemy.y);
         }
-        
+
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
             levelManager.onEnemyKilled();
         }
-        
+
         // Track achievements
         this.trackKillAchievements(data.enemy);
     }
@@ -1265,17 +1265,17 @@ class Game {
     onEnemyEscaped(enemy) {
         // Enemy reached the end, lose life
         this.gameState.lives--;
-        
+
         if (this.gameState.lives > 0) {
             this.uiManager.showNotification('Enemy escaped! Life lost.', 'warning');
             this.uiManager.flashScreen('#ff0000', 300);
         }
-        
+
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
             levelManager.onEnemyEscaped();
         }
-        
+
         if (this.systemManager.getAudioManager()) {
             this.systemManager.getAudioManager().playSound('life_lost');
         }
@@ -1283,11 +1283,11 @@ class Game {
 
     onDefensePlace(data) {
         console.log(`[Game] Placed ${data.defense.type} defense`);
-        
+
         if (this.systemManager.getAudioManager()) {
             this.systemManager.getAudioManager().playSound('defense_place');
         }
-        
+
         if (particleSystem) {
             particleSystem.emit('upgrade', data.defense.x, data.defense.y);
         }
@@ -1339,10 +1339,10 @@ class Game {
     trackGameOverAchievements(victory) {
         const achievementManager = this.systemManager.getAchievementManager();
         if (achievementManager) {
-            achievementManager.trackEvent('game_over', { 
-                victory, 
+            achievementManager.trackEvent('game_over', {
+                victory,
                 score: this.gameState.score,
-                level: this.gameState.level 
+                level: this.gameState.level
             });
         }
     }
@@ -1351,13 +1351,13 @@ class Game {
     updateUI() {
         this.uiManager.updateResources(this.resources);
         this.uiManager.updateGameState(this.gameState);
-        
+
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
             const canStartWave = levelManager.canStartNextWave();
             const nextWave = levelManager.getNextWavePreview();
             this.uiManager.updateWaveButton(canStartWave, nextWave);
-            
+
             if (levelManager.isWaveInProgress()) {
                 const progress = levelManager.getWaveProgress();
                 this.uiManager.updateWaveProgress(progress * 100, 100);
@@ -1371,7 +1371,7 @@ class Game {
         this.gameState.wave = saveData.wave || 1;
         this.gameState.score = saveData.statistics?.totalScore || 0;
         this.gameState.lives = 10; // Reset lives on load
-        
+
         this.resources = saveData.resources || this.resources;
     }
 
@@ -1387,7 +1387,7 @@ class Game {
                     totalPlayTime: Date.now() // Simplified
                 }
             };
-            
+
             return saveSystem.quickSave(saveData);
         }
         return false;
@@ -1396,7 +1396,7 @@ class Game {
     // Error Handling
     handleInitializationError(error) {
         console.error('[Game] Critical initialization error:', error);
-        
+
         // Show error to user
         const errorDiv = document.createElement('div');
         errorDiv.innerHTML = `
@@ -1412,12 +1412,12 @@ class Game {
     // Cleanup
     destroy() {
         this.gameState.running = false;
-        
+
         if (this.defenseManager) this.defenseManager.destroy();
         if (this.screenManager) this.screenManager.destroy();
         if (this.uiManager) this.uiManager.destroy();
         if (this.systemManager) this.systemManager.shutdown();
-        
+
         console.log('[Game] Game destroyed');
     }
 }

@@ -3,10 +3,10 @@ class Enemy {
         this.type = type;
         this.x = x;
         this.y = y;
-        
+
         // Get enemy configuration
         this.config = this.getEnemyConfig(type);
-        
+
         // Basic properties
         this.health = this.config.health;
         this.maxHealth = this.config.health;
@@ -15,21 +15,21 @@ class Enemy {
         this.size = this.config.size;
         this.color = this.config.color;
         this.reward = this.config.reward;
-        
+
         // Path following
         this.pathIndex = 0;
         this.pathProgress = 0;
         this.targetX = x;
         this.targetY = y;
-        
+
         // Movement
         this.velocityX = 0;
         this.velocityY = 0;
-        
+
         // State
         this.isAlive = true;
         this.reachedEnd = false;
-        
+
         // Status effects - simplified
         this.stunned = false;
         this.stunnedTime = 0;
@@ -37,15 +37,15 @@ class Enemy {
         this.slowEffectTime = 0;
         this.distractedBy = null;
         this.distractedTime = 0;
-        
+
         // Combat
         this.lastDamageTime = 0;
         this.armor = this.config.armor || 0;
-        
+
         // Visual effects
         this.flashTime = 0;
         this.deathAnimationTime = 0;
-        
+
         // Special behaviors - simplified
         this.initializeBehavior();
     }
@@ -53,20 +53,20 @@ class Enemy {
     getEnemyConfig(type) {
         const enemyConfigs = {
             scriptKiddie: {
-                health: 50,
-                speed: 1.2,
+                health: 15,
+                speed: 0.5,
                 size: 15,
                 color: '#ff4444',
-                reward: { dharma: 10, bandwidth: 1, anonymity: 0 },
+                reward: { dharma: 15, bandwidth: 2, anonymity: 1 },
                 armor: 0,
                 abilities: ['erratic_movement']
             },
             federalAgent: {
-                health: 100,
-                speed: 0.8,
+                health: 80,
+                speed: 0.7,
                 size: 18,
                 color: '#4444ff',
-                reward: { dharma: 20, bandwidth: 3, anonymity: 2 },
+                reward: { dharma: 25, bandwidth: 5, anonymity: 3 },
                 armor: 2,
                 abilities: ['persistent']
             },
@@ -111,18 +111,18 @@ class Enemy {
         if (typeof CONFIG !== 'undefined' && CONFIG.ENEMY_TYPES && CONFIG.ENEMY_TYPES[type]) {
             return CONFIG.ENEMY_TYPES[type];
         }
-        
+
         return enemyConfigs[type] || enemyConfigs.scriptKiddie;
     }
 
     initializeBehavior() {
         this.abilities = this.config.abilities || [];
         this.abilityTimers = {};
-        
+
         // Initialize ability-specific properties
         this.abilities.forEach(ability => {
             this.abilityTimers[ability] = 0;
-            
+
             switch (ability) {
                 case 'erratic_movement':
                     this.erraticTimer = 0;
@@ -157,32 +157,32 @@ class Enemy {
                     break;
             }
         });
-        
+
         // Store path reference (will be set when spawned)
         this.storedPath = null;
         this.cachedPath = null;
         this.pathCacheTime = 0;
         this.pathCacheTimeout = 5000; // Cache path for 5 seconds
     }
-    
+
     setPath(path) {
         this.storedPath = path;
         this.cachedPath = path;
-        this.pathCacheTime = Utils.performance.now();
+        this.pathCacheTime = performance.now();
         console.log(`[Enemy] Path set for ${this.type} with ${path ? path.length : 0} points`);
     }
 
     getCachedPath() {
-        const currentTime = Utils.performance.now();
-        
+        const currentTime = performance.now();
+
         // Return cached path if still valid
         if (this.cachedPath && (currentTime - this.pathCacheTime) < this.pathCacheTimeout) {
             return this.cachedPath;
         }
-        
+
         // Cache expired or no cache, get fresh path
         let path = null;
-        
+
         // Try stored path first (most reliable)
         if (this.storedPath) {
             path = this.storedPath;
@@ -194,7 +194,7 @@ class Enemy {
                     path = levelManager.getCurrentPath();
                 }
             }
-            
+
             // Try direct access to levelManager (fallback)
             if (!path && window.levelManager) {
                 if (typeof window.levelManager.getCurrentPath === 'function') {
@@ -202,13 +202,13 @@ class Enemy {
                 }
             }
         }
-        
+
         // Update cache
         if (path) {
             this.cachedPath = path;
             this.pathCacheTime = currentTime;
         }
-        
+
         return path;
     }
 
@@ -217,19 +217,19 @@ class Enemy {
             this.updateDeathAnimation(deltaTime);
             return;
         }
-        
+
         // Update status effects
         this.updateStatusEffects(deltaTime);
-        
+
         // Update movement (unless stunned)
         if (!this.stunned) {
             this.updateMovement(deltaTime);
             this.updateSpecialAbilities(deltaTime, defenses, enemies);
         }
-        
+
         // Update visual effects
         this.updateVisualEffects(deltaTime);
-        
+
         // Check if reached end
         this.checkReachedEnd();
     }
@@ -242,7 +242,7 @@ class Enemy {
                 this.stunned = false;
             }
         }
-        
+
         // Update slow effect
         if (this.slowEffectTime > 0) {
             this.slowEffectTime -= deltaTime;
@@ -250,7 +250,7 @@ class Enemy {
                 this.slowEffect = 1.0;
             }
         }
-        
+
         // Update distraction
         if (this.distractedTime > 0) {
             this.distractedTime -= deltaTime;
@@ -263,18 +263,18 @@ class Enemy {
     updateMovement(deltaTime) {
         // Get cached path (much more efficient)
         const path = this.getCachedPath();
-        
+
         if (!path || path.length === 0) {
             console.warn('[Enemy] No path available for movement');
             return;
         }
-        
+
         // Handle distraction (decoy defense effect)
         if (this.distractedBy) {
             this.moveToward(this.distractedBy.x, this.distractedBy.y, deltaTime);
             return;
         }
-        
+
         // Follow path
         this.followPath(path, deltaTime);
     }
@@ -284,34 +284,34 @@ class Enemy {
             this.reachedEnd = true;
             return;
         }
-        
+
         const target = path[this.pathIndex];
-        const distance = Utils.math.distance(this.x, this.y, target.x, target.y);
-        
+        const distance = Math.hypot(target.x - this.x, target.y - this.y);
+
         // Move to next waypoint if close enough
         if (distance < 20) {
             this.pathIndex++;
             this.pathProgress = this.pathIndex / path.length;
-            
+
             if (this.pathIndex >= path.length) {
                 this.reachedEnd = true;
                 return;
             }
         }
-        
+
         // Move toward current target
         this.moveToward(target.x, target.y, deltaTime);
     }
 
     moveToward(targetX, targetY, deltaTime) {
-        const angle = Utils.math.angle(this.x, this.y, targetX, targetY);
+        const angle = Math.atan2(targetY - this.y, targetX - this.x);
         const currentSpeed = this.speed * this.slowEffect * deltaTime * 0.1;
-        
+
         // Update per-second velocity components for aiming prediction
         const perSecondSpeed = this.speed * this.slowEffect * 100; // units per second
         this.velocityX = Math.cos(angle) * perSecondSpeed;
         this.velocityY = Math.sin(angle) * perSecondSpeed;
-        
+
         this.x += Math.cos(angle) * currentSpeed;
         this.y += Math.sin(angle) * currentSpeed;
     }
@@ -319,7 +319,7 @@ class Enemy {
     updateSpecialAbilities(deltaTime, defenses, enemies) {
         this.abilities.forEach(ability => {
             this.abilityTimers[ability] += deltaTime;
-            
+
             switch (ability) {
                 case 'erratic_movement':
                     this.updateErraticMovement(deltaTime);
@@ -351,12 +351,12 @@ class Enemy {
 
     updateErraticMovement(deltaTime) {
         this.erraticTimer += deltaTime;
-        
+
         if (this.erraticTimer > 2000) { // Change direction every 2 seconds
             this.erraticDirection = Math.random() * Math.PI * 2;
             this.erraticTimer = 0;
         }
-        
+
         // Add some random movement
         const erraticSpeed = 0.3;
         this.x += Math.cos(this.erraticDirection) * erraticSpeed;
@@ -366,20 +366,20 @@ class Enemy {
     updatePersistent(defenses) {
         // Federal agents speed up when near defenses
         let nearDefense = false;
-        
+
         defenses.forEach(defense => {
-            const distance = Utils.math.distance(this.x, this.y, defense.x, defense.y);
+            const distance = Math.hypot(defense.x - this.x, defense.y - this.y);
             if (distance <= this.detectionRadius) {
                 nearDefense = true;
             }
         });
-        
+
         this.speed = nearDefense ? this.baseSpeed * 1.3 : this.baseSpeed;
     }
 
     updateStealth(deltaTime) {
         this.stealthTimer += deltaTime;
-        
+
         if (this.stealthTimer > 5000) { // Toggle stealth every 5 seconds
             this.stealthMode = !this.stealthMode;
             this.color = this.stealthMode ? '#88888888' : this.originalColor;
@@ -389,7 +389,7 @@ class Enemy {
 
     updateScanning(deltaTime) {
         this.scanAngle += deltaTime * 0.002; // Slow rotation
-        
+
         // AI Surveillance enemies adapt to defense patterns
         if (this.abilityTimers.scanning > 8000) {
             this.speed = Math.min(this.baseSpeed * 1.2, this.speed + 0.1);
@@ -399,11 +399,11 @@ class Enemy {
 
     updatePhaseShift(deltaTime) {
         this.phaseTimer += deltaTime;
-        
+
         if (this.phaseTimer > 6000) { // Phase shift every 6 seconds
             this.phaseShifted = !this.phaseShifted;
             this.phaseTimer = 0;
-            
+
             // Visual effect
             if (window.particleSystem) {
                 window.particleSystem.emit('upgrade', this.x, this.y, {
@@ -416,7 +416,7 @@ class Enemy {
 
     updateTeleport(deltaTime) {
         this.teleportCooldown -= deltaTime;
-        
+
         if (this.teleportCooldown <= 0 && Math.random() < 0.02) { // 2% chance per update
             this.performTeleport();
             this.teleportCooldown = 8000; // 8 second cooldown
@@ -427,14 +427,14 @@ class Enemy {
         // Teleport forward along the path using cached path
         const path = this.getCachedPath();
         if (!path || path.length === 0) return;
-        
+
         const teleportDistance = Math.min(3, path.length - this.pathIndex - 1);
         if (teleportDistance > 0) {
             this.pathIndex = Math.min(path.length - 1, this.pathIndex + teleportDistance);
             const newTarget = path[this.pathIndex];
             this.x = newTarget.x;
             this.y = newTarget.y;
-            
+
             // Visual effect
             if (window.particleSystem) {
                 window.particleSystem.emit('upgrade', this.x, this.y, {
@@ -447,15 +447,15 @@ class Enemy {
 
     updateHealingAura(deltaTime, enemies) {
         this.healingTimer += deltaTime;
-        
+
         if (this.healingTimer > 3000) { // Heal every 3 seconds
             enemies.forEach(enemy => {
                 if (enemy !== this && enemy.isAlive) {
-                    const distance = Utils.math.distance(this.x, this.y, enemy.x, enemy.y);
+                    const distance = Math.hypot(enemy.x - this.x, enemy.y - this.y);
                     if (distance <= this.healingRadius) {
                         const healAmount = Math.min(10, enemy.maxHealth - enemy.health);
                         enemy.health += healAmount;
-                        
+
                         if (healAmount > 0 && window.particleSystem) {
                             window.particleSystem.emit('heal', enemy.x, enemy.y, {
                                 count: 3,
@@ -465,7 +465,7 @@ class Enemy {
                     }
                 }
             });
-            
+
             this.healingTimer = 0;
         }
     }
@@ -473,7 +473,7 @@ class Enemy {
     updateCorruption(defenses) {
         // Corrupted monks weaken nearby defenses
         defenses.forEach(defense => {
-            const distance = Utils.math.distance(this.x, this.y, defense.x, defense.y);
+            const distance = Math.hypot(defense.x - this.x, defense.y - this.y);
             if (distance <= this.corruptionRadius) {
                 // Apply corruption effect (already handled in defense update)
                 if (!defense.corruptedBy || defense.corruptedBy === this) {
@@ -492,7 +492,7 @@ class Enemy {
 
     updateDeathAnimation(deltaTime) {
         this.deathAnimationTime += deltaTime;
-        
+
         // Remove after death animation
         if (this.deathAnimationTime > 1000) {
             // Mark for removal
@@ -509,10 +509,10 @@ class Enemy {
 
     takeDamage(amount, damageType = 'normal') {
         if (!this.isAlive) return false;
-        
+
         // Apply armor reduction
         let actualDamage = Math.max(1, amount - this.armor);
-        
+
         // Handle special damage types
         switch (damageType) {
             case 'armor_piercing':
@@ -525,21 +525,21 @@ class Enemy {
                 actualDamage = amount * 1.2; // Explosive does more damage
                 break;
         }
-        
+
         // Phase-shifted enemies take reduced damage
         if (this.phaseShifted) {
             actualDamage *= 0.5;
         }
-        
+
         // Stealthed enemies take less damage from non-scanning defenses
         if (this.stealthMode && damageType !== 'scanning') {
             actualDamage *= 0.7;
         }
-        
+
         this.health -= actualDamage;
         this.flashTime = 200;
-        this.lastDamageTime = Utils.performance.now();
-        
+        this.lastDamageTime = performance.now();
+
         // Visual feedback
         if (window.particleSystem) {
             window.particleSystem.emit('hit', this.x, this.y, {
@@ -547,19 +547,19 @@ class Enemy {
                 color: ['#ffffff', this.color]
             });
         }
-        
+
         if (this.health <= 0) {
             this.die();
             return true; // Enemy was killed
         }
-        
+
         return false;
     }
 
     die() {
         this.isAlive = false;
         console.log(`[Enemy] ${this.type} killed`);
-        
+
         // Death effects
         if (window.particleSystem) {
             window.particleSystem.emit('death', this.x, this.y, {
@@ -567,18 +567,18 @@ class Enemy {
                 color: [this.color, '#ffffff']
             });
         }
-        
+
         if (window.audioManager) {
             window.audioManager.playSound('enemy_death', 0.5);
         }
-        
+
         // Award kill to nearby defense (for statistics)
         if (window.game && window.game.defenseManager) {
             const nearbyDefense = window.game.defenseManager.defenses.find(defense => {
-                const distance = Utils.math.distance(this.x, this.y, defense.x, defense.y);
+                const distance = Math.hypot(defense.x - this.x, defense.y - this.y);
                 return distance <= defense.range;
             });
-            
+
             if (nearbyDefense) {
                 nearbyDefense.kills++;
                 nearbyDefense.totalDamageDealt += this.maxHealth;
@@ -591,26 +591,32 @@ class Enemy {
             this.renderDeathAnimation(ctx);
             return;
         }
-        
+
         // Use sprite system if available
         if (window.spriteManager) {
             const spriteName = `enemy_${this.type}`;
             if (window.spriteManager.hasSprite(spriteName)) {
-                const flash = this.flashTime > 0 ? 1.3 : 1.0;
+                const flashMultiplier = this.flashTime > 0 ? 1.3 : 1.0;
                 const alpha = this.stealthMode ? 0.5 : (this.phaseShifted ? 0.7 : 1.0);
-                
-                window.spriteManager.drawSpriteScaled(ctx, spriteName, 
-                    this.x - this.size/2, this.y - this.size/2, 
-                    flash, 0, alpha);
-                
+
+                // Calculate proper scale: desired size / sprite native size
+                const sprite = window.spriteManager.getSprite(spriteName);
+                const spriteSize = sprite ? Math.max(sprite.width, sprite.height) : 64;
+                const desiredSize = this.size * 2; // Double the size for better visibility
+                const scale = (desiredSize / spriteSize) * flashMultiplier;
+
+                window.spriteManager.drawSpriteScaled(ctx, spriteName,
+                    this.x - desiredSize / 2, this.y - desiredSize / 2,
+                    scale, 0, alpha);
+
                 this.renderEffects(ctx);
                 return;
             }
         }
-        
+
         // Fallback rendering
         ctx.save();
-        
+
         // Apply visual effects
         if (this.stealthMode) {
             ctx.globalAlpha = 0.5;
@@ -619,35 +625,35 @@ class Enemy {
             ctx.shadowBlur = 10;
             ctx.shadowColor = this.color;
         }
-        
+
         if (this.stunned) {
             ctx.filter = 'brightness(0.6)';
         }
-        
+
         // Flash effect
         if (this.flashTime > 0) {
             ctx.fillStyle = '#ffffff';
         } else {
             ctx.fillStyle = this.color;
         }
-        
+
         // Enemy body
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // Enemy outline
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 1;
         ctx.stroke();
-        
+
         // Health bar (for stronger enemies)
         if (this.maxHealth > 100) {
             this.renderHealthBar(ctx);
         }
-        
+
         ctx.restore();
-        
+
         this.renderEffects(ctx);
     }
 
@@ -655,20 +661,20 @@ class Enemy {
         const barWidth = this.size * 2;
         const barHeight = 4;
         const barY = this.y - this.size - 8;
-        
+
         // Background
         ctx.fillStyle = '#333333';
-        ctx.fillRect(this.x - barWidth/2, barY, barWidth, barHeight);
-        
+        ctx.fillRect(this.x - barWidth / 2, barY, barWidth, barHeight);
+
         // Health
         const healthPercent = this.health / this.maxHealth;
         ctx.fillStyle = healthPercent > 0.5 ? '#00ff00' : (healthPercent > 0.25 ? '#ffff00' : '#ff0000');
-        ctx.fillRect(this.x - barWidth/2, barY, barWidth * healthPercent, barHeight);
-        
+        ctx.fillRect(this.x - barWidth / 2, barY, barWidth * healthPercent, barHeight);
+
         // Border
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1;
-        ctx.strokeRect(this.x - barWidth/2, barY, barWidth, barHeight);
+        ctx.strokeRect(this.x - barWidth / 2, barY, barWidth, barHeight);
     }
 
     renderEffects(ctx) {
@@ -679,18 +685,18 @@ class Enemy {
             ctx.strokeStyle = '#ffff44';
             ctx.lineWidth = 2;
             ctx.globalAlpha = 0.5;
-            
+
             const beamLength = this.scanRadius;
             const endX = this.x + Math.cos(this.scanAngle) * beamLength;
             const endY = this.y + Math.sin(this.scanAngle) * beamLength;
-            
+
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
             ctx.lineTo(endX, endY);
             ctx.stroke();
             ctx.restore();
         }
-        
+
         if (this.abilities.includes('healing_aura')) {
             // Healing aura visualization
             ctx.save();
@@ -702,7 +708,7 @@ class Enemy {
             ctx.stroke();
             ctx.restore();
         }
-        
+
         if (this.abilities.includes('corruption')) {
             // Corruption aura
             ctx.save();
@@ -719,17 +725,17 @@ class Enemy {
     renderDeathAnimation(ctx) {
         // Simple fade out death animation
         const alpha = Math.max(0, 1 - (this.deathAnimationTime / 1000));
-        
+
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.fillStyle = this.color;
-        
+
         // Shrinking circle
         const size = this.size * alpha;
         ctx.beginPath();
         ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
         ctx.fill();
-        
+
         ctx.restore();
     }
 
@@ -751,7 +757,7 @@ class Enemy {
             // These are bosses, create Boss instance instead
             return new Boss(type, x, y);
         }
-        
+
         return new Enemy(type, x, y);
     }
 

@@ -57,7 +57,7 @@ class InputManager {
         if (this.canvas) {
             this.removeCanvasListeners();
         }
-        
+
         this.canvas = canvas;
         if (canvas) {
             this.setupCanvasListeners();
@@ -114,7 +114,7 @@ class InputManager {
         this.mouse.down = true;
         this.mouse.pressed = true;
         this.mouse.button = e.button;
-        
+
         this.queueEvent('mousedown', {
             x: this.mouse.x,
             y: this.mouse.y,
@@ -126,7 +126,7 @@ class InputManager {
 
     onMouseMove(e) {
         this.updateMousePosition(e);
-        
+
         this.queueEvent('mousemove', {
             x: this.mouse.x,
             y: this.mouse.y,
@@ -141,7 +141,7 @@ class InputManager {
         this.mouse.down = false;
         this.mouse.released = true;
         this.mouse.button = -1;
-        
+
         this.queueEvent('mouseup', {
             x: this.mouse.x,
             y: this.mouse.y,
@@ -198,7 +198,7 @@ class InputManager {
 
         const oldX = this.touch.x;
         const oldY = this.touch.y;
-        
+
         this.updateTouchPosition(touch);
         this.touch.deltaX = this.touch.x - this.touch.startX;
         this.touch.deltaY = this.touch.y - this.touch.startY;
@@ -298,7 +298,7 @@ class InputManager {
 
     onKeyDown(e) {
         const key = e.key.toLowerCase();
-        
+
         if (!this.keyboard.keys.has(key)) {
             this.keyboard.pressed.add(key);
         }
@@ -315,7 +315,7 @@ class InputManager {
 
     onKeyUp(e) {
         const key = e.key.toLowerCase();
-        
+
         this.keyboard.keys.delete(key);
         this.keyboard.released.add(key);
 
@@ -343,7 +343,7 @@ class InputManager {
         const rect = this.canvas.getBoundingClientRect();
         this.mouse.x = e.clientX - rect.left;
         this.mouse.y = e.clientY - rect.top;
-        
+
         this.updateWorldCoordinates();
     }
 
@@ -351,10 +351,10 @@ class InputManager {
         const rect = this.canvas.getBoundingClientRect();
         this.touch.x = touch.clientX - rect.left;
         this.touch.y = touch.clientY - rect.top;
-        
+
         this.touch.worldX = this.touch.x;
         this.touch.worldY = this.touch.y;
-        
+
         if (this.camera) {
             this.touch.worldX = this.camera.screenToWorldX(this.touch.x);
             this.touch.worldY = this.camera.screenToWorldY(this.touch.y);
@@ -364,7 +364,7 @@ class InputManager {
     updateWorldCoordinates() {
         this.mouse.worldX = this.mouse.x;
         this.mouse.worldY = this.mouse.y;
-        
+
         if (this.camera) {
             this.mouse.worldX = this.camera.screenToWorldX(this.mouse.x);
             this.mouse.worldY = this.camera.screenToWorldY(this.mouse.y);
@@ -372,7 +372,7 @@ class InputManager {
     }
 
     queueEvent(type, data) {
-        this.eventQueue.push({ type, data, timestamp: Utils.performance.now() });
+        this.eventQueue.push({ type, data, timestamp: performance.now() });
     }
 
     update() {
@@ -385,7 +385,7 @@ class InputManager {
     processEvents() {
         const events = [...this.eventQueue];
         this.eventQueue.length = 0;
-        
+
         for (const event of events) {
             this.dispatchEvent(event.type, event.data);
         }
@@ -471,7 +471,7 @@ class InputManager {
         document.removeEventListener('keyup', this.onKeyUp);
         window.removeEventListener('blur', this.onWindowBlur);
         window.removeEventListener('focus', this.onWindowFocus);
-        
+
         this.listeners.clear();
         this.eventQueue.length = 0;
     }

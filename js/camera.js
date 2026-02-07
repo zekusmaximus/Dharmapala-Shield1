@@ -1,34 +1,38 @@
+import Utils from './utils.js';
+
 class Camera {
     constructor(canvas) {
         this.canvas = canvas;
-        this.x = 0;
-        this.y = 0;
+        // Initialize camera position to center of game world (not 0,0)
+        // The game world is 800x600, so center at 400x300
+        this.x = 400;
+        this.y = 300;
         this.zoom = 1;
         this.targetZoom = 1;
         this.minZoom = 0.5;
         this.maxZoom = 3.0;
         this.zoomSpeed = 0.1;
-        
+
         this.width = canvas ? canvas.width : 800;
         this.height = canvas ? canvas.height : 600;
-        
+
         this.bounds = {
             left: -Infinity,
             top: -Infinity,
             right: Infinity,
             bottom: Infinity
         };
-        
+
         this.following = null;
         this.followSpeed = 0.1;
         this.followOffset = { x: 0, y: 0 };
-        
+
         this.shaking = false;
         this.shakeIntensity = 0;
         this.shakeDuration = 0;
         this.shakeDecay = 0.9;
         this.shakeOffset = { x: 0, y: 0 };
-        
+
         this.setupResizeHandler();
     }
 
@@ -46,7 +50,7 @@ class Camera {
 
     updateDimensions() {
         if (!this.canvas) return;
-        
+
         this.width = this.canvas.width;
         this.height = this.canvas.height;
     }
@@ -83,15 +87,15 @@ class Camera {
     zoomToPoint(x, y, zoomFactor) {
         const worldX = this.screenToWorldX(x);
         const worldY = this.screenToWorldY(y);
-        
+
         const oldZoom = this.zoom;
         this.setZoom(this.zoom * zoomFactor);
         const newZoom = this.targetZoom;
-        
+
         const zoomRatio = newZoom / oldZoom;
         this.x = worldX - (worldX - this.x) * zoomRatio;
         this.y = worldY - (worldY - this.y) * zoomRatio;
-        
+
         this.constrainToBounds();
     }
 
@@ -106,13 +110,13 @@ class Camera {
     constrainToBounds() {
         const halfWidth = (this.width / 2) / this.zoom;
         const halfHeight = (this.height / 2) / this.zoom;
-        
+
         if (this.bounds.left !== -Infinity && this.bounds.right !== Infinity) {
             const minX = this.bounds.left + halfWidth;
             const maxX = this.bounds.right - halfWidth;
             this.x = Utils.math.clamp(this.x, minX, maxX);
         }
-        
+
         if (this.bounds.top !== -Infinity && this.bounds.bottom !== Infinity) {
             const minY = this.bounds.top + halfHeight;
             const maxY = this.bounds.bottom - halfHeight;
@@ -147,7 +151,7 @@ class Camera {
         if (Math.abs(this.zoom - this.targetZoom) > 0.01) {
             const zoomDiff = this.targetZoom - this.zoom;
             this.zoom += zoomDiff * this.zoomSpeed;
-            
+
             if (Math.abs(zoomDiff) < 0.01) {
                 this.zoom = this.targetZoom;
             }
@@ -156,31 +160,31 @@ class Camera {
 
     updateFollowing(deltaTime) {
         if (!this.following) return;
-        
+
         const targetX = this.following.x + this.followOffset.x;
         const targetY = this.following.y + this.followOffset.y;
-        
+
         const dx = targetX - this.x;
         const dy = targetY - this.y;
-        
+
         this.x += dx * this.followSpeed;
         this.y += dy * this.followSpeed;
-        
+
         this.constrainToBounds();
     }
 
     updateShake(deltaTime) {
         if (!this.shaking) return;
-        
+
         this.shakeDuration -= deltaTime;
-        
+
         if (this.shakeDuration <= 0) {
             this.shaking = false;
             this.shakeOffset.x = 0;
             this.shakeOffset.y = 0;
             return;
         }
-        
+
         const intensity = this.shakeIntensity * (this.shakeDuration / 1000);
         this.shakeOffset.x = (Math.random() - 0.5) * intensity * 2;
         this.shakeOffset.y = (Math.random() - 0.5) * intensity * 2;
@@ -188,14 +192,14 @@ class Camera {
 
     applyTransform(ctx) {
         ctx.save();
-        
+
         const centerX = this.width / 2;
         const centerY = this.height / 2;
-        
+
         ctx.translate(centerX, centerY);
         ctx.scale(this.zoom, this.zoom);
         ctx.translate(-this.x + this.shakeOffset.x, -this.y + this.shakeOffset.y);
-        
+
         return () => ctx.restore();
     }
 
@@ -235,10 +239,10 @@ class Camera {
 
     isPointVisible(worldX, worldY, margin = 0) {
         const screenPos = this.worldToScreen(worldX, worldY);
-        return screenPos.x >= -margin && 
-               screenPos.x <= this.width + margin && 
-               screenPos.y >= -margin && 
-               screenPos.y <= this.height + margin;
+        return screenPos.x >= -margin &&
+            screenPos.x <= this.width + margin &&
+            screenPos.y >= -margin &&
+            screenPos.y <= this.height + margin;
     }
 
     isRectVisible(worldX, worldY, width, height, margin = 0) {
@@ -246,17 +250,17 @@ class Camera {
         const right = this.worldToScreenX(worldX + width);
         const top = this.worldToScreenY(worldY);
         const bottom = this.worldToScreenY(worldY + height);
-        
-        return right >= -margin && 
-               left <= this.width + margin && 
-               bottom >= -margin && 
-               top <= this.height + margin;
+
+        return right >= -margin &&
+            left <= this.width + margin &&
+            bottom >= -margin &&
+            top <= this.height + margin;
     }
 
     getVisibleBounds(margin = 0) {
         const topLeft = this.screenToWorld(-margin, -margin);
         const bottomRight = this.screenToWorld(this.width + margin, this.height + margin);
-        
+
         return {
             left: topLeft.x,
             top: topLeft.y,
@@ -274,11 +278,11 @@ class Camera {
     fitToRect(worldX, worldY, width, height, padding = 50) {
         const paddedWidth = width + padding * 2;
         const paddedHeight = height + padding * 2;
-        
+
         const zoomX = this.width / paddedWidth;
         const zoomY = this.height / paddedHeight;
         const newZoom = Math.min(zoomX, zoomY);
-        
+
         this.setZoom(newZoom);
         this.centerOn(worldX + width / 2, worldY + height / 2);
     }

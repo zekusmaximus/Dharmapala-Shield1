@@ -1,3 +1,8 @@
+import Utils from './utils.js';
+
+// Maximum lead time (seconds) for predictive aiming
+const MAX_LEAD_TIME_SECONDS = 2;
+
 class Projectile {
     constructor(x, y, target, damage, speed, type = 'normal', defenseType = 'firewall') {
         this.x = x;

@@ -12,10 +12,10 @@ export default class AssetLoader {
      * @deprecated Use loadCriticalAssets() for API compatibility
      */
     async preloadCriticalAssets() {
+        // Note: game.js and utils.js are ES modules imported by main.js
+        // Only load non-module assets here (config is loaded via script tag, CSS via link)
         const essentialAssets = [
-            'js/game.js',
             'js/config.js',
-            'js/utils.js',
             'css/styles.css'
         ];
 
@@ -43,7 +43,7 @@ export default class AssetLoader {
                 resolve();
                 return;
             }
-            
+
             const script = document.createElement('script');
             script.src = src;
             script.onload = () => {
@@ -71,7 +71,7 @@ export default class AssetLoader {
                 resolve();
                 return;
             }
-            
+
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = href;
@@ -164,7 +164,7 @@ export default class AssetLoader {
      */
     async preloadImages(imageSources) {
         const loadPromises = imageSources.map(src => this.preloadImage(src));
-        
+
         try {
             await Promise.all(loadPromises);
             console.log(`[AssetLoader] All ${imageSources.length} images loaded successfully`);
@@ -175,7 +175,7 @@ export default class AssetLoader {
     }
 
     // API Compatibility Wrapper Methods
-    
+
     /**
      * Loads critical assets (wrapper for API compatibility)
      * @returns {Promise} Promise that resolves when all critical assets are loaded

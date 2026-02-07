@@ -1,3 +1,4 @@
+import Utils from './utils.js';
 
 class UIManager {
     constructor() {
@@ -5,10 +6,10 @@ class UIManager {
         this.animations = new Map();
         this.notifications = [];
         this.tooltips = new Map();
-        
+
         this.resources = { dharma: 0, bandwidth: 0, anonymity: 0 };
         this.gameState = { level: 1, wave: 1, score: 0 };
-        
+
         this.setupElements();
         this.setupEventHandlers();
     }
@@ -18,32 +19,32 @@ class UIManager {
         this.registerElement('dharma-display', 'text');
         this.registerElement('bandwidth-display', 'text');
         this.registerElement('anonymity-display', 'text');
-        
+
         // Game state displays
         this.registerElement('level-display', 'text');
         this.registerElement('wave-display', 'text');
         this.registerElement('score-display', 'text');
         this.registerElement('lives-display', 'text');
-        
+
         // Progress bars
         this.registerElement('wave-progress-bar', 'progress');
         this.registerElement('boss-health-bar', 'progress');
-        
+
         // Action buttons
         this.registerElement('start-wave-btn', 'button');
         this.registerElement('pause-game-btn', 'button');
         this.registerElement('speed-up-btn', 'button');
         this.registerElement('speed-normal-btn', 'button');
-        
+
         // Defense UI
         this.registerElement('defense-info-panel', 'container');
         this.registerElement('defense-selection-panel', 'container');
         this.registerElement('upgrade-tree-panel', 'container');
-        
+
         // Notification area
         this.registerElement('notification-area', 'container');
         this.registerElement('achievement-popup', 'container');
-        
+
         // Settings and menus
         this.registerElement('game-menu', 'container');
         this.registerElement('settings-panel', 'container');
@@ -66,19 +67,19 @@ class UIManager {
         // Game speed controls
         this.addClickHandler('speed-up-btn', () => this.setGameSpeed(2));
         this.addClickHandler('speed-normal-btn', () => this.setGameSpeed(1));
-        
+
         // Wave controls
         this.addClickHandler('start-wave-btn', () => this.startNextWave());
-        
+
         // Game controls
         this.addClickHandler('pause-game-btn', () => this.togglePause());
-        
+
         // Tooltips
         this.setupTooltips();
-        
+
         // Keyboard shortcuts
         this.setupKeyboardShortcuts();
-        
+
         // Defense selection
         this.setupDefenseSelection();
     }
@@ -93,14 +94,14 @@ class UIManager {
     setupTooltips() {
         // Defense type tooltips
         const defenseTypes = ['firewall', 'encryption', 'decoy', 'mirror', 'anonymity', 'distributor'];
-        
+
         defenseTypes.forEach(type => {
             const button = document.getElementById(`${type}-defense-btn`);
             if (button) {
                 this.setupTooltip(button, this.getDefenseTooltip(type));
             }
         });
-        
+
         // Resource tooltips
         this.setupTooltip('dharma-display', 'Dharma: Primary currency for defenses');
         this.setupTooltip('bandwidth-display', 'Bandwidth: Required for advanced defenses');
@@ -108,24 +109,24 @@ class UIManager {
     }
 
     setupTooltip(elementOrId, content) {
-        const element = typeof elementOrId === 'string' ? 
+        const element = typeof elementOrId === 'string' ?
             document.getElementById(elementOrId) : elementOrId;
-        
+
         if (!element) return;
-        
+
         let tooltip = null;
-        
+
         element.addEventListener('mouseenter', (e) => {
             tooltip = this.createTooltip(content, e.pageX, e.pageY);
         });
-        
+
         element.addEventListener('mouseleave', () => {
             if (tooltip) {
                 tooltip.remove();
                 tooltip = null;
             }
         });
-        
+
         element.addEventListener('mousemove', (e) => {
             if (tooltip) {
                 tooltip.style.left = (e.pageX + 10) + 'px';
@@ -154,7 +155,7 @@ class UIManager {
             max-width: 200px;
             box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         `;
-        
+
         document.body.appendChild(tooltip);
         return tooltip;
     }
@@ -168,14 +169,14 @@ class UIManager {
             anonymity: '<strong>Anonymity Cloak</strong><br>Cost: 80 Dharma, 30 Bandwidth, 50 Anonymity<br>Stealth attacks',
             distributor: '<strong>Load Distributor</strong><br>Cost: 150 Dharma, 75 Bandwidth<br>Long range, high damage'
         };
-        
+
         return defenseTypes[type] || 'Defense information';
     }
 
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            
+
             switch (e.key.toLowerCase()) {
                 case ' ':
                     e.preventDefault();
@@ -198,7 +199,7 @@ class UIManager {
             }
         });
     }
-    
+
     setupDefenseSelection() {
         // Add click handlers for defense items
         const defenseItems = document.querySelectorAll('.defense-item[data-type]');
@@ -206,29 +207,29 @@ class UIManager {
             item.addEventListener('click', (e) => {
                 const defenseType = item.getAttribute('data-type');
                 console.log(`[UIManager] Defense type selected: ${defenseType}`);
-                
+
                 // Remove active class from all defense items
                 defenseItems.forEach(di => di.classList.remove('active'));
-                
+
                 // Add active class to clicked item
                 item.classList.add('active');
-                
+
                 // Dispatch selection event
-                const event = new CustomEvent('selectDefenseType', { 
-                    detail: { type: defenseType } 
+                const event = new CustomEvent('selectDefenseType', {
+                    detail: { type: defenseType }
                 });
                 document.dispatchEvent(event);
             });
         });
-        
+
         console.log(`[UIManager] Set up defense selection for ${defenseItems.length} defense types`);
     }
 
     selectDefenseHotkey(index) {
         const defenseTypes = ['firewall', 'encryption', 'decoy', 'mirror', 'anonymity', 'distributor'];
         if (index < defenseTypes.length) {
-            const event = new CustomEvent('selectDefenseType', { 
-                detail: { type: defenseTypes[index] } 
+            const event = new CustomEvent('selectDefenseType', {
+                detail: { type: defenseTypes[index] }
             });
             document.dispatchEvent(event);
         }
@@ -237,11 +238,11 @@ class UIManager {
     // Resource Management
     updateResources(resources) {
         this.resources = { ...resources };
-        
+
         this.updateText('dharma-display', Utils.game.formatNumber(resources.dharma));
         this.updateText('bandwidth-display', Utils.game.formatNumber(resources.bandwidth));
         this.updateText('anonymity-display', Utils.game.formatNumber(resources.anonymity));
-        
+
         // Animate resource changes
         this.animateResourceChange('dharma-display');
         this.animateResourceChange('bandwidth-display');
@@ -251,10 +252,10 @@ class UIManager {
     animateResourceChange(elementId) {
         const elementData = this.elements.get(elementId);
         if (!elementData) return;
-        
+
         const element = elementData.element;
         element.classList.add('resource-change');
-        
+
         setTimeout(() => {
             element.classList.remove('resource-change');
         }, 300);
@@ -263,19 +264,19 @@ class UIManager {
     // Game State Updates
     updateGameState(state) {
         this.gameState = { ...this.gameState, ...state };
-        
+
         if (state.level !== undefined) {
             this.updateText('level-display', `Level ${state.level}`);
         }
-        
+
         if (state.wave !== undefined) {
             this.updateText('wave-display', `Wave ${state.wave}`);
         }
-        
+
         if (state.score !== undefined) {
             this.updateText('score-display', Utils.game.formatNumber(state.score));
         }
-        
+
         if (state.lives !== undefined) {
             this.updateText('lives-display', state.lives.toString());
             this.animateLivesChange(state.lives);
@@ -285,13 +286,13 @@ class UIManager {
     animateLivesChange(lives) {
         const element = this.elements.get('lives-display')?.element;
         if (!element) return;
-        
+
         if (lives <= 3) {
             element.classList.add('lives-low');
         } else {
             element.classList.remove('lives-low');
         }
-        
+
         if (lives === 1) {
             element.classList.add('lives-critical');
         } else {
@@ -303,13 +304,13 @@ class UIManager {
     updateProgress(barId, value, max = 100) {
         const elementData = this.elements.get(barId);
         if (!elementData || elementData.type !== 'progress') return;
-        
+
         const percentage = Math.max(0, Math.min(100, (value / max) * 100));
         const progressFill = elementData.element.querySelector('.progress-fill');
-        
+
         if (progressFill) {
             progressFill.style.width = `${percentage}%`;
-            
+
             // Color coding for health bars
             if (barId.includes('health')) {
                 if (percentage < 25) {
@@ -325,7 +326,7 @@ class UIManager {
 
     updateWaveProgress(current, total) {
         this.updateProgress('wave-progress-bar', current, total);
-        
+
         const progressText = document.querySelector('#wave-progress-bar .progress-text');
         if (progressText) {
             progressText.textContent = `${current}/${total}`;
@@ -335,7 +336,7 @@ class UIManager {
     updateBossHealth(health, maxHealth) {
         this.updateProgress('boss-health-bar', health, maxHealth);
         this.showElement('boss-health-bar');
-        
+
         if (health <= 0) {
             setTimeout(() => this.hideElement('boss-health-bar'), 2000);
         }
@@ -350,10 +351,10 @@ class UIManager {
             timestamp: Utils.performance.now(),
             duration: duration
         };
-        
+
         this.notifications.push(notification);
         this.renderNotification(notification);
-        
+
         setTimeout(() => {
             this.removeNotification(notification.id);
         }, duration);
@@ -362,7 +363,7 @@ class UIManager {
     renderNotification(notification) {
         const container = this.elements.get('notification-area')?.element;
         if (!container) return;
-        
+
         const element = document.createElement('div');
         element.className = `notification notification-${notification.type}`;
         element.id = `notification-${notification.id}`;
@@ -370,9 +371,9 @@ class UIManager {
             <div class="notification-content">${notification.message}</div>
             <button class="notification-close" onclick="uiManager.removeNotification('${notification.id}')">&times;</button>
         `;
-        
+
         container.appendChild(element);
-        
+
         // Animate in
         setTimeout(() => element.classList.add('notification-show'), 10);
     }
@@ -383,7 +384,7 @@ class UIManager {
             element.classList.add('notification-hide');
             setTimeout(() => element.remove(), 300);
         }
-        
+
         this.notifications = this.notifications.filter(n => n.id !== id);
     }
 
@@ -391,7 +392,7 @@ class UIManager {
     showAchievementUnlocked(achievement) {
         const popup = this.elements.get('achievement-popup')?.element;
         if (!popup) return;
-        
+
         popup.innerHTML = `
             <div class="achievement-content">
                 <div class="achievement-icon">${achievement.icon || '🏆'}</div>
@@ -402,14 +403,14 @@ class UIManager {
                 </div>
             </div>
         `;
-        
+
         popup.classList.add('achievement-show');
-        
+
         // Auto-hide after 4 seconds
         setTimeout(() => {
             popup.classList.remove('achievement-show');
         }, 4000);
-        
+
         // Play achievement sound
         if (window.audioManager) {
             window.audioManager.playSound('achievement_unlocked');
@@ -425,13 +426,13 @@ class UIManager {
                 element.classList.remove('active');
             }
         });
-        
+
         const activeButton = speed === 1 ? 'speed-normal-btn' : 'speed-up-btn';
         const element = this.elements.get(activeButton)?.element;
         if (element) {
             element.classList.add('active');
         }
-        
+
         // Dispatch game speed change event
         const event = new CustomEvent('gameSpeedChange', { detail: { speed } });
         document.dispatchEvent(event);
@@ -499,7 +500,7 @@ class UIManager {
     // Defense UI
     updateDefenseSelection(selectedType) {
         const defenseTypes = ['firewall', 'encryption', 'decoy', 'mirror', 'anonymity', 'distributor'];
-        
+
         defenseTypes.forEach(type => {
             const button = document.getElementById(`${type}-defense-btn`);
             if (button) {
@@ -511,7 +512,7 @@ class UIManager {
     updateDefenseInfo(defense) {
         const panel = this.elements.get('defense-info-panel')?.element;
         if (!panel) return;
-        
+
         if (defense) {
             panel.innerHTML = `
                 <h3>${defense.type} Defense (Level ${defense.level})</h3>
@@ -548,7 +549,7 @@ class UIManager {
     updateWaveButton(canStart, nextWaveInfo) {
         const button = this.elements.get('start-wave-btn')?.element;
         if (!button) return;
-        
+
         if (canStart) {
             button.disabled = false;
             button.textContent = nextWaveInfo ? `Start Wave ${nextWaveInfo.waveNumber}` : 'Start Wave';
@@ -574,9 +575,9 @@ class UIManager {
             z-index: 9999;
             pointer-events: none;
         `;
-        
+
         document.body.appendChild(flash);
-        
+
         setTimeout(() => {
             flash.style.opacity = '0';
             flash.style.transition = 'opacity 0.2s ease';
@@ -588,10 +589,10 @@ class UIManager {
     destroy() {
         // Remove all tooltips
         document.querySelectorAll('.tooltip').forEach(tooltip => tooltip.remove());
-        
+
         // Clear notifications
         this.notifications.length = 0;
-        
+
         // Clear elements
         this.elements.clear();
         this.animations.clear();

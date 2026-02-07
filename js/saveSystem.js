@@ -1,11 +1,32 @@
 
+// Helper functions (inline to avoid Utils import in non-module)
+function deepClone(obj) {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (obj instanceof Date) return new Date(obj.getTime());
+    if (obj instanceof Array) return obj.map(item => deepClone(item));
+    if (obj instanceof Object) {
+        const cloned = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                cloned[key] = deepClone(obj[key]);
+            }
+        }
+        return cloned;
+    }
+}
+const isString = (v) => typeof v === 'string';
+const isNumber = (v) => typeof v === 'number' && !isNaN(v);
+const isPositiveNumber = (v) => isNumber(v) && v > 0;
+const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const isArray = (v) => Array.isArray(v);
+
 class SaveSystem {
     constructor() {
         this.saveSlots = 3;
         this.currentSlot = 0;
         this.gameId = 'dharmapala_shield';
         this.version = '1.0.0';
-        
+
         this.defaultSaveData = {
             version: this.version,
             timestamp: 0,
@@ -41,14 +62,14 @@ class SaveSystem {
                 tutorialCompleted: false
             }
         };
-        
+
         this.callbacks = {
             onSaveSuccess: null,
             onSaveError: null,
             onLoadSuccess: null,
             onLoadError: null
         };
-        
+
         this.validateStorage();
     }
 
@@ -76,13 +97,13 @@ class SaveSystem {
 
             const saveData = this.prepareSaveData(data);
             const key = this.generateSaveKey(slot);
-            
+
             localStorage.setItem(key, JSON.stringify(saveData));
-            
+
             this.triggerCallback('onSaveSuccess', { slot, data: saveData });
             console.log(`Game saved to slot ${slot}`);
             return true;
-            
+
         } catch (error) {
             console.error('Save failed:', error);
             this.triggerCallback('onSaveError', { slot, error });
@@ -98,7 +119,7 @@ class SaveSystem {
 
             const key = this.generateSaveKey(slot);
             const savedData = localStorage.getItem(key);
-            
+
             if (!savedData) {
                 console.warn(`No save data found in slot ${slot}`);
                 return null;
@@ -106,12 +127,12 @@ class SaveSystem {
 
             const parsedData = JSON.parse(savedData);
             const validatedData = this.validateSaveData(parsedData);
-            
+
             this.currentSlot = slot;
             this.triggerCallback('onLoadSuccess', { slot, data: validatedData });
             console.log(`Game loaded from slot ${slot}`);
             return validatedData;
-            
+
         } catch (error) {
             console.error('Load failed:', error);
             this.triggerCallback('onLoadError', { slot, error });
@@ -120,20 +141,20 @@ class SaveSystem {
     }
 
     prepareSaveData(data) {
-        const saveData = Utils.game.deepClone(this.defaultSaveData);
-        
+        const saveData = deepClone(this.defaultSaveData);
+
         saveData.timestamp = Date.now();
         saveData.version = this.version;
-        
+
         if (data) {
             Object.assign(saveData, data);
-            
+
             if (data.resources) Object.assign(saveData.resources, data.resources);
             if (data.settings) Object.assign(saveData.settings, data.settings);
             if (data.statistics) Object.assign(saveData.statistics, data.statistics);
             if (data.progress) Object.assign(saveData.progress, data.progress);
         }
-        
+
         return saveData;
     }
 
@@ -142,46 +163,46 @@ class SaveSystem {
             throw new Error('Invalid save data format');
         }
 
-        const validated = Utils.game.deepClone(this.defaultSaveData);
-        
+        const validated = deepClone(this.defaultSaveData);
+
         if (data.version && data.version !== this.version) {
             console.warn(`Save version mismatch: ${data.version} vs ${this.version}`);
             validated.version = this.version;
         }
 
-        if (Utils.validation.isString(data.playerName)) {
+        if (isString(data.playerName)) {
             validated.playerName = data.playerName;
         }
 
-        if (Utils.validation.isPositiveNumber(data.level)) {
+        if (isPositiveNumber(data.level)) {
             validated.level = data.level;
         }
 
-        if (Utils.validation.isPositiveNumber(data.wave)) {
+        if (isPositiveNumber(data.wave)) {
             validated.wave = data.wave;
         }
 
-        if (data.resources && Utils.validation.isObject(data.resources)) {
+        if (data.resources && isObject(data.resources)) {
             Object.assign(validated.resources, data.resources);
         }
 
-        if (Utils.validation.isArray(data.unlockedDefenses)) {
-            validated.unlockedDefenses = data.unlockedDefenses.filter(Utils.validation.isString);
+        if (isArray(data.unlockedDefenses)) {
+            validated.unlockedDefenses = data.unlockedDefenses.filter(isString);
         }
 
-        if (Utils.validation.isArray(data.achievements)) {
-            validated.achievements = data.achievements.filter(Utils.validation.isString);
+        if (isArray(data.achievements)) {
+            validated.achievements = data.achievements.filter(isString);
         }
 
-        if (data.settings && Utils.validation.isObject(data.settings)) {
+        if (data.settings && isObject(data.settings)) {
             Object.assign(validated.settings, data.settings);
         }
 
-        if (data.statistics && Utils.validation.isObject(data.statistics)) {
+        if (data.statistics && isObject(data.statistics)) {
             Object.assign(validated.statistics, data.statistics);
         }
 
-        if (data.progress && Utils.validation.isObject(data.progress)) {
+        if (data.progress && isObject(data.progress)) {
             Object.assign(validated.progress, data.progress);
         }
 
@@ -193,11 +214,11 @@ class SaveSystem {
         try {
             const prefixedKey = `game_data_${key}`;
             const storedData = localStorage.getItem(prefixedKey);
-            
+
             if (storedData === null) {
                 return defaultValue;
             }
-            
+
             return JSON.parse(storedData);
         } catch (error) {
             console.warn(`Failed to get key '${key}' from storage:`, error);
@@ -227,7 +248,7 @@ class SaveSystem {
             localStorage.removeItem(key);
             console.log(`Save slot ${slot} deleted`);
             return true;
-            
+
         } catch (error) {
             console.error('Delete save failed:', error);
             return false;
@@ -238,7 +259,7 @@ class SaveSystem {
         try {
             const key = this.generateSaveKey(slot);
             const savedData = localStorage.getItem(key);
-            
+
             if (!savedData) {
                 return null;
             }
@@ -253,7 +274,7 @@ class SaveSystem {
                 version: data.version || 'Unknown',
                 playtime: data.statistics?.totalPlayTime || 0
             };
-            
+
         } catch (error) {
             console.error(`Failed to get save info for slot ${slot}:`, error);
             return null;
@@ -262,12 +283,12 @@ class SaveSystem {
 
     getAllSaveInfo() {
         const saves = [];
-        
+
         for (let i = 0; i < this.saveSlots; i++) {
             const info = this.getSaveInfo(i);
             saves.push(info);
         }
-        
+
         return saves;
     }
 
@@ -278,7 +299,7 @@ class SaveSystem {
     getMostRecentSave() {
         let mostRecent = null;
         let latestTimestamp = 0;
-        
+
         for (let i = 0; i < this.saveSlots; i++) {
             const info = this.getSaveInfo(i);
             if (info && info.timestamp > latestTimestamp) {
@@ -286,7 +307,7 @@ class SaveSystem {
                 mostRecent = i;
             }
         }
-        
+
         return mostRecent;
     }
 
@@ -307,7 +328,7 @@ class SaveSystem {
         try {
             const key = this.generateSaveKey(slot);
             const saveData = localStorage.getItem(key);
-            
+
             if (!saveData) {
                 throw new Error(`No save data in slot ${slot}`);
             }
@@ -320,7 +341,7 @@ class SaveSystem {
             };
 
             return JSON.stringify(exportData, null, 2);
-            
+
         } catch (error) {
             console.error('Export failed:', error);
             return null;
@@ -330,14 +351,14 @@ class SaveSystem {
     importSave(importString, slot) {
         try {
             const importData = JSON.parse(importString);
-            
+
             if (importData.gameId !== this.gameId) {
                 throw new Error('Save file is for a different game');
             }
 
             const validatedData = this.validateSaveData(importData.saveData);
             return this.save(validatedData, slot);
-            
+
         } catch (error) {
             console.error('Import failed:', error);
             return false;
@@ -351,7 +372,7 @@ class SaveSystem {
             }
             console.log('All saves cleared');
             return true;
-            
+
         } catch (error) {
             console.error('Clear all saves failed:', error);
             return false;
@@ -383,7 +404,7 @@ class SaveSystem {
             if (oldKeys.length > 0) {
                 console.log(`Migrated ${oldKeys.length} old saves`);
             }
-            
+
         } catch (error) {
             console.error('Save migration failed:', error);
         }

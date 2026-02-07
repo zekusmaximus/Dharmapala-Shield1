@@ -8,24 +8,24 @@ class LevelManager {
         this.waveStartTime = 0;
         this.waveEndTime = 0;
         this.nextWaveDelay = 3000;
-        
+
         this.enemiesSpawned = 0;
         this.enemiesKilled = 0;
         this.enemiesRemaining = 0;
-        
+
         // Spawn queue system
         this.spawnQueue = [];
         this.nextSpawnTime = 0;
         this.currentWaveData = null;
-        
+
         this.pathGenerator = null;
         this.currentPath = null;
         this.spawnPoints = [];
         this.exitPoints = [];
-        
+
         this.levelConfig = null;
         this.waveConfig = null;
-        
+
         this.callbacks = {
             onWaveStart: null,
             onWaveComplete: null,
@@ -35,7 +35,7 @@ class LevelManager {
             onEnemyKilled: null,
             onEnemySpawnRequest: null
         };
-        
+
         this.loadLevelConfiguration();
     }
 
@@ -45,8 +45,8 @@ class LevelManager {
                 name: "Meditation Garden",
                 description: "A peaceful beginning where digital demons first appear",
                 difficulty: 1,
-                baseEnemyHealth: 100,
-                baseEnemySpeed: 1.0,
+                baseEnemyHealth: 25,
+                baseEnemySpeed: 0.4,
                 baseReward: 10,
                 specialRules: [],
                 backgroundColor: "#1a1a2e",
@@ -78,8 +78,8 @@ class LevelManager {
 
         this.waveConfig = {
             enemy_types: [
-                { type: "scriptKiddie", count: 8, health_multiplier: 1.0, speed_multiplier: 1.0, reward_multiplier: 1.0 },
-                { type: "federalAgent", count: 6, health_multiplier: 2.0, speed_multiplier: 0.8, reward_multiplier: 1.5 },
+                { type: "scriptKiddie", count: 5, health_multiplier: 1.0, speed_multiplier: 1.0, reward_multiplier: 1.0 },
+                { type: "federalAgent", count: 4, health_multiplier: 1.5, speed_multiplier: 0.8, reward_multiplier: 1.5 },
                 { type: "corporateSaboteur", count: 4, health_multiplier: 1.5, speed_multiplier: 1.0, reward_multiplier: 1.2 },
                 { type: "aiSurveillance", count: 3, health_multiplier: 2.4, speed_multiplier: 0.9, reward_multiplier: 1.8 },
                 { type: "quantumHacker", count: 2, health_multiplier: 4.0, speed_multiplier: 0.7, reward_multiplier: 2.5 },
@@ -87,8 +87,8 @@ class LevelManager {
             ],
             boss_waves: [5, 10, 15, 20],
             difficulty_progression: {
-                health_increase: 0.15,
-                speed_increase: 0.05,
+                health_increase: 0.1,
+                speed_increase: 0.02,
                 count_increase: 0.1
             }
         };
@@ -101,10 +101,10 @@ class LevelManager {
         this.enemiesSpawned = 0;
         this.enemiesKilled = 0;
         this.enemiesRemaining = 0;
-        
+
         this.generateLevelPath();
         this.triggerCallback('onLevelStart', { level: levelNumber });
-        
+
         console.log(`[LevelManager] Level ${levelNumber} initialized, ready for wave 1`);
     }
 
@@ -118,12 +118,12 @@ class LevelManager {
         try {
             const levelData = this.getLevelData();
             const pathStyle = levelData.pathStyle || 'curved';
-            
+
             // Map pathStyle values to valid PathGenerator themes
             const mappedTheme = this.mapPathStyleToTheme(pathStyle);
-            
+
             this.currentPath = this.pathGenerator.generateBasePath(this.currentLevel, null, mappedTheme, 'hybrid');
-            
+
             // Extract spawn and exit points from the generated path
             if (this.currentPath && this.currentPath.length > 0) {
                 this.spawnPoints = [this.currentPath[0]];
@@ -146,23 +146,23 @@ class LevelManager {
             'zigzag': 'urban',    // angular patterns fit urban theme
             'spiral': 'forest'    // organic curves match forest theme
         };
-        
+
         // Return mapped theme or fallback to 'cyber' for unknown styles
         const mappedTheme = themeMapping[pathStyle] || 'cyber';
-        
+
         // Validate that the theme is one of the supported PathGenerator themes
         const validThemes = ['cyber', 'urban', 'forest', 'mountain'];
         if (!validThemes.includes(mappedTheme)) {
             console.warn(`Invalid theme "${mappedTheme}" mapped from pathStyle "${pathStyle}", using fallback 'cyber'`);
             return 'cyber';
         }
-        
+
         return mappedTheme;
     }
 
     createFallbackPath() {
         console.log('[LevelManager] Creating fallback path due to PathGenerator unavailability');
-        
+
         // Create a very winding path with many waypoints for smooth tower defense gameplay
         this.currentPath = [
             { x: 50, y: 300 },     // Start - left side
@@ -200,11 +200,11 @@ class LevelManager {
             { x: 730, y: 260 },    // Right-down
             { x: 750, y: 300 }     // Final position - right side
         ];
-        
+
         // Spawn and exit points
         this.spawnPoints = [{ x: 0, y: 300 }];
         this.exitPoints = [{ x: 800, y: 300 }];
-        
+
         console.log('[LevelManager] Fallback winding path created:', {
             pathPoints: this.currentPath.length,
             spawnPoints: this.spawnPoints.length,
@@ -222,14 +222,14 @@ class LevelManager {
         if (!this.waveInProgress) {
             return;
         }
-        
+
         try {
             // Process spawn queue for enemy spawning
             this.processSpawnQueue(deltaTime);
-            
+
             // Check wave progression and completion
             this.checkWaveCompletion();
-            
+
         } catch (error) {
             console.error('[LevelManager] Error during update:', error);
         }
@@ -239,13 +239,13 @@ class LevelManager {
         if (!this.spawnQueue || this.spawnQueue.length === 0) {
             return;
         }
-        
-        const currentTime = Utils.performance.now();
-        
+
+        const currentTime = performance.now();
+
         // Process all spawn events that are ready
         for (let i = this.spawnQueue.length - 1; i >= 0; i--) {
             const spawnEvent = this.spawnQueue[i];
-            
+
             if (currentTime >= spawnEvent.spawnTime) {
                 this.executeSpawnEvent(spawnEvent);
                 this.spawnQueue.splice(i, 1);
@@ -261,18 +261,18 @@ class LevelManager {
                 console.warn('[LevelManager] No spawn point available for enemy spawn');
                 return;
             }
-            
+
             // Get current path
             const path = this.getCurrentPath();
             if (!path || path.length === 0) {
                 console.warn('[LevelManager] No path available for enemy spawn');
                 return;
             }
-            
+
             // Trigger enemy spawn request via callback
             if (this.callbacks.onEnemySpawnRequest && typeof this.callbacks.onEnemySpawnRequest === 'function') {
                 const success = this.callbacks.onEnemySpawnRequest(spawnEvent.enemyData, spawnPoint, path);
-                
+
                 if (success) {
                     console.log(`[LevelManager] Successfully requested spawn for ${spawnEvent.enemyData.type}`);
                 } else {
@@ -281,7 +281,7 @@ class LevelManager {
             } else {
                 console.warn('[LevelManager] No onEnemySpawnRequest callback available');
             }
-            
+
         } catch (error) {
             console.error('[LevelManager] Error executing spawn event:', error);
         }
@@ -292,12 +292,12 @@ class LevelManager {
             // Return first spawn point or randomly select one
             return this.spawnPoints[0];
         }
-        
+
         // Fallback: use start of path
         if (this.currentPath && this.currentPath.length > 0) {
             return this.currentPath[0];
         }
-        
+
         return null;
     }
 
@@ -305,7 +305,7 @@ class LevelManager {
         // Wave is complete when all enemies are spawned and all are either killed or escaped
         const allEnemiesSpawned = this.spawnQueue.length === 0;
         const noEnemiesRemaining = this.enemiesRemaining <= 0;
-        
+
         if (allEnemiesSpawned && noEnemiesRemaining && this.waveInProgress) {
             console.log('[LevelManager] Wave completion conditions met');
             this.completeWave();
@@ -319,19 +319,19 @@ class LevelManager {
 
         this.currentWave++; // Increment to the actual wave number being started
         this.waveInProgress = true;
-        this.waveStartTime = Utils.performance.now();
+        this.waveStartTime = performance.now();
         this.enemiesSpawned = 0;
         this.enemiesKilled = 0;
-        
+
         const waveData = this.generateWaveData();
         this.currentWaveData = waveData;
         this.enemiesRemaining = waveData.totalEnemies;
-        
+
         // Populate spawn queue based on wave data
         this.populateSpawnQueue(waveData);
-        
+
         console.log(`[LevelManager] Wave ${this.currentWave} started with ${this.spawnQueue.length} spawn events`);
-        
+
         this.triggerCallback('onWaveStart', {
             wave: this.currentWave,
             level: this.currentLevel,
@@ -343,13 +343,13 @@ class LevelManager {
 
     populateSpawnQueue(waveData) {
         this.spawnQueue = [];
-        const baseTime = Utils.performance.now();
+        const baseTime = performance.now();
         let currentSpawnTime = baseTime;
-        
+
         // Convert wave's enemy composition into timed spawn events
         for (const enemyGroup of waveData.enemies) {
             const spawnDelay = enemyGroup.spawnDelay || 1000;
-            
+
             for (let i = 0; i < enemyGroup.count; i++) {
                 const spawnEvent = {
                     enemyData: {
@@ -363,20 +363,20 @@ class LevelManager {
                     groupIndex: waveData.enemies.indexOf(enemyGroup),
                     enemyIndex: i
                 };
-                
+
                 this.spawnQueue.push(spawnEvent);
-                
+
                 // Stagger spawn times within the group
                 currentSpawnTime += spawnDelay + (Math.random() * 200 - 100); // Add some variation
             }
-            
+
             // Add extra delay between different enemy groups
             currentSpawnTime += spawnDelay * 0.5;
         }
-        
+
         // Sort spawn queue by spawn time to ensure proper ordering
         this.spawnQueue.sort((a, b) => a.spawnTime - b.spawnTime);
-        
+
         console.log(`[LevelManager] Populated spawn queue with ${this.spawnQueue.length} spawn events for wave ${this.currentWave}`);
     }
 
@@ -384,9 +384,9 @@ class LevelManager {
         const levelData = this.getLevelData();
         const waveMultiplier = 1 + (this.currentWave - 1) * 0.1;
         const levelMultiplier = 1 + (this.currentLevel - 1) * 0.2;
-        
+
         const isBossWave = this.waveConfig.boss_waves.includes(this.currentWave);
-        
+
         let enemies = [];
         let totalEnemies = 0;
 
@@ -398,7 +398,7 @@ class LevelManager {
             } else if (this.currentWave >= 10) {
                 bossType = "corruptedMonk";
             }
-            
+
             enemies.push({
                 type: bossType,
                 count: 1,
@@ -411,12 +411,12 @@ class LevelManager {
         } else {
             for (const enemyType of this.waveConfig.enemy_types) {
                 const count = Math.ceil(enemyType.count * waveMultiplier);
-                const health = levelData.baseEnemyHealth * 
-                              enemyType.health_multiplier * 
-                              Math.pow(1 + this.waveConfig.difficulty_progression.health_increase, this.currentWave - 1);
-                const speed = levelData.baseEnemySpeed * 
-                             enemyType.speed_multiplier * 
-                             Math.pow(1 + this.waveConfig.difficulty_progression.speed_increase * 0.6, this.currentWave - 1);
+                const health = levelData.baseEnemyHealth *
+                    enemyType.health_multiplier *
+                    Math.pow(1 + this.waveConfig.difficulty_progression.health_increase, this.currentWave - 1);
+                const speed = levelData.baseEnemySpeed *
+                    enemyType.speed_multiplier *
+                    Math.pow(1 + this.waveConfig.difficulty_progression.speed_increase * 0.6, this.currentWave - 1);
                 const reward = Math.ceil(levelData.baseReward * enemyType.reward_multiplier * levelMultiplier);
 
                 enemies.push({
@@ -427,7 +427,7 @@ class LevelManager {
                     reward: reward,
                     spawnDelay: this.calculateSpawnDelay(enemyType.type)
                 });
-                
+
                 totalEnemies += count;
             }
         }
@@ -443,16 +443,16 @@ class LevelManager {
 
     calculateSpawnDelay(enemyType) {
         const baseDelays = {
-            scriptKiddie: 600,
-            federalAgent: 1000,
-            corporateSaboteur: 800,
-            aiSurveillance: 1200,
-            quantumHacker: 1800,
-            corruptedMonk: 2000,
-            raidTeam: 3000,
-            megaCorp: 3000
+            scriptKiddie: 3000,
+            federalAgent: 4000,
+            corporateSaboteur: 3600,
+            aiSurveillance: 5000,
+            quantumHacker: 6000,
+            corruptedMonk: 8000,
+            raidTeam: 10000,
+            megaCorp: 10000
         };
-        
+
         return baseDelays[enemyType] || 1000;
     }
 
@@ -464,7 +464,7 @@ class LevelManager {
     onEnemyKilled() {
         this.enemiesKilled++;
         this.enemiesRemaining = Math.max(0, this.enemiesRemaining - 1);
-        
+
         this.triggerCallback('onEnemyKilled', {
             killed: this.enemiesKilled,
             remaining: this.enemiesRemaining,
@@ -472,26 +472,26 @@ class LevelManager {
         });
 
         console.log(`[LevelManager] Enemy killed. Killed: ${this.enemiesKilled}, Remaining: ${this.enemiesRemaining}`);
-        
+
         // Wave completion will be checked in the update loop
     }
 
     onEnemyEscaped() {
         this.enemiesRemaining = Math.max(0, this.enemiesRemaining - 1);
-        
+
         console.log(`[LevelManager] Enemy escaped. Remaining: ${this.enemiesRemaining}`);
-        
+
         // Wave completion will be checked in the update loop
     }
 
     completeWave() {
         this.waveInProgress = false;
-        this.waveEndTime = Utils.performance.now();
-        
+        this.waveEndTime = performance.now();
+
         // Clear any remaining spawn queue entries
         this.spawnQueue = [];
         this.currentWaveData = null;
-        
+
         const waveData = {
             wave: this.currentWave,
             level: this.currentLevel,
@@ -500,9 +500,9 @@ class LevelManager {
             duration: this.waveEndTime - this.waveStartTime,
             perfect: this.enemiesKilled === this.enemiesSpawned
         };
-        
+
         console.log(`[LevelManager] Wave ${this.currentWave} completed:`, waveData);
-        
+
         this.triggerCallback('onWaveComplete', waveData);
 
         if (this.currentWave >= this.maxWaves) {
@@ -518,9 +518,9 @@ class LevelManager {
             wavesCompleted: this.maxWaves,
             totalTime: this.waveEndTime - this.waveStartTime
         };
-        
+
         this.triggerCallback('onLevelComplete', levelData);
-        
+
         if (this.currentLevel >= Object.keys(this.levelConfig).length) {
             this.triggerCallback('onGameComplete', { finalLevel: this.currentLevel });
         }
@@ -554,7 +554,7 @@ class LevelManager {
 
     getWaveProgress() {
         if (!this.waveInProgress) return 1.0;
-        
+
         const totalEnemies = this.enemiesSpawned || 1;
         return this.enemiesKilled / totalEnemies;
     }
@@ -566,16 +566,16 @@ class LevelManager {
     getNextWavePreview() {
         // Calculate the next wave number that would be started
         const nextWave = this.currentWave + 1;
-        
+
         console.log(`[LevelManager] getNextWavePreview: currentWave=${this.currentWave}, waveInProgress=${this.waveInProgress}, nextWave=${nextWave}, maxWaves=${this.maxWaves}`);
-        
+
         if (nextWave > this.maxWaves) return null;
-        
+
         const tempWave = this.currentWave;
         this.currentWave = nextWave;
         const preview = this.generateWaveData();
         this.currentWave = tempWave;
-        
+
         return preview;
     }
 
@@ -618,7 +618,7 @@ class LevelManager {
         this.enemiesKilled = state.enemiesKilled || 0;
         this.enemiesRemaining = state.enemiesRemaining || 0;
         this.waveStartTime = state.waveStartTime || 0;
-        
+
         // Reset spawn queue when loading state
         this.spawnQueue = [];
         this.currentWaveData = null;

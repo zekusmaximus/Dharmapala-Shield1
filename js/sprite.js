@@ -39,7 +39,7 @@ class SpriteManager {
     // Try to load sprites from the expected asset paths
     async loadGameSprites() {
         console.log('[SpriteManager] Loading game sprites...');
-        
+
         const spriteAssets = {
             // Defense sprites
             'defense_firewall_level1': 'assets/images/firewall_fortress.png',
@@ -48,7 +48,7 @@ class SpriteManager {
             'defense_mirror_level1': 'assets/images/mirror_server.png',
             'defense_anonymity_level1': 'assets/images/anonymity_shroud.png',
             'defense_dharma_level1': 'assets/images/dharma_distributor.png',
-            
+
             // Enemy sprites
             'enemy_scriptKiddie': 'assets/images/enemy_script_kiddie.png',
             'enemy_federalAgent': 'assets/images/enemy_federal_agent.png',
@@ -58,18 +58,18 @@ class SpriteManager {
             'enemy_corruptedMonk': 'assets/images/enemy_corrupted_monk.png',
             'enemy_raidTeam': 'assets/images/enemy_raid_team.png',
             'enemy_megaCorp': 'assets/images/enemy_mega_corp.png',
-            
+
             // Boss sprites
             'boss_raidTeam_phase1': 'assets/images/boss_raid_team_phase1.png',
             'boss_megaCorp_phase1': 'assets/images/boss_mega_corp_phase1.png',
             'boss_corruptedMonk_phase1': 'assets/images/boss_corrupted_monk_phase1.png'
         };
-        
+
         const loadPromises = [];
         for (const [spriteName, assetPath] of Object.entries(spriteAssets)) {
             loadPromises.push(this.loadSprite(spriteName, assetPath));
         }
-        
+
         try {
             await Promise.all(loadPromises);
             console.log('[SpriteManager] Sprite loading complete');
@@ -90,12 +90,12 @@ class SpriteManager {
     createFallbackSprite(name) {
         const size = this.getFallbackSize(name);
         const color = this.getFallbackColor(name);
-        
+
         this.canvas.width = size.width;
         this.canvas.height = size.height;
-        
+
         this.ctx.clearRect(0, 0, size.width, size.height);
-        
+
         if (name.includes('defense') || name.includes('tower')) {
             this.drawDefenseSprite(size, color);
         } else if (name.includes('enemy')) {
@@ -139,7 +139,7 @@ class SpriteManager {
         const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
         gradient.addColorStop(0, color);
         gradient.addColorStop(1, '#002244');
-        
+
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
@@ -149,13 +149,13 @@ class SpriteManager {
         ctx.strokeStyle = '#00d4ff';
         ctx.lineWidth = 3;
         ctx.stroke();
-        
+
         // Inner core
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius / 3, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // Defense spikes/details
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
@@ -165,7 +165,7 @@ class SpriteManager {
             const startY = centerY + Math.sin(angle) * (radius * 0.7);
             const endX = centerX + Math.cos(angle) * (radius * 1.2);
             const endY = centerY + Math.sin(angle) * (radius * 1.2);
-            
+
             ctx.beginPath();
             ctx.moveTo(startX, startY);
             ctx.lineTo(endX, endY);
@@ -186,7 +186,7 @@ class SpriteManager {
         const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
         gradient.addColorStop(0, color);
         gradient.addColorStop(1, '#cc2200');
-        
+
         ctx.fillStyle = gradient;
         ctx.fillRect(x, y, width, height);
 
@@ -198,9 +198,9 @@ class SpriteManager {
         // Enemy "eyes" or targeting system
         ctx.fillStyle = '#ff0000';
         const eyeSize = 4;
-        ctx.fillRect(centerX - eyeSize - 2, centerY - eyeSize/2, eyeSize, eyeSize);
-        ctx.fillRect(centerX + 2, centerY - eyeSize/2, eyeSize, eyeSize);
-        
+        ctx.fillRect(centerX - eyeSize - 2, centerY - eyeSize / 2, eyeSize, eyeSize);
+        ctx.fillRect(centerX + 2, centerY - eyeSize / 2, eyeSize, eyeSize);
+
         // Movement direction indicator
         ctx.fillStyle = '#ffff00';
         ctx.beginPath();
@@ -219,12 +219,12 @@ class SpriteManager {
         // Glowing projectile effect
         ctx.shadowBlur = 5;
         ctx.shadowColor = color;
-        
+
         ctx.fillStyle = color;
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // Inner bright core
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#ffffff';
@@ -244,7 +244,7 @@ class SpriteManager {
         gradient.addColorStop(0, color);
         gradient.addColorStop(0.7, '#660033');
         gradient.addColorStop(1, '#000000');
-        
+
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, size.width, size.height);
 
@@ -258,7 +258,7 @@ class SpriteManager {
         ctx.strokeStyle = color;
         ctx.lineWidth = 4;
         ctx.stroke();
-        
+
         // Boss "face" - threatening design
         ctx.fillStyle = '#ff0000';
         const eyeRadius = radius * 0.15;
@@ -269,7 +269,7 @@ class SpriteManager {
         ctx.beginPath();
         ctx.arc(centerX + radius * 0.3, centerY - radius * 0.2, eyeRadius, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // Mouth/weapon
         ctx.strokeStyle = '#ff0000';
         ctx.lineWidth = 3;
@@ -280,7 +280,7 @@ class SpriteManager {
 
     drawGenericSprite(size, color) {
         const ctx = this.ctx;
-        
+
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, size.width, size.height);
 
@@ -333,7 +333,7 @@ class SpriteManager {
     }
 
     preloadSprites(spriteList) {
-        const promises = spriteList.map(({name, url}) => this.loadSprite(name, url));
+        const promises = spriteList.map(({ name, url }) => this.loadSprite(name, url));
         return Promise.all(promises);
     }
 
@@ -360,7 +360,7 @@ class AnimatedSprite {
 
     play() {
         this.playing = true;
-        this.lastFrameTime = Utils.performance.now();
+        this.lastFrameTime = performance.now();
     }
 
     pause() {
@@ -375,12 +375,12 @@ class AnimatedSprite {
     update() {
         if (!this.playing || this.frames.length === 0) return;
 
-        const now = Utils.performance.now();
+        const now = performance.now();
         const frameDuration = 1000 / this.frameRate;
 
         if (now - this.lastFrameTime >= frameDuration) {
             this.currentFrame++;
-            
+
             if (this.currentFrame >= this.frames.length) {
                 if (this.loop) {
                     this.currentFrame = 0;
@@ -389,7 +389,7 @@ class AnimatedSprite {
                     this.playing = false;
                 }
             }
-            
+
             this.lastFrameTime = now;
         }
     }

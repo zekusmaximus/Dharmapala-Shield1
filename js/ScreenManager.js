@@ -1,3 +1,5 @@
+import Utils from './utils.js';
+
 class ScreenManager {
     constructor() {
         this.currentScreen = 'loading';
@@ -5,7 +7,7 @@ class ScreenManager {
         this.screens = new Map();
         this.modalStack = [];
         this.callbacks = new Map();
-        
+
         this.setupScreens();
         this.setupEventListeners();
         this.hideAllScreens(); // Hide all screens initially
@@ -169,14 +171,14 @@ class ScreenManager {
 
     showScreen(screenName, options = {}) {
         console.log(`[ScreenManager] Attempting to show screen: ${screenName}`);
-        
+
         if (!this.screens.has(screenName)) {
             console.warn(`[ScreenManager] Unknown screen: ${screenName}`);
             return false;
         }
 
         const screen = this.screens.get(screenName);
-        
+
         // Handle modal screens differently
         if (screen.isModal) {
             return this.showModal(screenName, options);
@@ -220,22 +222,22 @@ class ScreenManager {
             screen.element.style.display = displayValue;
             screen.element.classList.add('active');
             console.log(`[ScreenManager] Showing screen: ${screenName}`);
-            
+
             // Dynamic overflow management
             this.manageBodyOverflow(screenName);
-            
+
             // Update state
             this.previousScreen = this.currentScreen;
             this.currentScreen = screenName;
 
             // Trigger callbacks
-            this.triggerCallback('screenChanged', { 
-                from: this.previousScreen, 
-                to: screenName 
+            this.triggerCallback('screenChanged', {
+                from: this.previousScreen,
+                to: screenName
             });
 
             return true;
-            
+
         } catch (error) {
             console.error(`[ScreenManager] Error showing screen ${screenName}:`, error);
             return false;
@@ -263,7 +265,7 @@ class ScreenManager {
 
     showMainMenuDirect() {
         console.log('[ScreenManager] Using shared main menu display');
-        
+
         const success = Utils.dom.showMainMenuDirect();
         if (success) {
             this.currentScreen = 'main-menu';
@@ -280,7 +282,7 @@ class ScreenManager {
         }
 
         const modal = this.screens.get(modalName);
-        
+
         if (!modal.isModal) {
             console.warn(`[ScreenManager] ${modalName} is not a modal screen`);
             return false;
@@ -343,7 +345,7 @@ class ScreenManager {
 
     closeTopModal() {
         if (this.modalStack.length === 0) return false;
-        
+
         const topModal = this.modalStack[this.modalStack.length - 1];
         return this.closeModal(topModal);
     }
@@ -401,16 +403,16 @@ class ScreenManager {
         // Setup tutorial content and navigation
         this.currentTutorialStep = 1;
         this.totalTutorialSteps = 8;
-        
+
         // Get tutorial elements
         this.tutorialStepsContainer = document.querySelector('.tutorial-steps');
         this.tutorialProgress = document.getElementById('tutorialProgress');
         this.prevBtn = document.getElementById('prevTutorialBtn');
         this.nextBtn = document.getElementById('nextTutorialBtn');
-        
+
         // Generate tutorial content
         this.generateTutorialSteps();
-        
+
         // Setup navigation event listeners
         if (this.prevBtn) {
             this.prevBtn.addEventListener('click', () => this.previousTutorialStep());
@@ -418,10 +420,10 @@ class ScreenManager {
         if (this.nextBtn) {
             this.nextBtn.addEventListener('click', () => this.nextTutorialStep());
         }
-        
+
         // Initialize first step
         this.updateTutorialDisplay();
-        
+
         console.log('[ScreenManager] Tutorial screen initialized with', this.totalTutorialSteps, 'steps');
     }
 
@@ -608,20 +610,20 @@ class ScreenManager {
         // Clear existing content and populate with steps
         if (this.tutorialStepsContainer) {
             this.tutorialStepsContainer.innerHTML = '';
-            
+
             steps.forEach((step, index) => {
                 const stepElement = document.createElement('div');
                 stepElement.className = 'tutorial-step';
                 stepElement.setAttribute('data-step', index + 1);
                 if (index === 0) stepElement.classList.add('active');
-                
+
                 stepElement.innerHTML = `
                     <div class="step-content">
                         <h3>${step.title}</h3>
                         ${step.content}
                     </div>
                 `;
-                
+
                 this.tutorialStepsContainer.appendChild(stepElement);
             });
         }
@@ -646,7 +648,7 @@ class ScreenManager {
         if (this.tutorialProgress) {
             this.tutorialProgress.textContent = `${this.currentTutorialStep} / ${this.totalTutorialSteps}`;
         }
-        
+
         // Update navigation buttons
         if (this.prevBtn) {
             this.prevBtn.disabled = this.currentTutorialStep === 1;
@@ -654,7 +656,7 @@ class ScreenManager {
         if (this.nextBtn) {
             this.nextBtn.disabled = this.currentTutorialStep === this.totalTutorialSteps;
         }
-        
+
         // Show current step, hide others
         const steps = document.querySelectorAll('.tutorial-step');
         steps.forEach((step, index) => {
@@ -664,7 +666,7 @@ class ScreenManager {
                 step.classList.remove('active');
             }
         });
-        
+
         console.log(`[ScreenManager] Tutorial step ${this.currentTutorialStep} displayed`);
     }
 
@@ -745,7 +747,7 @@ class ScreenManager {
         // Initialize game HUD elements
         const hudElements = [
             'dharma-display',
-            'bandwidth-display', 
+            'bandwidth-display',
             'anonymity-display',
             'wave-display',
             'level-display'
@@ -770,7 +772,7 @@ class ScreenManager {
     setupSettingsControls() {
         // Setup audio volume sliders
         this.setupVolumeControls();
-        
+
         // Setup other game settings
         this.setupGameplaySettings();
     }
@@ -907,12 +909,12 @@ class ScreenManager {
             // Update boss warning content
             const titleElement = modal.element.querySelector('.boss-title');
             const descElement = modal.element.querySelector('.boss-description');
-            
+
             if (titleElement) titleElement.textContent = bossData.name || 'Boss Approaching';
             if (descElement) descElement.textContent = bossData.description || 'Prepare for battle!';
-            
+
             this.showModal('boss-warning');
-            
+
             // Auto-close after 3 seconds
             setTimeout(() => {
                 this.closeModal('boss-warning');
