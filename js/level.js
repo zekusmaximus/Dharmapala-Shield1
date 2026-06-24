@@ -3,7 +3,9 @@ class LevelManager {
     constructor() {
         this.currentLevel = 1;
         this.currentWave = 1;
-        this.maxWaves = 20;
+        // 10 waves per level to match CONFIG.WAVES / MAX_WAVES and keep a level a
+        // reasonable, completable length. Boss waves fall on 5 and 10.
+        this.maxWaves = 10;
         this.waveInProgress = false;
         this.waveStartTime = 0;
         this.waveEndTime = 0;
@@ -507,9 +509,10 @@ class LevelManager {
 
         if (this.currentWave >= this.maxWaves) {
             this.completeLevel();
-        } else {
-            this.currentWave++;
         }
+        // Do NOT increment currentWave here: startWave() already advances the
+        // wave counter when the next wave begins. Incrementing in both places
+        // skipped every other wave (1, 3, 5, ...) and bypassed boss waves.
     }
 
     completeLevel() {

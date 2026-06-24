@@ -28,8 +28,16 @@ class Game {
             level: 1,
             wave: 1,
             lives: 10,
-            score: 0
+            maxLives: 10,
+            score: 0,
+            ended: false
         };
+
+        // Number of campaign levels available (drives "Next Level" availability).
+        this.totalLevels = 3;
+
+        // Transient visual: counts down after the castle is hit (enemy escaped).
+        this.castleFlash = 0;
 
         // Resources
         this.resources = {
@@ -288,6 +296,18 @@ class Game {
         this.screenManager.on('resumeGame', () => this.resumeGame());
         this.screenManager.on('returnToMenu', () => this.returnToMenu());
 
+        // Victory / defeat / level-select screen actions
+        this.screenManager.on('nextLevel', () => {
+            this.startLevel(Math.min(this.gameState.level + 1, this.totalLevels));
+        });
+        this.screenManager.on('replayLevel', () => this.startLevel(this.gameState.level));
+        this.screenManager.on('retryLevel', () => this.startLevel(this.gameState.level));
+        this.screenManager.on('startLevel', (data) => {
+            const level = data && data.level ? data.level : 1;
+            this.gameState.score = 0;
+            this.startLevel(level);
+        });
+
         // Defense manager callbacks
         this.defenseManager.on('checkResources', (data) => this.checkResources(data.cost));
         this.defenseManager.on('deductResources', (data) => this.deductResources(data.cost));
@@ -450,16 +470,26 @@ class Game {
     // Game Flow Methods
     startNewGame() {
         console.log('[Game] Starting new game...');
+        // A brand-new campaign run resets the cumulative score; per-level state
+        // is handled by startLevel().
+        this.gameState.score = 0;
+        this.startLevel(1);
+    }
 
-        this.gameState = {
-            running: true,
-            paused: false,
-            gameSpeed: 1,
-            level: 1,
-            wave: 1,
-            lives: 10,
-            score: 0
-        };
+    // Begin (or restart) a specific campaign level. Used by New Game, the
+    // victory screen's "Next Level"/"Replay", the defeat screen's "Retry",
+    // and level select. Resets per-level state but preserves cumulative score.
+    startLevel(levelNumber) {
+        console.log(`[Game] Starting level ${levelNumber}...`);
+
+        this.gameState.running = true;
+        this.gameState.paused = false;
+        this.gameState.gameSpeed = 1;
+        this.gameState.level = levelNumber;
+        this.gameState.wave = 0;
+        this.gameState.lives = 10;
+        this.gameState.maxLives = 10;
+        this.gameState.ended = false;
 
         this.resources = {
             dharma: 250,
@@ -471,6 +501,7 @@ class Game {
         this.enemies.length = 0;
         this.projectiles.length = 0;
         this.effects.length = 0;
+        this.castleFlash = 0;
 
         // Reset managers
         this.defenseManager.clear();
@@ -480,7 +511,7 @@ class Game {
         // Initialize level
         const levelManager = this.systemManager.getLevelManager();
         if (levelManager) {
-            levelManager.initializeLevel(this.gameState.level);
+            levelManager.initializeLevel(levelNumber);
         }
 
         // Now that we're starting the game, enable and perform canvas resize
@@ -743,10 +774,8 @@ class Game {
             if (!enemy.isAlive) {
                 this.onEnemyDestroyed(enemy);
                 this.enemies.splice(i, 1);
-            }
-
-            // Check if enemy reached the end
-            if (enemy.reachedEnd) {
+            } else if (enemy.reachedEnd) {
+                // Check if enemy reached the end (only if it wasn't just removed)
                 this.onEnemyEscaped(enemy);
                 this.enemies.splice(i, 1);
             }
@@ -783,6 +812,7 @@ class Game {
         // Render game world
         this.renderBackground();
         this.renderPath();
+        this.renderCastle();
 
         this.renderEnemies();
         this.defenseManager.render(this.ctx);
@@ -957,6 +987,99 @@ class Game {
         this.ctx.restore();
     }
 
+    // The castle (temple/stupa) the player defends, drawn at the path's exit.
+    // Its health bar is tied directly to gameState.lives, so every enemy that
+    // escapes visibly damages the castle.
+    renderCastle() {
+        const levelManager = this.systemManager.getLevelManager();
+        if (!levelManager) return;
+
+        const path = levelManager.getCurrentPath();
+        if (!path || path.length < 1) return;
+
+        const end = path[path.length - 1];
+        const cx = end.x;
+        const cy = end.y;
+
+        const maxLives = this.gameState.maxLives || 10;
+        const healthPct = Math.max(0, Math.min(1, this.gameState.lives / maxLives));
+
+        // Tint shifts from serene cyan (healthy) toward warning red (near-breach).
+        const lerp = (a, b) => Math.round(a + (b - a) * (1 - healthPct));
+        const coreColor = `rgb(${lerp(0, 255)}, ${lerp(212, 68)}, ${lerp(255, 68)})`;
+
+        const ctx = this.ctx;
+        ctx.save();
+
+        // Damage flash (counts down per rendered frame after a breach).
+        const flashing = this.castleFlash > 0;
+        if (flashing) this.castleFlash--;
+
+        const baseWidth = 54;
+        const baseHeight = 16;
+        const bodyWidth = 40;
+        const bodyHeight = 30;
+
+        ctx.strokeStyle = coreColor;
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = flashing ? 30 : 16;
+        ctx.shadowColor = flashing ? '#ff0000' : coreColor;
+
+        // Stepped temple base
+        ctx.fillStyle = '#0b1d2a';
+        ctx.beginPath();
+        ctx.rect(cx - baseWidth / 2, cy + bodyHeight / 2 - 2, baseWidth, baseHeight);
+        ctx.fill();
+        ctx.stroke();
+
+        // Temple body
+        ctx.beginPath();
+        ctx.rect(cx - bodyWidth / 2, cy - bodyHeight / 2, bodyWidth, bodyHeight);
+        ctx.fill();
+        ctx.stroke();
+
+        // Pagoda roof
+        ctx.shadowBlur = flashing ? 30 : 12;
+        ctx.fillStyle = '#10283a';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - bodyHeight / 2 - 22);
+        ctx.lineTo(cx - bodyWidth / 2 - 8, cy - bodyHeight / 2 + 2);
+        ctx.lineTo(cx + bodyWidth / 2 + 8, cy - bodyHeight / 2 + 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Glowing dharma core
+        ctx.shadowBlur = flashing ? 24 : 14;
+        ctx.fillStyle = flashing ? '#ffffff' : coreColor;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Health bar above the castle
+        ctx.shadowBlur = 0;
+        const barWidth = 56;
+        const barHeight = 6;
+        const barX = cx - barWidth / 2;
+        const barY = cy - bodyHeight / 2 - 40;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+        ctx.fillStyle = healthPct > 0.5 ? '#00ff88' : (healthPct > 0.25 ? '#ffd60a' : '#ff4444');
+        ctx.fillRect(barX, barY, barWidth * healthPct, barHeight);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+        // Lives label
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Castle ${this.gameState.lives}/${maxLives}`, cx, barY - 4);
+
+        ctx.restore();
+    }
+
     renderEnemies() {
         // Debug logging (rate limited)
         this.logDebug('Enemies rendered', { count: this.enemies.length }, 'performance');
@@ -1031,24 +1154,58 @@ class Game {
     }
 
     checkGameOver() {
+        // Only one terminal transition per level run.
+        if (!this.gameState.running || this.gameState.ended) return;
         if (this.gameState.lives <= 0) {
             this.gameOver(false);
         }
     }
 
-    gameOver(victory) {
+    // Player lost: the castle's lives reached zero. Dispatches the `gameOver`
+    // event that ScreenManager listens for to show the defeat screen.
+    gameOver(victory = false) {
+        if (this.gameState.ended) return;
+        this.gameState.ended = true;
         this.gameState.running = false;
 
         console.log(`[Game] Game Over - ${victory ? 'Victory' : 'Defeat'}`);
 
-        // Show game over screen
         const event = new CustomEvent('gameOver', {
-            detail: { victory, score: this.gameState.score }
+            detail: {
+                victory,
+                score: this.gameState.score,
+                level: this.gameState.level,
+                hasNextLevel: false
+            }
         });
         document.dispatchEvent(event);
 
-        // Track achievements
         this.trackGameOverAchievements(victory);
+    }
+
+    // Player won the current level (all waves cleared). Shows the victory
+    // screen; "Next Level" is offered only when a further campaign level exists.
+    winLevel(data) {
+        if (this.gameState.ended) return;
+        this.gameState.ended = true;
+        this.gameState.running = false;
+
+        const completedLevel = (data && data.level) || this.gameState.level;
+        const hasNextLevel = completedLevel < this.totalLevels;
+
+        console.log(`[Game] Level ${completedLevel} cleared (hasNextLevel=${hasNextLevel})`);
+
+        const event = new CustomEvent('gameOver', {
+            detail: {
+                victory: true,
+                score: this.gameState.score,
+                level: completedLevel,
+                hasNextLevel
+            }
+        });
+        document.dispatchEvent(event);
+
+        this.trackGameOverAchievements(true);
     }
 
     // Resource Management
@@ -1116,17 +1273,15 @@ class Game {
 
     onLevelComplete(data) {
         console.log(`[Game] Level ${data.level} completed`);
-        this.gameState.level = data.level + 1;
-
-        // Big reward for level completion
-        const reward = this.calculateLevelReward(data);
-        this.addResources(reward);
-
-        this.uiManager.showNotification(`Level ${data.level} Complete!`, 'success', 5000);
 
         if (this.systemManager.getAudioManager()) {
             this.systemManager.getAudioManager().playSound('level_complete');
         }
+
+        // Surface the victory screen. Advancing to the next level is driven by
+        // the screen's "Next Level" button (-> startLevel via the 'nextLevel'
+        // callback), so we intentionally do not mutate gameState.level here.
+        this.winLevel(data);
     }
 
     spawnEnemy(enemyData, spawnPoint, path) {
@@ -1263,8 +1418,9 @@ class Game {
     }
 
     onEnemyEscaped(enemy) {
-        // Enemy reached the end, lose life
+        // Enemy reached the end, the castle takes a hit and loses a life
         this.gameState.lives--;
+        this.castleFlash = 12;
 
         if (this.gameState.lives > 0) {
             this.uiManager.showNotification('Enemy escaped! Life lost.', 'warning');

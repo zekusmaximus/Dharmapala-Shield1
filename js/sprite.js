@@ -122,6 +122,37 @@ class SpriteManager {
     }
 
     getFallbackColor(name) {
+        // Type-specific colors so procedurally-generated fallback sprites stay
+        // visually distinct per enemy/boss/defense type (these match the colors
+        // defined in CONFIG so a fallback reads like the intended unit). This is
+        // what keeps enemies such as quantumHacker/corruptedMonk/raidTeam/megaCorp
+        // recognizable even when their PNG art is missing.
+        const typeColors = {
+            // Enemies
+            scriptKiddie: '#ff7675',
+            federalAgent: '#2d3436',
+            corporateSaboteur: '#636e72',
+            aiSurveillance: '#74b9ff',
+            quantumHacker: '#00b894',
+            corruptedMonk: '#6c5ce7',
+            raidTeam: '#e17055',
+            megaCorp: '#fd79a8',
+            // Defenses
+            firewall: '#ff6b6b',
+            encryption: '#4ecdc4',
+            decoy: '#45b7d1',
+            mirror: '#f9ca24',
+            anonymity: '#6c5ce7',
+            dharma: '#ffd700'
+        };
+
+        // Extract the type token from names like `enemy_quantumHacker`,
+        // `boss_megaCorp_phase1`, or `defense_firewall_level1`.
+        const typeToken = name.split('_')[1];
+        if (typeToken && typeColors[typeToken]) {
+            return typeColors[typeToken];
+        }
+
         if (name.includes('boss')) return '#ff0080';
         if (name.includes('defense') || name.includes('tower')) return '#00d4ff';
         if (name.includes('enemy')) return '#ff6b35';

@@ -252,7 +252,15 @@ class GameBootstrap {
     }
 }
 
+// Default export so the Vite entry shim (src/main.js) can import GameBootstrap.
+export default GameBootstrap;
+
 window.addEventListener('load', () => {
+    // Guard against double-bootstrapping. Under Vite, src/main.js triggers init
+    // on DOMContentLoaded; when served unbundled, this `load` handler runs. The
+    // shared flag ensures exactly one GameBootstrap is ever created.
+    if (window.__dharmapalaBootstrapped) return;
+    window.__dharmapalaBootstrapped = true;
     const bootstrap = new GameBootstrap();
     bootstrap.init().catch(err => {
         console.error('Bootstrap initialization failed', err);
