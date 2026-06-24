@@ -8,6 +8,15 @@ class ScreenManager {
         this.modalStack = [];
         this.callbacks = new Map();
 
+        // Campaign levels available in level select (names mirror
+        // LevelManager.levelConfig in js/level.js).
+        this.levelDefinitions = [
+            { id: 1, name: 'Meditation Garden' },
+            { id: 2, name: 'Temple Servers' },
+            { id: 3, name: 'Cyber Monastery' }
+        ];
+        this.selectedLevel = 1;
+
         this.setupScreens();
         this.setupEventListeners();
         this.hideAllScreens(); // Hide all screens initially
@@ -136,6 +145,24 @@ class ScreenManager {
         this.addClickListener('pause-game-btn', () => this.pauseGame());
         this.addClickListener('resume-game-btn', () => this.resumeGame());
         this.addClickListener('return-to-menu-btn', () => this.returnToMenu());
+
+        // Victory screen actions (show the game screen first so the canvas is
+        // active when the level's deferred resize fires)
+        this.addClickListener('nextLevelBtn', () => { this.showScreen('game'); this.triggerCallback('nextLevel'); });
+        this.addClickListener('replayLevelBtn', () => { this.showScreen('game'); this.triggerCallback('replayLevel'); });
+        this.addClickListener('backToMenuFromVictoryBtn', () => this.showScreen('main-menu'));
+
+        // Defeat screen actions
+        this.addClickListener('retryFromDefeatBtn', () => { this.showScreen('game'); this.triggerCallback('retryLevel'); });
+        this.addClickListener('selectLevelFromDefeatBtn', () => this.showScreen('level-select'));
+        this.addClickListener('backToMenuFromDefeatBtn', () => this.showScreen('main-menu'));
+
+        // Level select
+        this.addClickListener('playSelectedLevelBtn', () => this.playSelectedLevel());
+
+        // Surface the victory/defeat screen when a level run ends. game.js
+        // dispatches this CustomEvent from gameOver()/winLevel().
+        document.addEventListener('gameOver', (e) => this.handleGameOver(e.detail || {}));
 
         // Modal close buttons
         this.addClickListener('close-upgrade-tree', () => this.closeModal('upgrade-tree'));
@@ -819,8 +846,59 @@ class ScreenManager {
     }
 
     loadLevelInfo() {
-        // Load level selection data
+        // Build the level grid and let any listeners augment it (e.g. lock state)
+        this.populateLevelGrid();
         this.triggerCallback('loadLevelInfo');
+    }
+
+    populateLevelGrid() {
+        const grid = document.getElementById('levelGrid');
+        if (!grid) return;
+
+        grid.innerHTML = '';
+
+        this.levelDefinitions.forEach(level => {
+            const tile = document.createElement('button');
+            tile.className = 'level-tile btn secondary' + (level.id === this.selectedLevel ? ' selected' : '');
+            tile.setAttribute('data-level', String(level.id));
+            tile.innerHTML = `<span class="level-number">Level ${level.id}</span>` +
+                `<span class="level-name">${level.name}</span>`;
+            tile.addEventListener('click', () => this.selectLevel(level.id));
+            grid.appendChild(tile);
+        });
+    }
+
+    selectLevel(levelId) {
+        this.selectedLevel = levelId;
+        const tiles = document.querySelectorAll('#levelGrid .level-tile');
+        tiles.forEach(tile => {
+            tile.classList.toggle('selected', Number(tile.getAttribute('data-level')) === levelId);
+        });
+    }
+
+    playSelectedLevel() {
+        const level = this.selectedLevel || 1;
+        console.log(`[ScreenManager] Playing selected level: ${level}`);
+        this.showScreen('game');
+        this.triggerCallback('startLevel', { level });
+    }
+
+    handleGameOver(detail) {
+        const victory = !!detail.victory;
+        console.log(`[ScreenManager] gameOver received (victory=${victory})`);
+
+        if (victory) {
+            const scoreEl = document.getElementById('finalScore');
+            if (scoreEl) scoreEl.textContent = detail.score != null ? detail.score : 0;
+
+            // "Next Level" only makes sense when a further level exists.
+            const nextBtn = document.getElementById('nextLevelBtn');
+            if (nextBtn) nextBtn.style.display = detail.hasNextLevel ? '' : 'none';
+
+            this.showScreen('victory');
+        } else {
+            this.showScreen('defeat');
+        }
     }
 
     // Callback system
